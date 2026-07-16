@@ -7,17 +7,38 @@
 <h1>Merchandise Management</h1>
 <br />
 
+
+
 <form asp-action="Index" method="post">
     @Html.AntiForgeryToken()
 
+
+
+
+
+
+
+
+  @*   Practice *@
     <p>
         Name:
         <input type="text" name="MerchandiseName" required />
     </p>
 
-    <p>
+    @* <p>
         Category:
         <input type="text" name="Category" required />
+    </p> *@
+
+    <p>
+        Category:
+        <select name="Category" required>
+            <option value="">-- Select --</option>
+            <option value="Coffee">Coffee</option>
+            <option value="Pastries">Pastries</option>
+            <option value="Beverage">Beverage</option>
+            <option value="Snack">Snack</option>
+        </select>
     </p>
 
     <p>
