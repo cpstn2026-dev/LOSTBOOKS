@@ -1,0 +1,104 @@
+﻿@model IEnumerable<LOSTBOOKS.Models.Merchandise>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Merchandise Management</h1>
+<br />
+
+<form asp-action="Index" method="post">
+    @Html.AntiForgeryToken()
+
+    <p>
+        Name:
+        <input type="text" name="MerchandiseName" required />
+    </p>
+
+    <p>
+        Category:
+        <input type="text" name="Category" required />
+    </p>
+
+    <p>
+        Quantity:
+        <input type="number" name="Quantity" required />
+    </p>
+
+    <p>
+        Selling Price:
+        <input type="number" step="0.01" name="SellingPrice" required />
+    </p>
+
+    <p>
+        Store Share :
+        <input type="number" step="0.01" name="StoreSharePercentage" min="0" max="100" required /> %
+    </p>
+
+    <p>
+        Consignor:
+        <select name="ConsignorID" asp-items="ViewBag.Consignors" required>
+            <option value="">-- Select Consignor --</option>
+        </select>
+    </p>
+
+    <button type="submit">
+        ADD
+    </button>
+</form>
+
+<br />
+<hr />
+<br />
+
+<form asp-action="Index" method="get" style="margin-bottom: 20px;">
+    <input type="text" name="searchString" placeholder="Search merchandise..." />
+    <button type="submit">Search</button>
+</form>
+
+<table border="1" cellpadding="10" style="width:100%; border-collapse: collapse;">
+    <thead>
+        <tr style="background-color: #f2f2f2;">
+            <th>ID</th>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Store Share</th>
+            <th>Consignor ID</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+
+                <td>MER-@item.MerchandiseID.ToString("D4")</td>
+                <td>@item.MerchandiseName</td>
+                <td>@item.Category</td>
+                <td>@item.Quantity</td>
+                <td>@item.SellingPrice</td>
+                <td>@item.StoreSharePercentage</td>
+                <td>
+
+                    <small>CON-@item.ConsignorID.ToString("D4")</small>
+                </td>
+                <td>
+                    <a asp-action="Edit"
+                       asp-route-id="@item.MerchandiseID"
+                       style="background-color: green; color: white; border: none; padding: 5px 15px;">
+                        Edit
+                    </a>
+
+                    <a asp-action="Delete"
+                       asp-route-id="@item.MerchandiseID"
+                       style="background-color: red; color: white; border: none; padding: 5px 15px;">
+                        Delete
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

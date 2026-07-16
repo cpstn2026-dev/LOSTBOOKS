@@ -1,0 +1,91 @@
+﻿@model LOSTBOOKS.Models.Book
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Book Management</h1>
+<br />
+
+<form asp-action="Edit" method="post">
+
+    <input type="hidden" asp-for="BookID" />
+
+    <p>
+        Book ID:
+        BK-@Model.BookID.ToString("D4")
+    </p>
+
+    <!-- ISBN -->
+    <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
+        <label>ISBN:</label>
+        <input asp-for="ISBN" required />
+        <span asp-validation-for="ISBN" style="color:red;"></span>
+    </div>
+
+    <!-- TITLE -->
+    <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
+        <label>Title:</label>
+        <input asp-for="Title" required />
+        <span asp-validation-for="Title" style="color:red;"></span>
+    </div>
+
+    <!-- AUTHOR -->
+    <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
+        <label>Author:</label>
+        <input asp-for="Author" required />
+        <span asp-validation-for="Author" style="color:red;"></span>
+    </div>
+
+    <!-- CONDITION -->
+    <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
+        <label>Condition:</label>
+        <input asp-for="Condition" required />
+        <span asp-validation-for="Condition" style="color:red;"></span>
+    </div>
+
+    <!-- QUANTITY -->
+    <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
+        <label>Quantity:</label>
+        <input asp-for="Quantity" type="number" min="0" required />
+        <span asp-validation-for="Quantity" style="color:red;"></span>
+    </div>
+
+    <!-- PRICE -->
+    <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
+        <label>Selling Price:</label>
+        <input asp-for="SellingPrice" type="number" step="0.01" required />
+        <span asp-validation-for="SellingPrice" style="color:red;"></span>
+    </div>
+
+    <!-- STORE SHARE -->
+    <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
+        <label>Store Share %:</label>
+        <input asp-for="StoreSharePercentage" type="number" step="0.01" required />
+        <span asp-validation-for="StoreSharePercentage" style="color:red;"></span>
+    </div>
+
+    <!-- CONSIGNOR -->
+    <div style="display:flex; align-items:center; gap:15px; margin-bottom:35px;">
+        <label>Consignor ID:</label>
+
+        <input value="CON-@Model.ConsignorID.ToString("D4")"
+               class="form-control"
+               readonly />
+
+        <input type="hidden" asp-for="ConsignorID" />
+    </div>
+
+    <div style="text-align:right;">
+        <button type="submit"
+                style="background-color:green;color:white;padding:5px 15px;border:none;">
+            update
+        </button>
+
+        <a asp-action="Index"
+           style="background-color:blue;color:white;padding:8px 15px;text-decoration:none;">
+            cancel
+        </a>
+    </div>
+
+</form>

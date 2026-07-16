@@ -1,0 +1,96 @@
+﻿@model IEnumerable<LOSTBOOKS.Models.Consignor>
+
+@{
+    ViewData["Title"] = "Index";
+}
+<h1>Consignor Management</h1>
+<br />
+
+<form asp-action="Create" method="post">
+    <p>
+        Consignor Name:
+        <input type="text" name="ConsignorName" required />
+    </p>
+    <p>
+        Contact Number: <input type="number" name="ContactNumber" pattern="[0-9]*" inputmode="numeric" title="Please enter numbers only" maxlength="11" required />
+    </p>
+    <p>
+        Email Address:
+        <input type="email" name="EmailAddress" required />
+    </p>
+
+    <p>
+        Home Address:
+        <input type="text" name="HomeAddress" required />
+    </p>
+    <p>
+        GCash Number:
+        <input type="text" name="GcashNumber" required />
+    </p>
+
+    <p>
+        Bank Name:
+        <input type="text" name="BankName" />
+    </p>
+
+    <p>
+        Bank Account Number:
+        <input type="text" name="BankAccountNumber" />
+    </p>
+
+    <p>
+        Account Name:
+        <input type="text" name="AccountName" />
+    </p>
+
+    <button type="submit" style="background-color: blue; color: white; padding: 5px 15px;">
+        ADD
+    </button>
+</form>
+<br />
+
+<hr />
+<br />
+
+<form asp-action="Index" method="get" style="margin-bottom: 20px;">
+    <input type="text" name="searchString" placeholder="Search consigners..." value="@Context.Request.Query["searchString"]" />
+    <button type="submit">Search</button>
+</form>
+
+<table border="1" cellpadding="10" style="width:100%; border-collapse: collapse;">
+    <thead>
+        <tr style="background-color: #f2f2f2;">
+            <th>ID</th>
+            <th>Name</th>
+            <th>Contact Number</th>
+            <th>Email Address</th>
+            <th>Home Address</th>
+            <th>Gcash Numbers</th>
+            <th>Bank Name</th>
+            <th>Bank Account Number</th>
+            <th>Account Name</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+       
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>CON-@item.ConsignorID.ToString("D4")</td>
+                <td>@item.ConsignorName</td>
+                <td>@item.ContactNumber</td>
+                <td>@item.EmailAddress</td>
+                <td>@item.HomeAddress</td>
+                <td>@item.GcashNumber </td>
+                <td>@item.BankName  </td>
+                <td>@item.BankAccountNumber  </td>
+                <td>@item.AccountName </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.ConsignorID" style="background-color: green; color: white; border: none; padding: 5px 15px; text-decoration: none; display: inline-block;">Edit</a>
+                    <a asp-action="Delete" asp-route-id="@item.ConsignorID" style="background-color: red; color: white; border: none; padding: 5px 15px; text-decoration: none; display: inline-block;">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

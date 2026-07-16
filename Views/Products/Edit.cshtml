@@ -1,0 +1,58 @@
+﻿@model LOSTBOOKS.Models.Product
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>Product</h4>
+<form asp-action="Edit" method="post">
+
+    <input type="hidden" asp-for="ProductID" />
+
+    <div style="display: flex; gap: 40px; margin-bottom: 25px; align-items: center;">
+
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <label style="font-size: 15px;">Category:</label>
+            <select asp-for="Category">
+                <option value="Coffee">Coffee</option>
+                <option value="Pastries">Pastries</option>
+                <option value="Beverage">Beverage</option>
+                <option value="Snack">Snack</option>
+            </select>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <label style="font-size:15px;">Name:</label>
+            <input type="text" asp-for="ProductName" />
+        </div>
+
+        <div>
+            <label style="font-size:15px;">Selling Price:</label>
+            <input type="number" asp-for="SellingPrice" step="0.01" />
+        </div>
+
+    </div>
+
+    <div style="text-align: right;">
+        <button type="submit"
+                style="background-color: green; color: white; border: none; padding: 5px 15px; cursor: pointer;">
+            update
+        </button>
+
+        <a asp-action="Index"
+           style="background-color: blue; color: white; border: none; padding: 8px 15px; text-decoration: none; display: inline-block; font-size: 14px;">
+            cancel
+        </a>
+    </div>
+
+</form>
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+ 

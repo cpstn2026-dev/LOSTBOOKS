@@ -1,0 +1,72 @@
+﻿@model LOSTBOOKS.Models.Service
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<form asp-action="Edit" method="post">
+
+    <input type="hidden" asp-for="ServiceID" />
+
+    <p>
+        <label style="font-size: 15px;">Service ID</label>
+        <span style="color: gray; font-size: 15px; margin-left: 10px;">
+            @Model.ServiceID
+        </span>
+    </p>
+
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+        <label style="font-size: 15px;">Service Type:</label>
+
+        <label>
+            <input type="radio" asp-for="ServiceType" value="Rush" /> Rush
+        </label>
+
+        <label>
+            <input type="radio" asp-for="ServiceType" value="Regular" /> Regular
+        </label>
+
+        </div>
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+        <label style="font-size: 15px;">Size:</label>
+        <input asp-for="Size" required />
+        <span asp-validation-for="Size" style="color:red;"></span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+        <label style="font-size: 15px;">Number of Pages:</label>
+        <input asp-for="NumberOfPages" required />
+        <span asp-validation-for="NumberOfPages" style="color:red;"></span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+        <label style="font-size: 15px;">Cover Finish:</label>
+        <input asp-for="CoverFinish" required />
+        <span asp-validation-for="CoverFinish" style="color:red;"></span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 35px;">
+        <label style="font-size: 15px;">Price:</label>
+        <input asp-for="Price" required />
+        <span asp-validation-for="Price" style="color:red;"></span>
+    </div>
+
+    <div style="text-align: right;">
+        <button type="submit"
+                style="background-color: green; color: white; border: none; padding: 5px 15px; cursor: pointer;">
+            Update
+        </button>
+
+        <a asp-action="Index"
+           style="background-color: blue; color: white; border: none; padding: 8px 15px; text-decoration: none; display: inline-block; font-size: 14px;">
+            Cancel
+        </a>
+    </div>
+
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,113 @@
+﻿@model IEnumerable<LOSTBOOKS.Models.Book>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Book Management</h1>
+<br />
+
+<form asp-controller="Books" asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+
+    <p>
+        ISBN:
+        <input type="text" name="ISBN" required />
+    </p>
+
+    <p>
+        Title: <input type="text" name="Title" required />
+    </p>
+    <p>
+        Author: <input type="text" name="Author" required />
+    </p>
+    <p>
+        Condition:
+        <select name="Condition"
+                onchange="document.getElementById('qty').value=this.value=='Secondhand'?1:''">
+            <option value="">-- Select --</option>
+            <option value="New Title">New Title</option>
+            <option value="Secondhand">Secondhand</option>
+        </select>
+    </p>
+
+    <p>
+    Quantity:
+    <input type="number"  name="Quantity" id="qty">
+    </p>
+    <p>
+        Selling Price: <input type="number" step="0.01" name="SellingPrice" required />
+    </p>
+    <p>
+        Store Share:
+        <input type="number" step="0.01" name="StoreSharePercentage" min="0" max="100" required /> %
+    </p>
+
+    <p>
+        Consignor:
+        <select name="ConsignorID" asp-items="ViewBag.Consignors" required>
+            <option value="">-- Select Consignor --</option>
+        </select>
+    </p>
+    <button type="submit" style="background-color: blue; color: white; border: none; padding: 5px 15px; cursor: pointer;">ADD</button>
+
+</form>
+<br />
+
+<hr />
+<br />
+
+<form asp-action="Index" method="get" style="margin-bottom: 20px;">
+    <input type="text" name="searchString" placeholder="Search books..." value="@Context.Request.Query["searchString"]" />
+    <button type="submit">Search</button>
+</form>
+
+<table border="1" cellpadding="10" style="width:100%; border-collapse: collapse;">
+    <thead>
+        <tr style="background-color: #f2f2f2;">
+            <th>ID</th>
+            <th>ISBN</th>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Condition</th>
+            <th>Quantity</th>
+            <th>Price</th>
+           <th>Store Share %</th>
+            <th>Store Share Amount</th>
+            <th>Consignor Amount</th>
+            <th>Consignor ID</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            var storeShareAmount = item.SellingPrice * item.StoreSharePercentage / 100;
+            var consignorAmount = item.SellingPrice - storeShareAmount;
+
+            <tr>
+                <td>
+                    BK-@item.BookID.ToString("D4")
+                </td>
+                <td>@item.ISBN</td>
+                <td>@item.Title</td>
+                <td>@item.Author</td>
+                <td>@item.Condition</td>
+                <td>@item.Quantity</td>
+                <td>₱@item.SellingPrice.ToString("N2")</td>
+                <td>@item.StoreSharePercentage%</td>
+                <td>₱@storeShareAmount.ToString("N2")</td>
+                <td>₱@consignorAmount.ToString("N2")</td>
+                <td>
+                   
+                    CON-@item.ConsignorID.ToString("D4")
+                </td>
+
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.BookID" style="background-color: green; color: white; border: none; padding: 5px 15px; text-decoration: none; display: inline-block;">Edit</a>
+                    <a asp-action="Delete" asp-route-id="@item.BookID" style="background-color: red; color: white; border: none; padding: 5px 15px; text-decoration: none; display: inline-block;">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
