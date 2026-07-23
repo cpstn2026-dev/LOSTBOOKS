@@ -44,29 +44,99 @@
         <input asp-for="CoverFinish" required />
         <span asp-validation-for="CoverFinish" style="color:red;"></span>
     </div>
+<div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+    <label style="font-size:15px;">Customer Name:</label>
+    <input asp-for="CustomerName" required />
+    <span asp-validation-for="CustomerName" style="color:red;"></span>
+</div>
 
-    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 35px;">
-        <label style="font-size: 15px;">Price:</label>
-        <input asp-for="Price" required />
-        <span asp-validation-for="Price" style="color:red;"></span>
-    </div>
+<div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+    <label style="font-size:15px;">Contact Number:</label>
+    <input asp-for="ContactNumber" required />
+    <span asp-validation-for="ContactNumber" style="color:red;"></span>
+</div>
 
-    <div style="text-align: right;">
+<div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
+    <label style="font-size:15px;">Status:</label>
+
+    <label>
+        <input type="radio"
+               asp-for="Status"
+               value="Pending Assessment"
+               onclick="togglePrice()" />
+        Pending Assessment
+    </label>
+
+    <label>
+        <input type="radio"
+               asp-for="Status"
+               value="Ready for Payment"
+               onclick="togglePrice()" />
+        Ready for Payment
+    </label>
+</div>
+
+<div style="display:flex; align-items:center; gap:15px; margin-bottom:35px;">
+    <label style="font-size:15px;">Assessed Price:</label>
+
+    <input asp-for="AssessedPrice" id="price" />
+
+    <span asp-validation-for="AssessedPrice"
+          style="color:red;">
+    </span>
+</div>
+
+ <div style="text-align: right;">
         <button type="submit"
                 style="background-color: green; color: white; border: none; padding: 5px 15px; cursor: pointer;">
-            Update
+            update
         </button>
 
         <a asp-action="Index"
            style="background-color: blue; color: white; border: none; padding: 8px 15px; text-decoration: none; display: inline-block; font-size: 14px;">
-            Cancel
+            cancel
         </a>
     </div>
 
+
 </form>
 
-@section Scripts {
+@section Scripts{
+
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+<script>
+
+    function togglePrice() {
+
+        var status =
+            document.querySelector('input[name="Status"]:checked').value;
+
+        var price =
+            document.getElementById("price");
+
+        if (status == "Pending Assessment") {
+
+            price.value = "";
+            price.disabled = true;
+
+        }
+        else {
+
+            price.disabled = false;
+
+        }
+
+    }
+
+    window.onload = function () {
+
+        togglePrice();
+
+    };
+
+</script>
+
 }

@@ -73,8 +73,6 @@
             <th>Quantity</th>
             <th>Price</th>
            <th>Store Share %</th>
-            <th>Store Share Amount</th>
-            <th>Consignor Amount</th>
             <th>Consignor ID</th>
             <th>Actions</th>
         </tr>
@@ -96,8 +94,7 @@
                 <td>@item.Quantity</td>
                 <td>₱@item.SellingPrice.ToString("N2")</td>
                 <td>@item.StoreSharePercentage%</td>
-                <td>₱@storeShareAmount.ToString("N2")</td>
-                <td>₱@consignorAmount.ToString("N2")</td>
+             
                 <td>
                    
                     CON-@item.ConsignorID.ToString("D4")

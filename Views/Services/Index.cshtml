@@ -7,43 +7,101 @@
 <br />
 
 <form asp-action="Create" method="post">
-    Service Type:
+
     <p>
+        Customer Name:
+        <input type="text"
+               name="CustomerName"
+               required />
+    </p>
+
+    <p>
+        Contact Number:
+        <input type="text"
+               name="ContactNumber"
+               required />
+    </p>
+
+    <p>
+        Service Type:
+
         <label>
-            <input type="radio" name="ServiceType" value="Rush" required />
+            <input type="radio"
+                   name="ServiceType"
+                   value="Rush"
+                   required />
             Rush
         </label>
 
-        <label style="margin-left: 20px;">
-            <input type="radio" name="ServiceType" value="Regular" required />
+        <label>
+            <input type="radio"
+                   name="ServiceType"
+                   value="Regular" />
             Regular
         </label>
+
     </p>
 
     <p>
         Size:
-        <input type="text" name="Size" required />
+        <input type="text"
+               name="Size"
+               required />
     </p>
 
     <p>
         Number of Pages:
-        <input type="number" name="NumberOfPages" required />
+        <input type="number"
+               name="NumberOfPages"
+               required />
     </p>
 
     <p>
         Cover Finish:
-        <input type="text" name="CoverFinish" required />
+        <input type="text"
+               name="CoverFinish"
+               required />
     </p>
 
     <p>
-        Price:
-        <input type="number" step="0.01" name="Price" required />
+        Status:
 
-        <button type="submit"
-                style="background-color: blue; color: white; border: none; padding: 5px 15px; cursor: pointer;">
-            ADD
-        </button>
+        <label>
+            <input type="radio"
+                   name="Status"
+                   value="Pending Assessment"
+                   checked
+                   onclick="togglePrice()" />
+
+            Pending Assessment
+        </label>
+
+        <label style="margin-left:20px;">
+            <input type="radio"
+                   name="Status"
+                   value="Ready for Payment"
+                   onclick="togglePrice()" />
+
+            Ready for Payment
+        </label>
+
     </p>
+
+    <p id="priceSection" style="display:none;">
+
+        Assessed Price:
+
+        <input type="number"
+               step="0.01"
+               name="AssessedPrice"
+               id="AssessedPrice" />
+
+    </p>
+
+    <button type="submit">
+        ADD
+    </button>
+
 </form>
 
 <br />
@@ -59,11 +117,14 @@
     <thead>
         <tr style="background-color: #f2f2f2;">
             <th>ID</th>
+             <th>Customer</th>
+            <th>Contact Number</th>
             <th>Service Type</th>
             <th>Size</th>
             <th>Pages</th>
             <th>Cover Finish</th>
-            <th>Price</th>
+            <th>Status</th>
+            <th>Assessed Price</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -73,11 +134,18 @@
         {
             <tr>
                 <td>@item.ServiceID</td>
+                 <td>@item.CustomerName</td>
+                 <td>@item.ContactNumber
                 <td>@item.ServiceType</td>
                 <td>@item.Size</td>
                 <td>@item.NumberOfPages</td>
                 <td>@item.CoverFinish</td>
-                <td>₱@item.Price</td>
+                <td>@item.Status</td>
+                <td>
+                    @(item.AssessedPrice.HasValue
+                        ? "₱" + item.AssessedPrice.Value
+                        : "-")
+                </td>
                 <td>
                     <a asp-action="Edit"
                        asp-route-id="@item.ServiceID"
@@ -95,3 +163,34 @@
         }
     </tbody>
 </table>
+
+@section Scripts{
+
+<script>
+
+function togglePrice(){
+
+    var status =
+        document.querySelector('input[name="Status"]:checked').value;
+
+    if(status=="Ready for Payment"){
+
+        document.getElementById("priceSection").style.display="block";
+
+    }
+
+    else{
+
+        document.getElementById("priceSection").style.display="none";
+
+        document.getElementById("AssessedPrice").value="";
+
+    }
+
+}
+
+window.onload=togglePrice;
+
+</script>
+
+}

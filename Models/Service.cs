@@ -5,24 +5,22 @@ namespace LOSTBOOKS.Models
 {
     public class Service
     {
-        [Key]
         public int ServiceID { get; set; }
+        public string CustomerName { get; set; }
 
-        [Required]
-        public required string ServiceType { get; set; }
+        public string ContactNumber { get; set; }
 
-        [Required]
-        public required string Size { get; set; }        
+        public string ServiceType { get; set; }
 
-        [Required]
+        public string Size { get; set; }
+
         public int NumberOfPages { get; set; }
 
-        [Required]
-        public required string CoverFinish { get; set; }
+        public string CoverFinish { get; set; }
 
-        [Required]
+        public string Status { get; set; }
+
         [Column(TypeName = "decimal(10,2)")]
-        public decimal Price { get; set; }
-
+        public decimal? AssessedPrice { get; set; }
     }
 }

@@ -32,7 +32,7 @@ namespace LOSTBOOKS.Controllers
            s.Size.Contains(searchString) ||
            s.CoverFinish.ToString().Contains(searchString)||
            s.Size.Contains(searchString) ||
-          s.Price.ToString().Contains(searchString));
+          s.AssessedPrice.ToString().Contains(searchString));
             }
 
             return View(await service.ToListAsync());
@@ -67,7 +67,7 @@ namespace LOSTBOOKS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ServiceID,ServiceType,Size,NumberOfPages,CoverFinish,Price")] Service service)
+        public async Task<IActionResult> Create([Bind("ServiceID,CustomerName,ContactNumber,ServiceType,Size,NumberOfPages,CoverFinish,Status,AssessedPrice")] Service service)
         {
             if (ModelState.IsValid)
             {
@@ -99,7 +99,7 @@ namespace LOSTBOOKS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ServiceID,ServiceType,Size,NumberOfPages,CoverFinish,Price")] Service service)
+        public async Task<IActionResult> Edit(int id, [Bind("ServiceID,CustomerName,ContactNumber,ServiceType,Size,NumberOfPages,CoverFinish,Status,AssessedPrice")] Service service)
         {
             if (id != service.ServiceID)
             {

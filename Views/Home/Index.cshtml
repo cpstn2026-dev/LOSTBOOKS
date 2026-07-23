@@ -1,8 +1,406 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model List<LOSTBOOKS.ViewModels.POSViewModels>
+
+@{
+    ViewData["Title"] = "PAGE & POUR POS";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<h2>PAGE & POUR POS</h2>
+
+<form asp-action="Index" method="get">
+
+    <input type="text"
+           name="search"
+           value="@Context.Request.Query["search"]"
+           placeholder="Search item..." />
+
+    <button type="submit" class="btn btn-primary">
+        Search
+    </button>
+
+    <button class="btn btn-dark"
+        data-bs-toggle="offcanvas"
+        data-bs-target="#shoppingBag">
+    🛒 Shopping Bag
+    </button>
+
+    <br /><br />
+
+    <select name="category" onchange="this.form.submit()">
+
+        <option value="All">All</option>
+        <option value="Books">Books</option>
+        <option value="Products">Products</option>
+        <option value="Merchandise">Merchandise</option>
+        <option value="Services">Services</option>
+
+    </select>
+
+</form>
+
+<br />
+
+<table class="table table-bordered">
+
+    <thead>
+
+        <tr>
+
+            <th>ID</th>
+            <th>Item Name</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Action</th>
+
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+
+                <td>@item.Id</td>
+
+                <td>@item.Name</td>
+
+                <td>@item.Category</td>
+
+                <td>₱@item.Price</td>
+
+                <td>
+
+                    <button class="btn btn-success"
+                            data-bs-toggle="modal"
+                            data-bs-target="#cartModal"
+                            data-name="@item.Name"
+                            data-price="@item.Price"
+                            data-category="@item.Category"
+                            data-stock="999">
+
+                        Add To Cart
+
+                    </button>
+
+                </td>
+
+            </tr>
+        }
+
+    </tbody>
+
+</table>
+
+<!-- ADD TO CART MODAL -->
+
+<div class="modal fade"
+     id="cartModal"
+     tabindex="-1">
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h4>Add To Cart</h4>
+
+                <button class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <!-- ITEM NAME -->
+
+                <label>Item Name</label>
+
+                <input type="text"
+                       id="itemName"
+                       class="form-control"
+                       readonly />
+
+                <br />
+
+                <!-- PRICE -->
+
+                <label>Price</label>
+
+                <input type="text"
+                       id="itemPrice"
+                       class="form-control"
+                       readonly />
+
+              <br />
+
+                <!-- PRODUCT / MERCHANDISE -->
+                <div id="qtySection">
+
+                    <label>Quantity</label>
+
+                    <div class="input-group">
+
+                        <button class="btn btn-secondary"
+                                type="button"
+                                onclick="minusQty()">
+                            -
+                        </button>
+
+                        <input type="number"
+                               id="qty"
+                               class="form-control text-center"
+                               value="1"
+                               min="1"
+                               onchange="computeTotal()" />
+
+                        <button class="btn btn-secondary"
+                                type="button"
+                                onclick="addQty()">
+                            +
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <br />
+
+                <p>
+                    <b>Total :</b>
+                    ₱<span id="totalPrice">0</span>
+                </p>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button
+                    id="btnAddCart"
+                    class="btn btn-success"
+                    type="button">
+                    Add To Cart
+                </button>
+
+                <button class="btn btn-danger"
+                        data-bs-dismiss="modal">
+
+                    Cancel
+
+                </button>
+
+            </div>
+
+            <div class="offcanvas offcanvas-end"
+                 tabindex="-1"
+                 id="shoppingBag"
+                 style="width:400px;">
+
+                <div class="offcanvas-header">
+
+                    <h4>🛒 My Shopping Bag</h4>
+
+                    <button class="btn-close"
+                            data-bs-dismiss="offcanvas">
+                    </button>
+
+                </div>
+
+                <div class="offcanvas-body">
+
+                    <div id="cartItems">
+
+                        <p class="text-muted">
+                            No items in cart.
+                        </p>
+
+                    </div>
+
+                    <hr>
+
+                    <h5>
+                        Total :
+                        ₱<span id="cartTotal">0</span>
+                    </h5>
+
+                    <button class="btn btn-danger w-100 mt-3">
+                        Clear Cart
+                    </button>
+
+                    <button class="btn btn-success w-100 mt-2">
+                        Checkout
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </div>
+
+@section Scripts{
+
+    <script>
+
+        var price = 0;
+        var stock = 0;
+        var category = "";
+        var cart = [];
+
+        var modal = document.getElementById("cartModal");
+
+        modal.addEventListener("show.bs.modal", function (event) {
+
+            var button = event.relatedTarget;
+
+            // Get data from button
+            var name = button.getAttribute("data-name");
+            var itemPrice = button.getAttribute("data-price");
+
+            category = button.getAttribute("data-category");
+            stock = parseInt(button.getAttribute("data-stock"));
+
+            // Display Item Name
+            document.getElementById("itemName").value = name;
+
+            // Display Price
+            document.getElementById("itemPrice").value = itemPrice;
+
+            price = parseFloat(itemPrice);
+
+            document.getElementById("qty").value = 1;
+
+            computeTotal();
+
+            // Books
+            if (category == "Books")
+            {
+                document.getElementById("qtySection").style.display = "block";
+            }   
+
+            // Services
+            else if (category == "Services")
+            {
+                document.getElementById("qtySection").style.display = "none";
+            }
+
+            // Products & Merchandise
+            else
+            {
+                document.getElementById("qtySection").style.display = "block";
+            }
+
+        });
+
+                 
+
+        function minusQty()
+        {
+            var qty = document.getElementById("qty");
+
+            if(qty.value > 1)
+            {
+                qty.value--;
+            }
+
+            computeTotal();
+        }
+
+        function addQty()
+        {
+            var qty = document.getElementById("qty");
+
+            // Products = unlimited
+            if(category == "Products")
+            {
+                qty.value++;
+            }
+
+            // Books ug Merchandise = limit sa stock
+            else
+            {
+                if(parseInt(qty.value) < stock)
+                {
+                    qty.value++;
+                }
+            }
+
+            computeTotal();
+        }
+
+        function computeTotal()
+        {
+            var qty = document.getElementById("qty").value;
+
+            var total = price * qty;
+
+            document.getElementById("totalPrice").innerHTML = total;
+        }
+
+        document.getElementById("btnAddCart").addEventListener("click", function () {
+
+            var qty = category == "Services"
+                ? 1
+                : parseInt(document.getElementById("qty").value);
+
+            cart.push({
+
+                name: document.getElementById("itemName").value,
+                price: price,
+                qty: qty
+
+            });
+
+            loadCart();
+
+            bootstrap.Modal.getInstance(document.getElementById("cartModal")).hide();
+
+        });
+
+        function loadCart()
+        {
+            var html = "";
+
+            var total = 0;
+
+            cart.forEach(function(item){
+
+                html += `
+                    <div class="border-bottom mb-2 pb-2">
+
+                        <b>${item.name}</b>
+
+                        <br>
+
+                        Qty : ${item.qty}
+
+                        <br>
+
+                        ₱${item.price * item.qty}
+
+                    </div>
+                `;
+
+                total += item.price * item.qty;
+
+            });
+
+            if(cart.length==0)
+            {
+                html="<p class='text-muted'>No items in cart.</p>";
+            }
+
+            document.getElementById("cartItems").innerHTML=html;
+
+            document.getElementById("cartTotal").innerHTML=total.toFixed(2);
+
+        }
+
+    </script>
+
+}

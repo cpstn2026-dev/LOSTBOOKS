@@ -76,11 +76,8 @@ namespace LOSTBOOKS.Controllers
 
                 return View("Index", books);
             }
-            // Calculate the store share amount
-            decimal storeShareAmount = book.SellingPrice * (book.StoreSharePercentage / 100);
-
-            // Calculate the consignor's share
-            decimal consignorAmount = book.SellingPrice - storeShareAmount;
+            
+            
 
             _context.Add(book);
             await _context.SaveChangesAsync();
