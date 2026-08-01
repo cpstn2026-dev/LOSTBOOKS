@@ -4,82 +4,95 @@
     ViewData["Title"] = "PAGE & POUR POS";
 }
 
-<h2>PAGE & POUR POS</h2>
+<h2 class="text-success fw-bold">
+    PAGE & POUR POS
+</h2>
 
 <form asp-action="Index" method="get" class="mb-3">
 
-    <div class="row">
+        <div class="row align-items-center mb-3">
 
-        <div class="col-md-4">
+            <!-- Search -->
+            <div class="col-md-5">
 
-            <input type="text"
-                   class="form-control"
-                   name="search"
-                   placeholder="Search Item..."
-                   value="@Context.Request.Query["search"]" />
+                <input type="text"
+                       class="form-control"
+                       name="search"
+                       placeholder="Search Item..."
+                       value="@Context.Request.Query["search"]" />
 
-        </div>
+            </div>
 
-        <div class="col-md-3">
+            <!-- Search Button -->
+            <div class="col-md-2">
 
-            <select class="form-select"
-                    name="category"
-                    onchange="this.form.submit()">
+                <button type="submit"
+                        class="btn btn-success w-100">
 
-                <option value="All">All</option>
-                <option value="Books">Books</option>
-                <option value="Products">Products</option>
-                <option value="Merchandise">Merchandise</option>
-                <option value="Services">Services</option>
+                    Search
 
-            </select>
+                </button>
 
-        </div>
+            </div>
 
-        <div class="col-md-2">
+            <!-- Shopping Bag -->
+            <div class="col-md-3 ms-auto text-end">
 
-            <button type="submit"
-                    class="btn btn-primary w-100">
+                <button type="button"
+                        class="btn btn-dark w-100 position-relative"
+                        data-bs-toggle="offcanvas"
+                        data-bs-target="#shoppingBag">
 
-                Search
+                    <i class="bi bi-cart3"></i>
 
-            </button>
+                    Shopping Bag
 
-        </div>
+                    <span id="cartBadge"
+                          class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
 
-        <div class="col-md-3">
+                        0
 
-            <button type="button"
-                    class="btn btn-dark w-100"
-                    data-bs-toggle="offcanvas"
-                    data-bs-target="#shoppingBag">
+                    </span>
 
-                🛒 Shopping Bag
+                </button>
 
-            </button>
+            </div>
 
         </div>
 
-    </div>
+        <!-- Category sa ubos -->
+        <div class="row mb-4">
 
+            <div class="col-md-3">
+
+                <select class="form-select"
+                        name="category"
+                        onchange="this.form.submit()">
+
+                    <option value="All">All Categories</option>
+                    <option value="Books">Books</option>
+                    <option value="Products">Products</option>
+                    <option value="Merchandise">Merchandise</option>
+                    <option value="Services">Services</option>
+
+                </select>
+
+            </div>
+
+        </div>
 </form>
 
 <table class="table table-bordered table-hover">
 
-    <thead class="table-dark">
-
+     <thead>
         <tr>
-
-            <th>ID</th>
+            <th>Id</th>
             <th>Item Name</th>
             <th>Category</th>
             <th>Price</th>
-            <th width="150">Action</th>
-
+            <th>Action</th>
         </tr>
-
-    </thead>
-
+      </thead>
     <tbody>
 
         @foreach (var item in Model)
@@ -96,18 +109,19 @@
 
                 <td>
 
-                    <button class="btn btn-success w-100"
-                            type="button"
-                            data-bs-toggle="modal"
-                            data-bs-target="#cartModal"
-                            data-name="@item.Name"
-                            data-price="@item.Price"
-                            data-category="@item.Category"
-                            data-stock="@item.Stock">
+                   <button 
+                        class="btn btn-primary"
+                        data-id="@item.Id"
+                        data-name="@item.Name"
+                        data-price="@item.Price"
+                        data-stock="@item.Stock"
+                        data-category="@item.Category"
+                        data-bs-toggle="modal"
+                        data-bs-target="#cartModal">
 
-                        Add To Cart
+                        Add to Cart
 
-                    </button>
+                     </button>   
 
                 </td>
 
@@ -247,19 +261,18 @@
 
         <table class="table table-sm table-bordered">
 
-            <thead class="table-light">
+           <thead>
 
                 <tr>
-
                     <th>Item</th>
-                    <th width="60">Qty</th>
-                    <th width="90">Total</th>
-                    <th width="50"></th>
-
+                    <th>Category</th>
+                    <th>Qty</th>
+                    <th>Unit Price</th>
+                    <th>Subtotal</th>
+                    <th>Action</th>
                 </tr>
 
             </thead>
-
             <tbody id="cartItems">
 
                 <tr>
@@ -398,10 +411,19 @@
     // VARIABLES
     // ===========================
 
-    let price = 0;
-    let stock = 0;
-    let category = "";
-    let cart = [];
+        let price = 0;
+        let stock = 0;
+        let category = "";
+
+        let cart = [];
+
+        let selectedItem = {
+            id: 0,
+            name: "",
+            price: 0,
+            stock: 0,
+            category: ""
+        };
 
     // ===========================
     // OPEN ADD TO CART MODAL
@@ -414,12 +436,18 @@
         let button = event.relatedTarget;
 
         // Get Item Information
-        document.getElementById("itemName").value = button.dataset.name;
-        document.getElementById("itemPrice").value = button.dataset.price;
+        selectedItem.id = button.dataset.id;
+        selectedItem.name = button.dataset.name;
+        selectedItem.price = parseFloat(button.dataset.price);
+        selectedItem.stock = parseInt(button.dataset.stock);
+        selectedItem.category = button.dataset.category;
 
-        price = parseFloat(button.dataset.price);
-        stock = parseInt(button.dataset.stock);
-        category = button.dataset.category;
+        document.getElementById("itemName").value = selectedItem.name;
+        document.getElementById("itemPrice").value = selectedItem.price;
+
+        price = selectedItem.price;
+        stock = selectedItem.stock;
+        category = selectedItem.category;
 
         // Default Quantity
         document.getElementById("qty").value = 1;
@@ -507,34 +535,39 @@
     // ADD ITEM TO CART
     // ===========================
 
-    document.getElementById("btnAddCart").addEventListener("click", function () {
+           document.getElementById("btnAddCart").addEventListener("click", function () {
 
-        let qty;
+            let qty = category == "Services"
+                ? 1
+                : parseInt(document.getElementById("qty").value);
 
-        if (category == "Services") {
+            let existing = cart.find(x => x.name === selectedItem.name);
 
-            qty = 1;
+            if (existing) {
 
-        }
-        else {
+                existing.qty += qty;
 
-            qty = parseInt(document.getElementById("qty").value);
+            }
+            else {  cart.push({
 
-        }
+                    id: selectedItem.id,
+                    name: selectedItem.name,
+                    price: selectedItem.price,
+                    qty: qty,
+                    category: selectedItem.category
 
-        cart.push({
+                });
 
-            name: document.getElementById("itemName").value,
-            price: price,
-            qty: qty
+
+            }
+
+            loadCart();
+
+            updateBadge();
+
+            bootstrap.Modal.getInstance(modal).hide();
 
         });
-
-        loadCart();
-
-        bootstrap.Modal.getInstance(modal).hide();
-
-    });
 
         // ===========================
     // LOAD SHOPPING BAG
@@ -559,7 +592,7 @@
                     </td>
 
                 </tr>
-            `;
+              ` ;
 
         }
         else {
@@ -572,46 +605,62 @@
                 total += subTotal;
 
                 html += `
+                <tr>
 
-                    <tr>
+                    <td>${item.name}</td>
 
-                        <td>
+                    <td>${item.category}</td>
 
-                            ${item.name}
+                    <td class="text-center">
 
-                        </td>
-
-                        <td>
-
-                            ${item.qty}
-
-                        </td>
-
-                        <td>
-
-                            ₱${subTotal.toFixed(2)}
-
-                        </td>
-
-                        <td>
+                        <div class="d-flex justify-content-center align-items-center">
 
                             <button
-                                class="btn btn-danger btn-sm"
-                                onclick="removeItem(${index})">
-
-                                ✖
-
+                                class="btn btn-sm btn-outline-secondary"
+                                onclick="decreaseQty(${index})">
+                                -
                             </button>
 
-                        </td>
+                            <span class="mx-2 fw-bold">
+                                ${item.qty}
+                            </span>
 
-                    </tr>
+                            <button
+                                class="btn btn-sm btn-outline-secondary"
+                                onclick="increaseQty(${index})">
+                                +
+                            </button>
 
+                        </div>
+
+                    </td>
+
+                    <td>
+                        ₱${item.price.toFixed(2)}
+                    </td>
+
+                    <td class="fw-bold">
+                        ₱${subTotal.toFixed(2)}
+                    </td>
+
+                    <td class="text-center">
+
+                        <button
+                            class="btn btn-outline-danger btn-sm"
+                            onclick="removeItem(${index})">
+
+                            🗑
+
+                        </button>
+
+                    </td>
+
+                </tr>
                 `;
 
-            });
 
-        }
+                });   // <-- FOR EACH NI
+                }      // <-- ELSE NI
 
         // Display Cart Items
         document.getElementById("cartItems").innerHTML = html;
@@ -623,19 +672,58 @@
         // Update Change
         computeChange();
 
+
+      
     }
 
     // ===========================
     // REMOVE ITEM
     // ===========================
+        function updateBadge() {
 
-    function removeItem(index) {
+            document.getElementById("cartBadge").innerHTML = cart.length;
 
-        cart.splice(index, 1);
+        }
 
-        loadCart();
+                function removeItem(index) {
 
-    }
+            cart.splice(index, 1);
+
+            loadCart();
+
+            updateBadge();
+
+        }
+
+
+                function increaseQty(index) {
+
+            cart[index].qty++;
+
+            loadCart();
+
+            updateBadge();
+
+        }
+
+        function decreaseQty(index) {
+
+            if (cart[index].qty > 1) {
+
+                cart[index].qty--;
+
+            }
+            else {
+
+                cart.splice(index, 1);
+
+            }
+
+            loadCart();
+
+            updateBadge();
+
+        }
 
     // ===========================
     // CLEAR SHOPPING BAG
@@ -648,6 +736,8 @@
             cart = [];
 
             loadCart();
+
+            updateBadge();
 
             // Reset Payment
             document.getElementById("cash").value = 0;
@@ -718,70 +808,78 @@
     // CHECKOUT
     // ===========================
 
-    document.getElementById("btnCheckout").addEventListener("click", function () {
+          document.getElementById("btnCheckout").addEventListener("click", async function () {
 
-        if (cart.length == 0) {
-
-            alert("Shopping Bag is empty.");
-
-            return;
-
-        }
-
-        // CASH PAYMENT
-        if (document.getElementById("paymentType").value == "Cash") {
-
-            let total =
-                parseFloat(document.getElementById("cartTotal").value);
-
-            let cash =
-                parseFloat(document.getElementById("cash").value) || 0;
-
-            if (cash < total) {
-
-                alert("Insufficient cash.");
-
+            if (cart.length == 0) {
+                alert("Shopping Bag is empty.");
                 return;
-
             }
 
-            alert("Cash Payment Successful!");
+            // CASH PAYMENT
+            if (document.getElementById("paymentType").value == "Cash") {
 
-        }
+                let total = parseFloat(document.getElementById("cartTotal").value);
+                let cash = parseFloat(document.getElementById("cash").value) || 0;
 
-        // GCASH PAYMENT
-        else {
+                if (cash < total) {
+                    alert("Insufficient cash.");
+                    return;
+                }
+            }
+            // GCASH PAYMENT
+            else {
 
-            let ref =
-                document.getElementById("referenceNo").value.trim();
+                let ref = document.getElementById("referenceNo").value.trim();
 
-            if (ref == "") {
-
-                alert("Please enter GCash Reference Number.");
-
-                return;
-
+                if (ref == "") {
+                    alert("Please enter GCash Reference Number.");
+                    return;
+                }
             }
 
-            alert("GCash Payment Successful!");
+            // Convert cart ngadto sa SalesRecording model
+            let sales = cart.map(item => ({
+                ItemID: item.id,
+                ItemName: item.name,
+                Category: item.category,
+                QuantitySold: item.qty,
+                SellingPrice: item.price
+            }));
 
-        }
+            // Save sa database
+            const response = await fetch("/Home/Checkout", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(sales)
+            });
 
-        // Clear Cart After Checkout
-        cart = [];
+            if (response.ok) {
 
-        loadCart();
+                alert("Checkout Successful!");
 
-        document.getElementById("cash").value = 0;
-        document.getElementById("change").value = "0.00";
+                cart = [];
 
-        if (document.getElementById("referenceNo")) {
+                loadCart();
 
-            document.getElementById("referenceNo").value = "";
+                updateBadge();
 
-        }
+                document.getElementById("cash").value = 0;
+                document.getElementById("change").value = "0.00";
 
-    });
+                if (document.getElementById("referenceNo")) {
+                    document.getElementById("referenceNo").value = "";
+                }
+
+                // Refresh aron makita ang updated stock
+                location.reload();
+            }
+            else {
+                alert("Checkout failed.");
+            }
+
+        });
 
     // ===========================
     // DEFAULT DISPLAY
@@ -792,4 +890,4 @@
 
 </script>
 
-}
+}   

@@ -21,6 +21,8 @@ namespace LOSTBOOKS.Data
         public DbSet<LOSTBOOKS.Models.Merchandise> Merchandises { get; set; } = default!;
         public DbSet<LOSTBOOKS.Models.Book> Books { get; set; } = default!;
 
+        public DbSet<SalesRecording> SalesRecordings { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

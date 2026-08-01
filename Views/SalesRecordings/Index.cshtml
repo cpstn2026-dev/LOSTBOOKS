@@ -1,0 +1,74 @@
+@model IEnumerable<LOSTBOOKS.Models.SalesRecording>
+
+@{
+    ViewData["Title"] = "Sales Recording";
+}
+
+<h2 class="mb-4 fw-bold text-success">
+    <i class="bi bi-receipt"></i> Sales Recording
+</h2>
+
+<div class="card shadow-sm">
+
+    <div class="card-body">
+
+        <table class="table table-hover table-bordered align-middle">
+
+            <thead class="table-success">
+
+                <tr>
+
+                    <th>Date & Time</th>
+                    <th>Item ID</th>
+                    <th>Category</th>
+                    <th>Item Name</th>
+                    <th>Qty Sold</th>
+                    <th>Selling Price</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                @if (Model.Any())
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+
+                            <td>@item.TransactionDate.ToString("MMM dd, yyyy hh:mm tt")</td>
+
+                            <td>@item.ItemID</td>
+
+                            <td>@item.Category</td>
+
+                            <td>@item.ItemName</td>
+
+                            <td>@item.QuantitySold</td>
+
+                            <td>₱@item.SellingPrice.ToString("N2")</td>
+
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+
+                        <td colspan="6" class="text-center text-muted">
+
+                            No sales recorded yet.
+
+                        </td>
+
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>

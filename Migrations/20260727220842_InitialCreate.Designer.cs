@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LOSTBOOKS.Migrations
 {
     [DbContext(typeof(LOSTBOOKSContext))]
-    [Migration("20260723034541_UpdateService")]
-    partial class UpdateService
+    [Migration("20260727220842_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

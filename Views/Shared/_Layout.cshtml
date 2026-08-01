@@ -1,57 +1,198 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
+
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>@ViewData["Title"] - LOSTBOOKS</title>
+
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/LOSTBOOKS.styles.css" asp-append-version="true" />
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
 </head>
+
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">LOSTBOOKS</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
-                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Products" asp-action="Index">Products</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Services" asp-action="Index">Services</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Consignors" asp-action="Index">Consignors</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Merchandises" asp-action="Index">Merchandises</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Books" asp-action="Index">Books</a>
-                        </li>
-                    </ul>
-                </div>
+
+    <div class="d-flex">
+
+        <!-- ================= SIDEBAR ================= -->
+
+        <aside id="sidebar">
+
+            <div class="sidebar-header">
+                <i class="bi bi-book-half"></i>
+                <span>LOSTBOOKS</span>
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - LOSTBOOKS - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+
+            <a asp-controller="Home"
+               asp-action="Index"
+               class="sidebar-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "active" : "")">
+
+                <i class="bi bi-house-door-fill"></i>
+                <span>Dashboard</span>
+
+            </a>
+
+            <a asp-controller="Products"
+               asp-action="Index"
+               class="sidebar-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Products" ? "active" : "")">
+                <i class="bi bi-box-seam"></i>
+                <span>Products</span>
+            </a>
+
+            <a asp-controller="Services"
+               asp-action="Index"
+               class="sidebar-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Services" ? "active" : "")">
+                <i class="bi bi-cup-hot-fill"></i>
+                <span>Services</span>
+            </a>
+
+            <a asp-controller="Consignors"
+               asp-action="Index"
+               class="sidebar-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Consignors" ? "active" : "")">
+                <i class="bi bi-people-fill"></i>
+                <span>Consignors</span>
+            </a>
+
+            <a asp-controller="Merchandises"
+               asp-action="Index"
+               class="sidebar-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Merchandises" ? "active" : "")">
+                <i class="bi bi-bag-fill"></i>
+                <span>Merchandises</span>
+            </a>
+
+            <a asp-controller="Books"
+               asp-action="Index"
+               class="sidebar-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Books" ? "active" : "")">
+                <i class="bi bi-book-fill"></i>
+                <span>Books</span>
+            </a>
+
+
+            <a asp-controller="SalesRecordings"
+               asp-action="Index"
+               class="sidebar-link @(ViewContext.RouteData.Values["Controller"]?.ToString()=="SalesRecordings" ? "active" : "")">
+
+                <i class="bi bi-receipt"></i>
+                <span>Sales Recording</span>
+
+            </a>
+
+        </aside>
+
+        <!-- ================= MAIN ================= -->
+
+        <div class="main-content">
+
+            <!-- ================= TOPBAR ================= -->
+            <nav class="navbar navbar-expand-lg bg-white shadow-sm px-4">
+
+                <div class="container-fluid">
+
+                    <!-- Toggle Button -->
+                    <button id="toggleBtn" class="btn border-0 bg-transparent">
+                        <i class="bi bi-list fs-2 text-white"></i>
+                    </button>
+
+                    <!-- Page Title -->
+                    <h4 class="fw-bold text-success m-0">
+                        PAGE & POUR POS
+                    </h4>
+
+                    <!-- Right Side -->
+                    <div class="ms-auto d-flex align-items-center">
+
+                        <!-- Date & Time -->
+                        <span id="dateTime"
+                              class="me-4 text-secondary fw-semibold">
+                        </span>
+
+                        <!-- User -->
+                        <div class="d-flex align-items-center">
+
+                            <i class="bi bi-person-circle fs-3 text-success"></i>
+
+                            <span class="ms-2 fw-semibold">
+                                Admin
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </nav>
+
+            <!-- ================= PAGE ================= -->
+
+            <main class="container-fluid p-4">
+
+                @RenderBody()
+
+            </main>
+
         </div>
-    </footer>
+
+    </div>
+    <script>
+
+            // ===========================
+            // SIDEBAR TOGGLE
+            // ===========================
+
+            const sidebar = document.getElementById("sidebar");
+            const btn = document.getElementById("toggleBtn");
+
+            btn.addEventListener("click", function () {
+
+                sidebar.classList.toggle("collapsed");
+
+            });
+
+            // ===========================
+            // DATE & TIME
+            // ===========================
+
+            function updateDateTime() {
+
+                const now = new Date();
+
+                const options = {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
+                    second: "2-digit"
+                };
+
+                document.getElementById("dateTime").innerHTML =
+                    now.toLocaleString("en-US", options);
+
+            }
+
+            updateDateTime();
+
+            setInterval(updateDateTime, 1000);
+
+    </script>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
     <script src="~/js/site.js" asp-append-version="true"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
+
 </body>
+
 </html>

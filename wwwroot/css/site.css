@@ -1,22 +1,308 @@
-html {
-  font-size: 14px;
+/* ===========================
+   COLORS
+=========================== */
+
+:root {
+    --primary: #5F844D;
+    --primary-dark: #48683A;
+    --secondary: #E9B437;
+    --secondary-dark: #D99D12;
+    --background: #F5F5F5;
+    --white: #FFFFFF;
+    --text: #222;
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
+/* ===========================
+   GENERAL
+=========================== */
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
-}
-
+html,
 body {
-  margin-bottom: 60px;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: var(--background);
+    font-family: "Segoe UI",sans-serif;
+}
+
+/* ===========================
+   SIDEBAR
+=========================== */
+
+#sidebar {
+    width: 250px;
+    min-height: 100vh;
+    background: var(--secondary);
+    transition: .3s;
+    overflow: hidden;
+}
+
+    #sidebar.collapsed {
+        width: 80px;
+    }
+
+.sidebar-header {
+    background: var(--primary);
+    color: white;
+    text-align: center;
+    padding: 25px 15px;
+}
+
+    .sidebar-header i {
+        font-size: 42px;
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    .sidebar-header span {
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 20px;
+    text-decoration: none;
+    color: #222;
+    font-size: 17px;
+    font-weight: 600;
+    transition: .25s;
+}
+
+    .sidebar-link i {
+        font-size: 22px;
+    }
+
+    .sidebar-link:hover {
+        background: white;
+        color: var(--primary);
+    }
+
+    .sidebar-link.active {
+        background: white;
+        color: var(--primary);
+        border-left: 5px solid var(--primary);
+    }
+
+/* Collapse */
+
+#sidebar.collapsed .sidebar-header span {
+    display: none;
+}
+
+#sidebar.collapsed .sidebar-link span {
+    display: none;
+}
+
+#sidebar.collapsed .sidebar-link {
+    justify-content: center;
+}
+
+#sidebar.collapsed .sidebar-header {
+    padding: 20px 0;
+}
+
+/* ===========================
+   MAIN CONTENT
+=========================== */
+
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ===========================
+   TOPBAR
+=========================== */
+
+.navbar {
+    background: var(--primary) !important;
+    height: 70px;
+}
+
+    .navbar h4 {
+        color: white;
+        font-weight: bold;
+    }
+
+    .navbar .btn-success {
+        background: var(--secondary);
+        border: none;
+        color: #222;
+    }
+
+        .navbar .btn-success:hover {
+            background: var(--secondary-dark);
+        }
+
+    .navbar .bi-person-circle {
+        color: white;
+    }
+
+/* ===========================
+   PAGE
+=========================== */
+
+main {
+    padding: 25px;
+}
+
+/* ===========================
+   TABLE
+=========================== */
+
+.table {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+    .table thead {
+        background: var(--primary);
+        color: white;
+    }
+
+    .table td,
+    .table th {
+        vertical-align: middle;
+    }
+
+    .table tbody tr:hover {
+        background: #FFF8E8;
+    }
+
+/* ===========================
+   BUTTONS
+=========================== */
+
+.btn-primary {
+    background: var(--primary);
+    border: none;
+}
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+    }
+
+.btn-success {
+    background: var(--primary);
+    border: none;
+}
+
+    .btn-success:hover {
+        background: var(--primary-dark);
+    }
+
+.btn-warning {
+    background: var(--secondary);
+    border: none;
+}
+
+/* ===========================
+   FORMS
+=========================== */
+
+.form-control,
+.form-select {
+    border: 2px solid var(--primary);
+}
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--secondary);
+        box-shadow: none;
+    }
+
+/* ===========================
+   SHOPPING BAG
+=========================== */
+
+.offcanvas-header {
+    background: var(--primary);
+    color: white;
+}
+
+.offcanvas-title {
+    color: white;
+}
+
+/* ===========================
+   CARDS
+=========================== */
+
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.1);
+}
+
+/* ===========================
+   FOOTER
+=========================== */
+
+footer {
+    background: white;
+    border-top: 1px solid #ddd;
+    padding: 15px;
+    text-align: center;
+}
+
+/* ===========================
+   SCROLLBAR
+=========================== */
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 20px;
+}
+
+/* ===========================
+   RESPONSIVE
+=========================== */
+
+@media(max-width:768px) {
+
+    #sidebar {
+        width: 80px;
+    }
+
+        #sidebar .sidebar-header span {
+            display: none;
+        }
+
+        #sidebar .sidebar-link span {
+            display: none;
+        }
+
+        #sidebar .sidebar-link {
+            justify-content: center;
+        }
+
+    .navbar h4 {
+        font-size: 18px;
+    }
+
+
+    /* ===========================
+   TABLE TEXT FIX
+=========================== */
+
+    .table tbody td {
+        color: #212529 !important;
+    }
+
+    .table tbody th {
+        color: #212529 !important;
+    }
+
+    .table thead th {
+        color: #fff !important;
+    }
 }
