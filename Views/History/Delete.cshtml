@@ -1,13 +1,14 @@
-@model LOSTBOOKS.Models.SalesRecording
+@model LOSTBOOKS.Models.History
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Delete";
 }
 
-<h1>Details</h1>
+<h1>Delete</h1>
 
+<h3>Are you sure you want to delete this?</h3>
 <div>
-    <h4>SalesRecording</h4>
+    <h4>LOSTBOOKS.Models.History</h4>
     <hr />
     <dl class="row">
         <dt class = "col-sm-2">
@@ -17,6 +18,7 @@
             @Html.DisplayFor(model => model.TransactionDate)
         </dd>
     </dl>
+    <dl class="row">
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.ItemID)
         </dt>
@@ -24,6 +26,7 @@
             @Html.DisplayFor(model => model.ItemID)
         </dd>
     </dl>
+    <dl class="row">
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.ItemName)
         </dt>
@@ -31,6 +34,7 @@
             @Html.DisplayFor(model => model.ItemName)
         </dd>
     </dl>
+    <dl class="row">
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Category)
         </dt>
@@ -38,6 +42,7 @@
             @Html.DisplayFor(model => model.Category)
         </dd>
     </dl>
+    <dl class="row">
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.QuantitySold)
         </dt>
@@ -45,6 +50,7 @@
             @Html.DisplayFor(model => model.QuantitySold)
         </dd>
     </dl>
+    <dl class="row">
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.SellingPrice)
         </dt>
@@ -52,8 +58,25 @@
             @Html.DisplayFor(model => model.SellingPrice)
         </dd>
     </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.SalesRecordingID">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.ConsignorID)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.ConsignorID)
+        </dd>
+    </dl>
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.StoreSharePercentage)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.StoreSharePercentage)
+        </dd>
+    </dl>
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="HistoryID" />
+        <input type="submit" value="Delete" class="btn btn-danger" /> |
+        <a asp-action="Index">Back to List</a>
+    </form>
 </div>

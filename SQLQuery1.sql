@@ -4,6 +4,8 @@ GO
 USE LOSTBOOKS;
 GO
 
+
+
 CREATE TABLE Consignors (
     ConsignorID INT IDENTITY(1,1) PRIMARY KEY,
     ConsignorName VARCHAR(100) NOT NULL,
@@ -58,3 +60,7 @@ CREATE TABLE Services (
     Status VARCHAR(50) NOT NULL,
     AssessedPrice DECIMAL(10,2)
 );
+
+SELECT *
+FROM dbo.SalesRecordings
+ORDER BY TransactionDate DESC;

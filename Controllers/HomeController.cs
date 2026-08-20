@@ -4,6 +4,7 @@ using LOSTBOOKS.Models;
 using LOSTBOOKS.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+
 namespace LOSTBOOKS.Controllers
 {
     public class HomeController : Controller
@@ -12,79 +13,115 @@ namespace LOSTBOOKS.Controllers
         private readonly LOSTBOOKSContext _context;
 
         public HomeController(
-         ILogger<HomeController> logger,
-         LOSTBOOKSContext context)
+            ILogger<HomeController> logger,
+            LOSTBOOKSContext context)
         {
             _logger = logger;
             _context = context;
         }
+
+        // =========================
+        // POS
+        // =========================
         public IActionResult Index(string search, string category)
         {
             var items = new List<POSViewModels>();
 
+            // =========================
             // BOOKS
-            items.AddRange(_context.Books.Select(b => new POSViewModels
-            {
-                Id = "BK-" + b.BookID.ToString("D4"),
-                Name = b.Title,
-                Category = "Books",
-                Price = b.SellingPrice,
-                Stock = b.Quantity
-            }).ToList());
+            // =========================
+            items.AddRange(_context.Books
+                .Where(b => b.Quantity > 0)
+                .Select(b => new POSViewModels
+                {
+                    Id = "BK-" + b.BookID.ToString("D4"),
+                    Name = b.Title,
+                    Category = "Books",
+                    Price = b.SellingPrice,
+                    Stock = b.Quantity
+                })
+                .ToList());
 
+            // =========================
             // PRODUCTS
-            items.AddRange(_context.Products.Select(p => new POSViewModels
-            {
-                Id = "PROD-" + p.ProductID.ToString("D4"),
-                Name = p.ProductName,
-                Category = "Products",
-                Price = p.SellingPrice,
-                Stock = 9999
-            }).ToList());
+            // =========================
+            items.AddRange(_context.Products
+                .Select(p => new POSViewModels
+                {
+                    Id = "PROD-" + p.ProductID.ToString("D4"),
+                    Name = p.ProductName,
+                    Category = "Products",
+                    Price = p.SellingPrice,
+                    Stock = 9999
+                })
+                .ToList());
 
+            // =========================
             // MERCHANDISE
-            items.AddRange(_context.Merchandises.Select(m => new POSViewModels
-            {
-                Id = "MER-" + m.MerchandiseID.ToString("D4"),
-                Name = m.MerchandiseName,
-                Category = "Merchandise",
-                Price = m.SellingPrice,
-                Stock = m.Quantity
+            // =========================
+            items.AddRange(_context.Merchandises
+                .Select(m => new POSViewModels
+                {
+                    Id = "MER-" + m.MerchandiseID.ToString("D4"),
+                    Name = m.MerchandiseName,
+                    Category = "Merchandise",
+                    Price = m.SellingPrice,
+                    Stock = m.Quantity
+                })
+                .ToList());
 
-            }).ToList());
+            // =========================
+            // SERVICES
+            // =========================
+            items.AddRange(_context.Services
+                .Select(s => new POSViewModels
+                {
+                    Id = "SER-" + s.ServiceID.ToString("D4"),
+                    Name = s.ServiceType + " - " + s.Size,
+                    Category = "Services",
+                    Price = s.AssessedPrice ?? 0
+                })
+                .ToList());
 
-            items.AddRange(_context.Services.Select(s => new POSViewModels
-            {
-                Id = "SER-" + s.ServiceID.ToString("0000"),
-                Name = s.ServiceType + " - " + s.Size,
-                Category = "Services",
-                Price = s.AssessedPrice ?? 0
-            }));
-
-
+            // =========================
             // SEARCH
-            if (search != null)
+            // =========================
+            if (!string.IsNullOrEmpty(search))
             {
-                items = items.Where(x => x.Name.Contains(search)).ToList();
+                items = items
+                    .Where(x => x.Name.Contains(
+                        search,
+                        StringComparison.OrdinalIgnoreCase))
+                    .ToList();
             }
 
-            // CATEGORY
-            if (category != null && category != "All")
+            // =========================
+            // CATEGORY FILTER
+            // =========================
+            if (!string.IsNullOrEmpty(category) &&
+                category != "All")
             {
-                items = items.Where(x => x.Category == category).ToList();
+                items = items
+                    .Where(x => x.Category == category)
+                    .ToList();
             }
+
             return View(items);
         }
 
+        // =========================
+        // PRIVACY
+        // =========================
         public IActionResult Privacy()
         {
-
             return View();
         }
 
-
+        // =========================
+        // CHECKOUT
+        // =========================
         [HttpPost]
-        public IActionResult Checkout([FromBody] List<SalesRecording> sales)
+        public IActionResult Checkout([FromBody] List<History> sales)
         {
             if (sales == null || sales.Count == 0)
             {
@@ -95,18 +132,21 @@ namespace LOSTBOOKS.Controllers
             {
                 item.TransactionDate = DateTime.Now;
 
-                _context.SalesRecordings.Add(item);
-
                 // BOOKS
                 if (item.Category == "Books")
                 {
                     int id = int.Parse(item.ItemID.Replace("BK-", ""));
 
-                    var book = _context.Books.FirstOrDefault(x => x.BookID == id);
+                    var book = _context.Books
+                        .FirstOrDefault(x => x.BookID == id);
 
                     if (book != null)
                     {
                         book.Quantity -= item.QuantitySold;
+
+                        item.ConsignorID = book.ConsignorID;
+                        item.StoreSharePercentage =
+                            book.StoreSharePercentage;
                     }
                 }
 
@@ -115,13 +155,22 @@ namespace LOSTBOOKS.Controllers
                 {
                     int id = int.Parse(item.ItemID.Replace("MER-", ""));
 
-                    var merchandise = _context.Merchandises.FirstOrDefault(x => x.MerchandiseID == id);
+                    var merchandise = _context.Merchandises
+                        .FirstOrDefault(x => x.MerchandiseID == id);
 
                     if (merchandise != null)
                     {
                         merchandise.Quantity -= item.QuantitySold;
+
+                        item.ConsignorID = merchandise.ConsignorID;
+                        item.StoreSharePercentage =
+                            merchandise.StoreSharePercentage;
                     }
                 }
+
+                // IMPORTANT
+                // Save the selected Cash / GCash
+                _context.Histories.Add(item);
             }
 
             _context.SaveChanges();
@@ -129,14 +178,20 @@ namespace LOSTBOOKS.Controllers
             return Ok();
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        // =========================
+        // ERROR
+        // =========================
+        [ResponseCache(
+            Duration = 0,
+            Location = ResponseCacheLocation.None,
+            NoStore = true)]
         public IActionResult Error()
         {
             return View(new ErrorViewModel
             {
-                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+                RequestId = Activity.Current?.Id
+                    ?? HttpContext.TraceIdentifier
             });
         }
     }
 }
-

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -28,6 +29,27 @@ namespace LOSTBOOKS.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Consignors", x => x.ConsignorID);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Histories",
+                columns: table => new
+                {
+                    HistoryID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TransactionDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ItemID = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ItemName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Category = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    QuantitySold = table.Column<int>(type: "int", nullable: false),
+                    SellingPrice = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
+                    ConsignorID = table.Column<int>(type: "int", nullable: true),
+                    StoreSharePercentage = table.Column<decimal>(type: "decimal(5,2)", nullable: true),
+                    PaymentType = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Histories", x => x.HistoryID);
                 });
 
             migrationBuilder.CreateTable(
@@ -131,6 +153,9 @@ namespace LOSTBOOKS.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Books");
+
+            migrationBuilder.DropTable(
+                name: "Histories");
 
             migrationBuilder.DropTable(
                 name: "Merchandises");

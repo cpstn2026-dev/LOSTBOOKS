@@ -1,0 +1,532 @@
+@model IEnumerable<LOSTBOOKS.Models.History>
+
+@{
+    ViewData["Title"] = "History";
+
+    var selectedRange =
+        Context.Request.Query["dateRange"].ToString();
+
+    var selectedCategory =
+        Context.Request.Query["category"].ToString();
+
+    var fromDate =
+        Context.Request.Query["fromDate"].ToString();
+
+    var toDate =
+        Context.Request.Query["toDate"].ToString();
+
+    decimal totalSales =
+        ViewBag.TotalSales ?? 0;
+}
+
+<div class="container-fluid">
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <h2 class="fw-bold text-success mb-0">
+
+            <i class="bi bi-clock-history"></i>
+            History
+
+        </h2>
+
+
+        <!-- =================================================
+             VIEW PDF
+        ================================================== -->
+
+        <a asp-controller="History"
+           asp-action="ViewPdf"
+           asp-route-dateRange="@selectedRange"
+           asp-route-fromDate="@fromDate"
+           asp-route-toDate="@toDate"
+           asp-route-category="@selectedCategory"
+           target="_blank"
+           class="btn btn-success">
+
+            <i class="bi bi-eye"></i>
+
+            View
+
+        </a>
+
+    </div>
+
+
+    <!-- =====================================================
+         FILTER CARD
+    ====================================================== -->
+
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <form asp-controller="History"
+                  asp-action="Index"
+                  method="get">
+
+                <!-- DATE RANGE + CATEGORY -->
+
+                <div class="row align-items-end">
+
+                    <!-- DATE RANGE -->
+
+                    <div class="col-md-4 mb-3">
+
+                        <label class="form-label fw-bold">
+                            Date Range
+                        </label>
+
+                        <select id="dateRange"
+                                name="dateRange"
+                                class="form-select">
+
+                            <option value=""
+                                    selected="@(string.IsNullOrEmpty(selectedRange))">
+
+                                -- Select --
+
+                            </option>
+
+                            <option value="Daily"
+                                    selected="@(selectedRange == "Daily")">
+
+                                Daily
+
+                            </option>
+
+                            <option value="Weekly"
+                                    selected="@(selectedRange == "Weekly")">
+
+                                Weekly
+
+                            </option>
+
+                            <option value="Monthly"
+                                    selected="@(selectedRange == "Monthly")">
+
+                                Monthly
+
+                            </option>
+
+                            <option value="Custom"
+                                    selected="@(selectedRange == "Custom")">
+
+                                Custom
+
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- CATEGORY -->
+
+                    <div class="col-md-4 mb-3">
+
+                        <label class="form-label fw-bold">
+                            Category
+                        </label>
+
+                        <select name="category"
+                                class="form-select">
+
+                            <option value="All"
+                                    selected="@(string.IsNullOrEmpty(selectedCategory) || selectedCategory == "All")">
+
+                                All Categories
+
+                            </option>
+
+                            <option value="Books"
+                                    selected="@(selectedCategory == "Books")">
+
+                                Books
+
+                            </option>
+
+                            <option value="Products"
+                                    selected="@(selectedCategory == "Products")">
+
+                                Products
+
+                            </option>
+
+                            <option value="Merchandise"
+                                    selected="@(selectedCategory == "Merchandise")">
+
+                                Merchandise
+
+                            </option>
+
+                            <option value="Services"
+                                    selected="@(selectedCategory == "Services")">
+
+                                Services
+
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <!-- DATE FIELDS -->
+
+                <div class="row">
+
+                    <!-- FROM -->
+
+                    <div class="col-md-4 mb-3"
+                         id="fromDateDiv"
+                         style="display:none;">
+
+                        <label class="form-label fw-bold">
+                            From
+                        </label>
+
+                        <input type="date"
+                               id="fromDate"
+                               name="fromDate"
+                               class="form-control"
+                               value="@fromDate" />
+
+                    </div>
+
+
+                    <!-- TO -->
+
+                    <div class="col-md-4 mb-3"
+                         id="toDateDiv"
+                         style="display:none;">
+
+                        <label class="form-label fw-bold">
+                            To
+                        </label>
+
+                        <input type="date"
+                               id="toDate"
+                               name="toDate"
+                               class="form-control"
+                               value="@toDate" />
+
+                    </div>
+
+                </div>
+
+
+                <!-- FILTER + RESET -->
+
+                <div class="mt-2">
+
+                    <button type="submit"
+                            class="btn btn-success me-2">
+
+                        <i class="bi bi-funnel-fill"></i>
+
+                        Filter
+
+                    </button>
+
+
+                    <a asp-controller="History"
+                       asp-action="Index"
+                       class="btn btn-secondary">
+
+                        <i class="bi bi-arrow-counterclockwise"></i>
+
+                        Reset
+
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         SUMMARY
+    ====================================================== -->
+
+    <div class="row mb-4">
+
+        <!-- TOTAL SALES -->
+
+        <div class="col-md-4">
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-body">
+
+                    <h6 class="text-muted">
+                        Total Sales
+                    </h6>
+
+                    <h3 class="fw-bold text-success">
+
+                        ₱@totalSales.ToString("N2")
+
+                    </h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- TOTAL TRANSACTIONS -->
+
+        <div class="col-md-4">
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-body">
+
+                    <h6 class="text-muted">
+                        Total Transactions
+                    </h6>
+
+                    <h3 class="fw-bold">
+
+                        @Model.Count()
+
+                    </h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         TRANSACTION HISTORY TABLE
+    ====================================================== -->
+
+    <div class="card shadow-sm">
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover table-bordered align-middle">
+
+                    <thead class="table-success">
+
+                        <tr>
+
+                            <th>
+                                Date & Time
+                            </th>
+
+                            <th>
+                                Item ID
+                            </th>
+
+                            <th>
+                                Category
+                            </th>
+
+                            <th>
+                                Item Name
+                            </th>
+
+                            <th>
+                                Qty Sold
+                            </th>
+
+                            <th>
+                                Selling Price
+                            </th>
+
+                            <th>
+                                Payment
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        @if (Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+
+                                    <td>
+                                        @item.TransactionDate.ToString(
+                                            "MMM dd, yyyy hh:mm tt")
+                                    </td>
+
+                                    <td>
+                                        @item.ItemID
+                                    </td>
+
+                                    <td>
+                                        @item.Category
+                                    </td>
+
+                                    <td>
+                                        @item.ItemName
+                                    </td>
+
+                                    <td>
+                                        @item.QuantitySold
+                                    </td>
+
+                                    <td>
+                                        ₱@item.SellingPrice.ToString("N2")
+                                    </td>
+
+                                    <td>
+
+                                        @if (item.PaymentType == "Cash")
+                                        {
+                                            <span class="badge bg-success">
+                                                Cash
+                                            </span>
+                                        }
+                                        else if (item.PaymentType == "GCash")
+                                        {
+                                            <span class="badge bg-primary">
+                                                GCash
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">
+                                                @item.PaymentType
+                                            </span>
+                                        }
+
+                                    </td>
+
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+
+                                <td colspan="7"
+                                    class="text-center text-muted py-4">
+
+                                    <i class="bi bi-inbox fs-3"></i>
+
+                                    <br />
+
+                                    No transactions found.
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     JAVASCRIPT
+========================================================= -->
+
+@section Scripts {
+
+    <script>
+
+        const dateRange =
+            document.getElementById("dateRange");
+
+        const fromDateDiv =
+            document.getElementById("fromDateDiv");
+
+        const toDateDiv =
+            document.getElementById("toDateDiv");
+
+
+        function changeDateFields() {
+
+            const selected =
+                dateRange.value;
+
+
+            if (selected === "Daily") {
+
+                fromDateDiv.style.display = "block";
+
+                toDateDiv.style.display = "none";
+
+            }
+
+            else if (selected === "Weekly") {
+
+                fromDateDiv.style.display = "block";
+
+                toDateDiv.style.display = "none";
+
+            }
+
+            else if (selected === "Monthly") {
+
+                fromDateDiv.style.display = "block";
+
+                toDateDiv.style.display = "none";
+
+            }
+
+            else if (selected === "Custom") {
+
+                fromDateDiv.style.display = "block";
+
+                toDateDiv.style.display = "block";
+
+            }
+
+            else {
+
+                fromDateDiv.style.display = "none";
+
+                toDateDiv.style.display = "none";
+
+            }
+
+        }
+
+
+        dateRange.addEventListener(
+            "change",
+            changeDateFields
+        );
+
+
+        changeDateFields();
+
+    </script>
+
+}

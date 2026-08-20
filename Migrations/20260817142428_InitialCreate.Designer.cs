@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LOSTBOOKS.Migrations
 {
     [DbContext(typeof(LOSTBOOKSContext))]
-    [Migration("20260727220842_InitialCreate")]
+    [Migration("20260817142428_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -20,7 +20,7 @@ namespace LOSTBOOKS.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.25")
+                .HasAnnotation("ProductVersion", "8.0.30")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -109,6 +109,50 @@ namespace LOSTBOOKS.Migrations
                     b.HasKey("ConsignorID");
 
                     b.ToTable("Consignors");
+                });
+
+            modelBuilder.Entity("LOSTBOOKS.Models.History", b =>
+                {
+                    b.Property<int>("HistoryID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HistoryID"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ConsignorID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ItemID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ItemName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PaymentType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("QuantitySold")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("SellingPrice")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<decimal?>("StoreSharePercentage")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<DateTime>("TransactionDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("HistoryID");
+
+                    b.ToTable("Histories");
                 });
 
             modelBuilder.Entity("LOSTBOOKS.Models.Merchandise", b =>

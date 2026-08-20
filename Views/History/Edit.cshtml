@@ -1,4 +1,4 @@
-@model LOSTBOOKS.Models.SalesRecording
+@model LOSTBOOKS.Models.History
 
 @{
     ViewData["Title"] = "Edit";
@@ -6,13 +6,13 @@
 
 <h1>Edit</h1>
 
-<h4>SalesRecording</h4>
+<h4>History</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="SalesRecordingID" />
+            <input type="hidden" asp-for="HistoryID" />
             <div class="form-group">
                 <label asp-for="TransactionDate" class="control-label"></label>
                 <input asp-for="TransactionDate" class="form-control" />
@@ -42,6 +42,16 @@
                 <label asp-for="SellingPrice" class="control-label"></label>
                 <input asp-for="SellingPrice" class="form-control" />
                 <span asp-validation-for="SellingPrice" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ConsignorID" class="control-label"></label>
+                <input asp-for="ConsignorID" class="form-control" />
+                <span asp-validation-for="ConsignorID" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StoreSharePercentage" class="control-label"></label>
+                <input asp-for="StoreSharePercentage" class="form-control" />
+                <span asp-validation-for="StoreSharePercentage" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />

@@ -4,10 +4,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LOSTBOOKS.Models
 {
-    public class SalesRecording
+    public class History
     {
         [Key]
-        public int SalesRecordingID { get; set; }
+        public int HistoryID { get; set; }
 
         public DateTime TransactionDate { get; set; } = DateTime.Now;
 
@@ -21,5 +21,12 @@ namespace LOSTBOOKS.Models
 
         [Column(TypeName = "decimal(10,2)")]
         public decimal SellingPrice { get; set; }
+
+        public int? ConsignorID { get; set; }
+
+        [Column(TypeName = "decimal(5,2)")]
+        public decimal? StoreSharePercentage { get; set; }
+
+        public string PaymentType{ get; set; } = "";
     }
 }

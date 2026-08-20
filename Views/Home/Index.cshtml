@@ -4,16 +4,53 @@
     ViewData["Title"] = "PAGE & POUR POS";
 }
 
-<h2 class="text-success fw-bold">
-    PAGE & POUR POS
-</h2>
+<div class="container-fluid py-4">
 
-<form asp-action="Index" method="get" class="mb-3">
+    <!-- =========================
+         PAGE & POUR POS HEADER
+    ========================== -->
 
-        <div class="row align-items-center mb-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <h2 class="text-success fw-bold mb-0">
+            PAGE & POUR POS
+        </h2>
+
+        <button type="button"
+                class="btn btn-dark position-relative px-4"
+                data-bs-toggle="offcanvas"
+                data-bs-target="#shoppingBag">
+
+            🛒 Shopping Bag
+
+            <span id="cartBadge"
+                  class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+
+                0
+
+            </span>
+
+        </button>
+
+    </div>
+
+
+    <!-- =========================
+         SEARCH AND CATEGORY
+    ========================== -->
+
+    <form asp-action="Index"
+          method="get"
+          class="mb-4">
+
+        <div class="row g-3 align-items-end">
 
             <!-- Search -->
             <div class="col-md-5">
+
+                <label class="form-label fw-bold">
+                    Search Item
+                </label>
 
                 <input type="text"
                        class="form-control"
@@ -23,156 +60,274 @@
 
             </div>
 
+
             <!-- Search Button -->
             <div class="col-md-2">
 
                 <button type="submit"
                         class="btn btn-success w-100">
 
-                    Search
+                    🔍 Search
 
                 </button>
 
             </div>
 
-            <!-- Shopping Bag -->
-            <div class="col-md-3 ms-auto text-end">
 
-                <button type="button"
-                        class="btn btn-dark w-100 position-relative"
-                        data-bs-toggle="offcanvas"
-                        data-bs-target="#shoppingBag">
-
-                    <i class="bi bi-cart3"></i>
-
-                    Shopping Bag
-
-                    <span id="cartBadge"
-                          class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-
-                        0
-
-                    </span>
-
-                </button>
-
-            </div>
-
-        </div>
-
-        <!-- Category sa ubos -->
-        <div class="row mb-4">
-
+            <!-- Category -->
             <div class="col-md-3">
 
-                <select class="form-select"
-                        name="category"
-                        onchange="this.form.submit()">
+                <label class="form-label fw-bold">
+                    Category
+                </label>
 
-                    <option value="All">All Categories</option>
-                    <option value="Books">Books</option>
-                    <option value="Products">Products</option>
-                    <option value="Merchandise">Merchandise</option>
-                    <option value="Services">Services</option>
+                <select class="form-select"
+                        name="category">
+
+                    <option value="All"
+                            selected="@(Context.Request.Query["category"] == "All" || string.IsNullOrEmpty(Context.Request.Query["category"]))">
+
+                        All Categories
+
+                    </option>
+
+                    <option value="Books"
+                            selected="@(Context.Request.Query["category"] == "Books")">
+
+                        Books
+
+                    </option>
+
+                    <option value="Products"
+                            selected="@(Context.Request.Query["category"] == "Products")">
+
+                        Products
+
+                    </option>
+
+                    <option value="Merchandise"
+                            selected="@(Context.Request.Query["category"] == "Merchandise")">
+
+                        Merchandise
+
+                    </option>
+
+                    <option value="Services"
+                            selected="@(Context.Request.Query["category"] == "Services")">
+
+                        Services
+
+                    </option>
 
                 </select>
 
             </div>
 
+
+            <!-- Filter -->
+            <div class="col-md-2">
+
+                <button type="submit"
+                        class="btn btn-success w-100">
+
+                    Filter
+
+                </button>
+
+            </div>
+
         </div>
-</form>
 
-<table class="table table-bordered table-hover">
+    </form>
 
-     <thead>
-        <tr>
-            <th>Id</th>
-            <th>Item Name</th>
-            <th>Category</th>
-            <th>Price</th>
-            <th>Action</th>
-        </tr>
-      </thead>
-    <tbody>
 
-        @foreach (var item in Model)
-        {
-            <tr>
+    <!-- =========================
+         PRODUCT TABLE
+    ========================== -->
 
-                <td>@item.Id</td>
+    <div class="card shadow-sm">
 
-                <td>@item.Name</td>
+        <div class="card-header bg-success text-white">
 
-                <td>@item.Category</td>
+            <h5 class="mb-0">
+                Available Items
+            </h5>
 
-                <td>₱@item.Price</td>
+        </div>
 
-                <td>
+        <div class="card-body p-0">
 
-                   <button 
-                        class="btn btn-primary"
-                        data-id="@item.Id"
-                        data-name="@item.Name"
-                        data-price="@item.Price"
-                        data-stock="@item.Stock"
-                        data-category="@item.Category"
-                        data-bs-toggle="modal"
-                        data-bs-target="#cartModal">
+            <div class="table-responsive">
 
-                        Add to Cart
+                <table class="table table-bordered table-hover mb-0">
 
-                     </button>   
+                    <thead class="table-success">
 
-                </td>
+                        <tr>
 
-            </tr>
-        }
+                            <th>Item ID</th>
 
-    </tbody>
+                            <th>Item Name</th>
 
-</table>
+                            <th>Category</th>
 
-<!-- ================= ADD TO CART MODAL ================= -->
+                            <th>Price</th>
+
+                            <th>Action</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @if (Model != null && Model.Any())
+                        {
+
+                            foreach (var item in Model)
+                            {
+
+                                <tr>
+
+                                    <td>
+                                        @item.Id
+                                    </td>
+
+                                    <td>
+                                        @item.Name
+                                    </td>
+
+                                    <td>
+                                        @item.Category
+                                    </td>
+
+                                    <td>
+                                        ₱@item.Price.ToString("N2")
+                                    </td>
+
+                                    <td>
+
+                                        <button type="button"
+                                                class="btn btn-success btn-sm"
+                                                data-id="@item.Id"
+                                                data-name="@item.Name"
+                                                data-price="@item.Price"
+                                                data-stock="@item.Stock"
+                                                data-category="@item.Category"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#cartModal">
+
+                                            Add to Cart
+
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+
+                            }
+
+                        }
+                        else
+                        {
+
+                            <tr>
+
+                                <td colspan="5"
+                                    class="text-center text-muted py-4">
+
+                                    No items found.
+
+                                </td>
+
+                            </tr>
+
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     ADD TO CART MODAL
+========================================================= -->
 
 <div class="modal fade"
      id="cartModal"
-     tabindex="-1">
+     tabindex="-1"
+     aria-hidden="true">
 
     <div class="modal-dialog">
 
         <div class="modal-content">
 
+            <!-- HEADER -->
+
             <div class="modal-header">
 
-                <h4>Add To Cart</h4>
+                <h4 class="modal-title">
+                    Add To Cart
+                </h4>
 
-                <button class="btn-close"
+                <button type="button"
+                        class="btn-close"
                         data-bs-dismiss="modal">
                 </button>
 
             </div>
 
+
+            <!-- BODY -->
+
             <div class="modal-body">
 
-                <label>Item Name</label>
+                <!-- ITEM NAME -->
 
-                <input id="itemName"
-                       class="form-control"
-                       readonly />
+                <div class="mb-3">
 
-                <br />
+                    <label class="form-label">
+                        Item Name
+                    </label>
 
-                <label>Price</label>
+                    <input id="itemName"
+                           class="form-control"
+                           readonly />
 
-                <input id="itemPrice"
-                       class="form-control"
-                       readonly />
+                </div>
 
-                <br />
 
-                <div id="qtySection">
+                <!-- PRICE -->
 
-                    <label>Quantity</label>
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Price
+                    </label>
+
+                    <input id="itemPrice"
+                           class="form-control"
+                           readonly />
+
+                </div>
+
+
+                <!-- QUANTITY -->
+
+                <div id="qtySection"
+                     class="mb-3">
+
+                    <label class="form-label">
+                        Quantity
+                    </label>
 
                     <div class="input-group">
 
@@ -180,7 +335,7 @@
                                 class="btn btn-secondary"
                                 onclick="minusQty()">
 
-                            -
+                            −
 
                         </button>
 
@@ -188,8 +343,7 @@
                                type="number"
                                class="form-control text-center"
                                value="1"
-                               min="1"
-                               onchange="computeTotal()" />
+                               min="1" />
 
                         <button type="button"
                                 class="btn btn-secondary"
@@ -203,9 +357,10 @@
 
                 </div>
 
-                <br />
 
-                <h5>
+                <!-- TOTAL -->
+
+                <h5 class="fw-bold mt-4">
 
                     Total :
                     ₱<span id="totalPrice">0.00</span>
@@ -213,6 +368,9 @@
                 </h5>
 
             </div>
+
+
+            <!-- FOOTER -->
 
             <div class="modal-footer">
 
@@ -224,7 +382,8 @@
 
                 </button>
 
-                <button class="btn btn-danger"
+                <button type="button"
+                        class="btn btn-danger"
                         data-bs-dismiss="modal">
 
                     Cancel
@@ -240,156 +399,205 @@
 </div>
 
 
-<!-- ================= SHOPPING BAG ================= -->
+<!-- =========================================================
+     SHOPPING BAG
+========================================================= -->
 
 <div class="offcanvas offcanvas-end"
      tabindex="-1"
      id="shoppingBag"
-     style="width:450px;">
+     style="width: 520px;">
 
-    <div class="offcanvas-header">
+    <!-- HEADER -->
 
-        <h4>🛒 Shopping Bag</h4>
+    <div class="offcanvas-header bg-success text-white">
 
-        <button class="btn-close"
+        <h4 class="mb-0">
+
+            🛒 Shopping Bag
+
+        </h4>
+
+        <button type="button"
+                class="btn-close btn-close-white"
                 data-bs-dismiss="offcanvas">
         </button>
 
     </div>
 
+
+    <!-- BODY -->
+
     <div class="offcanvas-body">
 
-        <table class="table table-sm table-bordered">
+        <!-- CART TABLE -->
 
-           <thead>
+        <div class="table-responsive">
 
-                <tr>
-                    <th>Item</th>
-                    <th>Category</th>
-                    <th>Qty</th>
-                    <th>Unit Price</th>
-                    <th>Subtotal</th>
-                    <th>Action</th>
-                </tr>
+            <table class="table table-bordered align-middle">
 
-            </thead>
-            <tbody id="cartItems">
+                <thead class="table-success">
 
-                <tr>
+                    <tr>
 
-                    <td colspan="4"
-                        class="text-center text-muted">
+                        <th>Item</th>
 
-                        No items in cart.
+                        <th>Category</th>
 
-                    </td>
+                        <th>Qty</th>
 
-                </tr>
+                        <th>Unit Price</th>
 
-            </tbody>
+                        <th>Subtotal</th>
 
-        </table>
+                        <th>Action</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="cartItems">
+
+                    <tr>
+
+                        <td colspan="6"
+                            class="text-center text-muted py-4">
+
+                            No items in cart.
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
 
         <hr />
 
+
+        <!-- TOTAL -->
+
         <div class="mb-3">
 
-            <label class="form-label">
-
+            <label class="form-label fw-bold">
                 Total
-
             </label>
 
             <input id="cartTotal"
-                   class="form-control"
+                   class="form-control form-control-lg"
                    value="0.00"
                    readonly />
 
         </div>
 
+
+        <!-- PAYMENT TYPE -->
+
         <div class="mb-3">
 
-            <label class="form-label">
-
+            <label class="form-label fw-bold">
                 Payment Type
-
             </label>
 
             <select id="paymentType"
-                    class="form-select">
+                    class="form-select form-select-lg">
 
-                <option>Cash</option>
-                <option>GCash</option>
+                <option value="Cash">
+                    Cash
+                </option>
+
+                <option value="GCash">
+                    GCash
+                </option>
 
             </select>
 
         </div>
 
-      <div id="cashSection">
 
-    <div class="mb-3">
+        <!-- =========================
+             CASH
+        ========================== -->
 
-        <label class="form-label">
-            Cash Received
-        </label>
+        <div id="cashSection">
 
-        <input id="cash"
-               type="number"
-               class="form-control"
-               value="0"
-               onkeyup="computeChange()"
-               onchange="computeChange()" />
+            <div class="mb-3">
 
-    </div>
+                <label class="form-label fw-bold">
+                    Cash Received
+                </label>
 
-    <div class="mb-3">
+                <input id="cash"
+                       type="number"
+                       class="form-control form-control-lg"
+                       value="0"
+                       min="0" />
 
-        <label class="form-label">
-            Change
-        </label>
+            </div>
 
-        <input id="change"
-               class="form-control"
-               value="0.00"
-               readonly />
 
-    </div>
+            <div class="mb-3">
 
-    </div>
+                <label class="form-label fw-bold">
+                    Change
+                </label>
 
-    <div id="gcashSection" style="display:none;">
+                <input id="change"
+                       class="form-control form-control-lg"
+                       value="0.00"
+                       readonly />
 
-        <div class="mb-3">
-
-            <label class="form-label">
-                GCash Reference No.
-            </label>
-
-            <input id="referenceNo"
-                   class="form-control"
-                   placeholder="Enter Reference Number" />
+            </div>
 
         </div>
 
-        <div class="alert alert-success">
 
-            ✔ Payment will be verified using the reference number.
+        <!-- =========================
+             GCASH
+        ========================== -->
+
+        <div id="gcashSection"
+             style="display:none;">
+
+            <div class="mb-3">
+
+                <label class="form-label fw-bold">
+
+                    GCash Reference No.
+
+                </label>
+
+                <input id="referenceNo"
+                       class="form-control form-control-lg"
+                       placeholder="Enter Reference Number" />
+
+            </div>
 
         </div>
 
-    </div>
+
+        <!-- =========================
+             BUTTONS
+        ========================== -->
 
         <div class="d-grid gap-2">
 
             <button id="btnClear"
-                    class="btn btn-danger">
+                    type="button"
+                    class="btn btn-danger btn-lg">
 
                 Clear Cart
 
             </button>
 
+
             <button id="btnCheckout"
-                    class="btn btn-success">
+                    type="button"
+                    class="btn btn-success btn-lg">
 
                 Checkout
 
@@ -402,290 +610,483 @@
 </div>
 
 
+@section Scripts {
 
- @section Scripts{
+    <script>
 
-<script>
-
-    // ===========================
-    // VARIABLES
-    // ===========================
+        // =========================================================
+        // VARIABLES
+        // =========================================================
 
         let price = 0;
+
         let stock = 0;
+
         let category = "";
 
         let cart = [];
 
+
         let selectedItem = {
-            id: 0,
+
+            id: "",
+
             name: "",
+
             price: 0,
+
             stock: 0,
+
             category: ""
+
         };
 
-    // ===========================
-    // OPEN ADD TO CART MODAL
-    // ===========================
 
-    const modal = document.getElementById("cartModal");
+        // =========================================================
+        // MODAL
+        // =========================================================
 
-    modal.addEventListener("show.bs.modal", function (event) {
+        const modal =
+            document.getElementById("cartModal");
 
-        let button = event.relatedTarget;
 
-        // Get Item Information
-        selectedItem.id = button.dataset.id;
-        selectedItem.name = button.dataset.name;
-        selectedItem.price = parseFloat(button.dataset.price);
-        selectedItem.stock = parseInt(button.dataset.stock);
-        selectedItem.category = button.dataset.category;
+        modal.addEventListener(
+            "show.bs.modal",
+            function (event) {
 
-        document.getElementById("itemName").value = selectedItem.name;
-        document.getElementById("itemPrice").value = selectedItem.price;
+                const button =
+                    event.relatedTarget;
 
-        price = selectedItem.price;
-        stock = selectedItem.stock;
-        category = selectedItem.category;
 
-        // Default Quantity
-        document.getElementById("qty").value = 1;
+                // GET ITEM DATA
 
-        // Hide Quantity if Service
-        if (category == "Services") {
+                selectedItem.id =
+                    button.dataset.id;
 
-            document.getElementById("qtySection").style.display = "none";
+                selectedItem.name =
+                    button.dataset.name;
 
-        }
-        else {
+                selectedItem.price =
+                    parseFloat(button.dataset.price) || 0;
 
-            document.getElementById("qtySection").style.display = "block";
+                selectedItem.stock =
+                    parseInt(button.dataset.stock) || 0;
 
-        }
+                selectedItem.category =
+                    button.dataset.category;
 
-        computeTotal();
 
-    });
+                // SET VARIABLES
 
-    // ===========================
-    // ADD QUANTITY
-    // ===========================
+                price =
+                    selectedItem.price;
 
-    function addQty() {
+                stock =
+                    selectedItem.stock;
 
-        let qty = document.getElementById("qty");
+                category =
+                    selectedItem.category;
 
-        // Unlimited Products
-        if (category == "Products") {
 
-            qty.value++;
+                // DISPLAY ITEM
 
-        }
+                document.getElementById("itemName").value =
+                    selectedItem.name;
 
-        // Books & Merchandise
-        else {
+                document.getElementById("itemPrice").value =
+                    "₱" + selectedItem.price.toFixed(2);
 
-            if (parseInt(qty.value) < stock) {
 
-                qty.value++;
+                // RESET QUANTITY
+
+                document.getElementById("qty").value = 1;
+
+
+                // SERVICES DO NOT NEED QUANTITY
+
+                if (category === "Services") {
+
+                    document.getElementById("qtySection")
+                        .style.display = "none";
+
+                }
+                else {
+
+                    document.getElementById("qtySection")
+                        .style.display = "block";
+
+                }
+
+
+                computeTotal();
+
+            }
+        );
+
+
+        // =========================================================
+        // ADD QUANTITY
+        // =========================================================
+
+        function addQty() {
+
+            const qty =
+                document.getElementById("qty");
+
+
+            let currentQty =
+                parseInt(qty.value) || 1;
+
+
+            // PRODUCTS CAN HAVE MULTIPLE
+
+            if (category === "Products") {
+
+                currentQty++;
 
             }
 
-        }
+            // BOOKS / MERCHANDISE
 
-        computeTotal();
+            else {
 
-    }
+                if (currentQty < stock) {
 
-    // ===========================
-    // MINUS QUANTITY
-    // ===========================
+                    currentQty++;
 
-    function minusQty() {
-
-        let qty = document.getElementById("qty");
-
-        if (qty.value > 1) {
-
-            qty.value--;
-
-        }
-
-        computeTotal();
-
-    }
-
-    // ===========================
-    // COMPUTE TOTAL
-    // ===========================
-
-    function computeTotal() {
-
-        let qty = parseInt(document.getElementById("qty").value);
-
-        let total = price * qty;
-
-        document.getElementById("totalPrice").innerHTML =
-            total.toFixed(2);
-
-    }
-
-    // ===========================
-    // ADD ITEM TO CART
-    // ===========================
-
-           document.getElementById("btnAddCart").addEventListener("click", function () {
-
-            let qty = category == "Services"
-                ? 1
-                : parseInt(document.getElementById("qty").value);
-
-            let existing = cart.find(x => x.name === selectedItem.name);
-
-            if (existing) {
-
-                existing.qty += qty;
-
-            }
-            else {  cart.push({
-
-                    id: selectedItem.id,
-                    name: selectedItem.name,
-                    price: selectedItem.price,
-                    qty: qty,
-                    category: selectedItem.category
-
-                });
-
+                }
 
             }
 
-            loadCart();
 
-            updateBadge();
+            qty.value =
+                currentQty;
 
-            bootstrap.Modal.getInstance(modal).hide();
 
-        });
-
-        // ===========================
-    // LOAD SHOPPING BAG
-    // ===========================
-
-    function loadCart() {
-
-        let html = "";
-        let total = 0;
-
-        // Check if cart is empty
-        if (cart.length == 0) {
-
-            html = `
-                <tr>
-
-                    <td colspan="4"
-                        class="text-center text-muted">
-
-                        No items in cart.
-
-                    </td>
-
-                </tr>
-              ` ;
+            computeTotal();
 
         }
-        else {
 
-            // Display all cart items
-            cart.forEach(function (item, index) {
 
-                let subTotal = item.price * item.qty;
+        // =========================================================
+        // MINUS QUANTITY
+        // =========================================================
 
-                total += subTotal;
+        function minusQty() {
 
-                html += `
-                <tr>
+            const qty =
+                document.getElementById("qty");
 
-                    <td>${item.name}</td>
 
-                    <td>${item.category}</td>
+            let currentQty =
+                parseInt(qty.value) || 1;
 
-                    <td class="text-center">
 
-                        <div class="d-flex justify-content-center align-items-center">
+            if (currentQty > 1) {
 
-                            <button
-                                class="btn btn-sm btn-outline-secondary"
-                                onclick="decreaseQty(${index})">
-                                -
-                            </button>
+                currentQty--;
 
-                            <span class="mx-2 fw-bold">
-                                ${item.qty}
-                            </span>
+            }
 
-                            <button
-                                class="btn btn-sm btn-outline-secondary"
-                                onclick="increaseQty(${index})">
-                                +
-                            </button>
 
-                        </div>
+            qty.value =
+                currentQty;
 
-                    </td>
 
-                    <td>
-                        ₱${item.price.toFixed(2)}
-                    </td>
+            computeTotal();
 
-                    <td class="fw-bold">
-                        ₱${subTotal.toFixed(2)}
-                    </td>
+        }
 
-                    <td class="text-center">
 
-                        <button
-                            class="btn btn-outline-danger btn-sm"
-                            onclick="removeItem(${index})">
+        // =========================================================
+        // COMPUTE MODAL TOTAL
+        // =========================================================
 
-                            🗑
+        function computeTotal() {
 
-                        </button>
+            let qty =
+                parseInt(
+                    document.getElementById("qty").value
+                ) || 1;
 
-                    </td>
 
-                </tr>
+            if (category === "Services") {
+
+                qty = 1;
+
+            }
+
+
+            let total =
+                price * qty;
+
+
+            document.getElementById("totalPrice")
+                .innerText =
+                total.toFixed(2);
+
+        }
+
+
+        // =========================================================
+        // ADD TO CART
+        // =========================================================
+
+        document
+            .getElementById("btnAddCart")
+            .addEventListener(
+                "click",
+                function () {
+
+                    let qty;
+
+
+                    if (category === "Services") {
+
+                        qty = 1;
+
+                    }
+                    else {
+
+                        qty =
+                            parseInt(
+                                document.getElementById("qty").value
+                            ) || 1;
+
+                    }
+
+
+                    // FIND SAME ITEM
+                    // IMPORTANT:
+                    // SAME ITEM = SAME ID
+
+                    let existing =
+                        cart.find(
+                            x => x.id === selectedItem.id
+                        );
+
+
+                    // IF ITEM ALREADY EXISTS
+                    // INCREASE QUANTITY
+
+                    if (existing) {
+
+                        existing.qty += qty;
+
+                    }
+
+                    // OTHERWISE ADD NEW ITEM
+
+                    else {
+
+                        cart.push({
+
+                            id:
+                                selectedItem.id,
+
+                            name:
+                                selectedItem.name,
+
+                            price:
+                                selectedItem.price,
+
+                            qty:
+                                qty,
+
+                            category:
+                                selectedItem.category
+
+                        });
+
+                    }
+
+
+                    loadCart();
+
+                    updateBadge();
+
+
+                    bootstrap.Modal
+                        .getInstance(modal)
+                        .hide();
+
+                }
+            );
+
+
+        // =========================================================
+        // LOAD SHOPPING BAG
+        // =========================================================
+
+        function loadCart() {
+
+            let html = "";
+
+            let total = 0;
+
+
+            // EMPTY CART
+
+            if (cart.length === 0) {
+
+                html = `
+
+                    <tr>
+
+                        <td colspan="6"
+                            class="text-center text-muted py-4">
+
+                            No items in cart.
+
+                        </td>
+
+                    </tr>
+
                 `;
 
+            }
 
-                });   // <-- FOR EACH NI
-                }      // <-- ELSE NI
+            // HAS ITEMS
 
-        // Display Cart Items
-        document.getElementById("cartItems").innerHTML = html;
+            else {
 
-        // Display Total Amount
-        document.getElementById("cartTotal").value =
-            total.toFixed(2);
+                cart.forEach(
+                    function (item, index) {
 
-        // Update Change
-        computeChange();
+                        let subtotal =
+                            item.price * item.qty;
 
 
-      
-    }
+                        total += subtotal;
 
-    // ===========================
-    // REMOVE ITEM
-    // ===========================
-        function updateBadge() {
 
-            document.getElementById("cartBadge").innerHTML = cart.length;
+                        html += `
+
+                            <tr>
+
+                                <td>
+                                    ${item.name}
+                                </td>
+
+                                <td>
+                                    ${item.category}
+                                </td>
+
+                                <td>
+
+                                    <div class="d-flex
+                                                align-items-center
+                                                justify-content-center">
+
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm btn-outline-secondary"
+                                            onclick="decreaseQty(${index})">
+
+                                            −
+
+                                        </button>
+
+                                        <span class="mx-2 fw-bold">
+
+                                            ${item.qty}
+
+                                        </span>
+
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm btn-outline-secondary"
+                                            onclick="increaseQty(${index})">
+
+                                            +
+
+                                        </button>
+
+                                    </div>
+
+                                </td>
+
+                                <td>
+                                    ₱${item.price.toFixed(2)}
+                                </td>
+
+                                <td class="fw-bold">
+
+                                    ₱${subtotal.toFixed(2)}
+
+                                </td>
+
+                                <td class="text-center">
+
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-outline-danger"
+                                        onclick="removeItem(${index})">
+
+                                        🗑
+
+                                    </button>
+
+                                </td>
+
+                            </tr>
+
+                        `;
+
+                    }
+                );
+
+            }
+
+
+            document.getElementById("cartItems")
+                .innerHTML = html;
+
+
+            document.getElementById("cartTotal")
+                .value =
+                total.toFixed(2);
+
+
+            computeChange();
 
         }
 
-                function removeItem(index) {
+
+        // =========================================================
+        // UPDATE BADGE
+        // =========================================================
+        //
+        // IMPORTANT:
+        //
+        // cart.length = NUMBER OF DIFFERENT ITEMS
+        //
+        // Example:
+        //
+        // Noli x 2
+        // Badge = 1
+        //
+        // Noli x 2 + Cupcake x 1
+        // Badge = 2
+        //
+        // NOT 3
+        //
+        // =========================================================
+
+        function updateBadge() {
+
+            document.getElementById("cartBadge")
+                .innerText =
+                cart.length;
+
+        }
+
+
+        // =========================================================
+        // REMOVE ITEM
+        // =========================================================
+
+        function removeItem(index) {
 
             cart.splice(index, 1);
 
@@ -696,15 +1097,27 @@
         }
 
 
-                function increaseQty(index) {
+        // =========================================================
+        // INCREASE CART QUANTITY
+        // =========================================================
+
+        function increaseQty(index) {
 
             cart[index].qty++;
 
             loadCart();
 
+            // DO NOT INCREASE BADGE
+            // because it is still the same item
+
             updateBadge();
 
         }
+
+
+        // =========================================================
+        // DECREASE CART QUANTITY
+        // =========================================================
 
         function decreaseQty(index) {
 
@@ -719,175 +1132,414 @@
 
             }
 
-            loadCart();
-
-            updateBadge();
-
-        }
-
-    // ===========================
-    // CLEAR SHOPPING BAG
-    // ===========================
-
-    document.getElementById("btnClear").addEventListener("click", function () {
-
-        if (confirm("Clear all items?")) {
-
-            cart = [];
 
             loadCart();
 
             updateBadge();
 
-            // Reset Payment
-            document.getElementById("cash").value = 0;
-            document.getElementById("change").value = "0.00";
-
-            if (document.getElementById("referenceNo")) {
-
-                document.getElementById("referenceNo").value = "";
-
-            }
-
         }
 
-    });
+
+        // =========================================================
+        // CLEAR CART
+        // =========================================================
+
+        document
+            .getElementById("btnClear")
+            .addEventListener(
+                "click",
+                function () {
+
+                    if (cart.length === 0) {
+
+                        return;
+
+                    }
 
 
-        // ===========================
-    // COMPUTE CHANGE
-    // ===========================
+                    if (
+                        !confirm(
+                            "Clear all items from the shopping bag?"
+                        )
+                    ) {
 
-    function computeChange() {
+                        return;
 
-        let total =
-            parseFloat(document.getElementById("cartTotal").value) || 0;
+                    }
 
-        let cash =
-            parseFloat(document.getElementById("cash").value) || 0;
 
-        let change = cash - total;
+                    cart = [];
 
-        if (change < 0) {
 
-            change = 0;
+                    loadCart();
 
-        }
+                    updateBadge();
 
-        document.getElementById("change").value =
-            change.toFixed(2);
 
-    }
+                    // RESET CASH
 
-    // ===========================
-    // PAYMENT TYPE
-    // ===========================
+                    document.getElementById("cash")
+                        .value = 0;
 
-    document.getElementById("paymentType").addEventListener("change", function () {
 
-        if (this.value == "Cash") {
+                    document.getElementById("change")
+                        .value = "0.00";
 
-            // Show Cash Fields
-            document.getElementById("cashSection").style.display = "block";
-            document.getElementById("gcashSection").style.display = "none";
 
-            computeChange();
+                    // RESET GCASH
 
-        }
-        else {
+                    document.getElementById("referenceNo")
+                        .value = "";
 
-            // Show GCash Fields
-            document.getElementById("cashSection").style.display = "none";
-            document.getElementById("gcashSection").style.display = "block";
-
-        }
-
-    });
-
-    // ===========================
-    // CHECKOUT
-    // ===========================
-
-          document.getElementById("btnCheckout").addEventListener("click", async function () {
-
-            if (cart.length == 0) {
-                alert("Shopping Bag is empty.");
-                return;
-            }
-
-            // CASH PAYMENT
-            if (document.getElementById("paymentType").value == "Cash") {
-
-                let total = parseFloat(document.getElementById("cartTotal").value);
-                let cash = parseFloat(document.getElementById("cash").value) || 0;
-
-                if (cash < total) {
-                    alert("Insufficient cash.");
-                    return;
                 }
+            );
+
+
+        // =========================================================
+        // COMPUTE CHANGE
+        // =========================================================
+
+        function computeChange() {
+
+            let total =
+                parseFloat(
+                    document.getElementById("cartTotal").value
+                ) || 0;
+
+
+            let cash =
+                parseFloat(
+                    document.getElementById("cash").value
+                ) || 0;
+
+
+            let change =
+                cash - total;
+
+
+            if (change < 0) {
+
+                change = 0;
+
             }
-            // GCASH PAYMENT
-            else {
 
-                let ref = document.getElementById("referenceNo").value.trim();
 
-                if (ref == "") {
-                    alert("Please enter GCash Reference Number.");
-                    return;
+            document.getElementById("change")
+                .value =
+                change.toFixed(2);
+
+        }
+
+
+        // =========================================================
+        // CASH INPUT
+        // =========================================================
+
+        document
+            .getElementById("cash")
+            .addEventListener(
+                "input",
+                computeChange
+            );
+
+
+        // =========================================================
+        // PAYMENT TYPE
+        // =========================================================
+
+        document
+            .getElementById("paymentType")
+            .addEventListener(
+                "change",
+                function () {
+
+                    if (this.value === "Cash") {
+
+                        document.getElementById(
+                            "cashSection"
+                        ).style.display = "block";
+
+
+                        document.getElementById(
+                            "gcashSection"
+                        ).style.display = "none";
+
+
+                        computeChange();
+
+                    }
+                    else {
+
+                        document.getElementById(
+                            "cashSection"
+                        ).style.display = "none";
+
+
+                        document.getElementById(
+                            "gcashSection"
+                        ).style.display = "block";
+
+                    }
+
                 }
-            }
+            );
 
-            // Convert cart ngadto sa SalesRecording model
-            let sales = cart.map(item => ({
-                ItemID: item.id,
-                ItemName: item.name,
-                Category: item.category,
-                QuantitySold: item.qty,
-                SellingPrice: item.price
-            }));
 
-            // Save sa database
-            const response = await fetch("/Home/Checkout", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(sales)
-            });
+        // =========================================================
+        // CHECKOUT
+        // =========================================================
 
-            if (response.ok) {
+        document
+            .getElementById("btnCheckout")
+            .addEventListener(
+                "click",
+                async function () {
 
-                alert("Checkout Successful!");
+                    // CHECK EMPTY CART
 
-                cart = [];
+                    if (cart.length === 0) {
 
-                loadCart();
+                        alert(
+                            "Shopping Bag is empty."
+                        );
 
-                updateBadge();
+                        return;
 
-                document.getElementById("cash").value = 0;
-                document.getElementById("change").value = "0.00";
+                    }
 
-                if (document.getElementById("referenceNo")) {
-                    document.getElementById("referenceNo").value = "";
+
+                    // GET PAYMENT TYPE
+
+                    let paymentType =
+                        document.getElementById(
+                            "paymentType"
+                        ).value;
+
+
+                    // TOTAL
+
+                    let total =
+                        parseFloat(
+                            document.getElementById(
+                                "cartTotal"
+                            ).value
+                        ) || 0;
+
+
+                    // =================================================
+                    // CASH
+                    // =================================================
+
+                    if (paymentType === "Cash") {
+
+                        let cash =
+                            parseFloat(
+                                document.getElementById(
+                                    "cash"
+                                ).value
+                            ) || 0;
+
+
+                        if (cash < total) {
+
+                            alert(
+                                "Insufficient cash."
+                            );
+
+                            return;
+
+                        }
+
+                    }
+
+
+                    // =================================================
+                    // GCASH
+                    // =================================================
+
+                    else {
+
+                        let referenceNo =
+                            document.getElementById(
+                                "referenceNo"
+                            ).value.trim();
+
+
+                        if (referenceNo === "") {
+
+                            alert(
+                                "Please enter GCash Reference Number."
+                            );
+
+                            return;
+
+                        }
+
+                    }
+
+
+                    // =================================================
+                    // CONVERT CART TO HISTORY
+                    // =================================================
+
+                    let sales =
+                        cart.map(
+                            item => ({
+
+                                ItemID:
+                                    item.id,
+
+                                ItemName:
+                                    item.name,
+
+                                Category:
+                                    item.category,
+
+                                QuantitySold:
+                                    item.qty,
+
+                                SellingPrice:
+                                    item.price,
+
+                                PaymentType:
+                                    paymentType
+
+                            })
+                        );
+
+
+                    // =================================================
+                    // SEND TO CONTROLLER
+                    // =================================================
+
+                    try {
+
+                        const response =
+                            await fetch(
+                                "/Home/Checkout",
+                                {
+
+                                    method: "POST",
+
+                                    headers: {
+
+                                        "Content-Type":
+                                            "application/json"
+
+                                    },
+
+                                    body:
+                                        JSON.stringify(sales)
+
+                                }
+                            );
+
+
+                        // =================================================
+                        // SUCCESS
+                        // =================================================
+
+                        if (response.ok) {
+
+                            alert(
+                                "Checkout Successful!"
+                            );
+
+
+                            // CLEAR CART
+
+                            cart = [];
+
+
+                            loadCart();
+
+                            updateBadge();
+
+
+                            // RESET PAYMENT
+
+                            document.getElementById(
+                                "cash"
+                            ).value = 0;
+
+
+                            document.getElementById(
+                                "change"
+                            ).value = "0.00";
+
+
+                            document.getElementById(
+                                "referenceNo"
+                            ).value = "";
+
+
+                            // RESET PAYMENT TYPE
+
+                            document.getElementById(
+                                "paymentType"
+                            ).value = "Cash";
+
+
+                            document.getElementById(
+                                "cashSection"
+                            ).style.display = "block";
+
+
+                            document.getElementById(
+                                "gcashSection"
+                            ).style.display = "none";
+
+
+                            // REFRESH
+
+                            location.reload();
+
+                        }
+
+                        else {
+
+                            alert(
+                                "Checkout failed."
+                            );
+
+                        }
+
+                    }
+
+                    catch (error) {
+
+                        console.error(error);
+
+                        alert(
+                            "An error occurred during checkout."
+                        );
+
+                    }
+
                 }
+            );
 
-                // Refresh aron makita ang updated stock
-                location.reload();
-            }
-            else {
-                alert("Checkout failed.");
-            }
 
-        });
+        // =========================================================
+        // DEFAULT DISPLAY
+        // =========================================================
 
-    // ===========================
-    // DEFAULT DISPLAY
-    // ===========================
+        document.getElementById(
+            "cashSection"
+        ).style.display = "block";
 
-    document.getElementById("cashSection").style.display = "block";
-    document.getElementById("gcashSection").style.display = "none";
 
-</script>
+        document.getElementById(
+            "gcashSection"
+        ).style.display = "none";
 
-}   
+
+        // INITIAL LOAD
+
+        loadCart();
+
+        updateBadge();
+
+    </script>
+
+}

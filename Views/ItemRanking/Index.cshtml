@@ -1,0 +1,537 @@
+﻿@{
+    ViewData["Title"] = "Item Ranking";
+
+    var selectedRange =
+        Context.Request.Query["range"].ToString();
+
+    var selectedCategory =
+        Context.Request.Query["category"].ToString();
+
+    var fromDate =
+        Context.Request.Query["fromDate"].ToString();
+
+    var toDate =
+        Context.Request.Query["toDate"].ToString();
+
+    var rankings = ViewBag.Rankings;
+}
+
+<div class="container-fluid">
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <h2 class="fw-bold text-success mb-0">
+
+            <i class="bi bi-trophy-fill"></i>
+            Item Ranking
+
+        </h2>
+
+
+        <!-- =================================================
+             VIEW PDF
+        ================================================== -->
+
+        <a asp-controller="ItemRanking"
+           asp-action="ViewPdf"
+           asp-route-range="@selectedRange"
+           asp-route-fromDate="@fromDate"
+           asp-route-toDate="@toDate"
+           asp-route-category="@selectedCategory"
+           target="_blank"
+           class="btn btn-success">
+
+            <i class="bi bi-eye"></i>
+            View
+
+        </a>
+
+    </div>
+
+
+    <!-- =====================================================
+         FILTER CARD
+    ====================================================== -->
+
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <form asp-controller="ItemRanking"
+                  asp-action="Index"
+                  method="get">
+
+                <div class="row align-items-end">
+
+                    <!-- DATE RANGE -->
+
+                    <div class="col-md-4 mb-3">
+
+                        <label class="form-label fw-bold">
+                            Date Range
+                        </label>
+
+                        <select id="range"
+                                name="range"
+                                class="form-select">
+
+                            <option value=""
+                                    selected="@(string.IsNullOrEmpty(selectedRange))">
+
+                                -- Select --
+
+                            </option>
+
+                            <option value="daily"
+                                    selected="@(selectedRange == "daily")">
+
+                                Daily
+
+                            </option>
+
+                            <option value="weekly"
+                                    selected="@(selectedRange == "weekly")">
+
+                                Weekly
+
+                            </option>
+
+                            <option value="monthly"
+                                    selected="@(selectedRange == "monthly")">
+
+                                Monthly
+
+                            </option>
+
+                            <option value="custom"
+                                    selected="@(selectedRange == "custom")">
+
+                                Custom
+
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- CATEGORY -->
+
+                    <div class="col-md-4 mb-3">
+
+                        <label class="form-label fw-bold">
+                            Category
+                        </label>
+
+                        <select name="category"
+                                class="form-select">
+
+                            <option value="All"
+                                    selected="@(string.IsNullOrEmpty(selectedCategory) || selectedCategory == "All")">
+
+                                All Categories
+
+                            </option>
+
+                            <option value="Books"
+                                    selected="@(selectedCategory == "Books")">
+
+                                Books
+
+                            </option>
+
+                            <option value="Products"
+                                    selected="@(selectedCategory == "Products")">
+
+                                Products
+
+                            </option>
+
+                            <option value="Merchandise"
+                                    selected="@(selectedCategory == "Merchandise")">
+
+                                Merchandise
+
+                            </option>
+
+                            <option value="Services"
+                                    selected="@(selectedCategory == "Services")">
+
+                                Services
+
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     DATE FIELDS
+                ================================================== -->
+
+                <div class="row">
+
+                    <!-- FROM -->
+
+                    <div class="col-md-4 mb-3"
+                         id="fromDateDiv"
+                         style="display:none;">
+
+                        <label class="form-label fw-bold">
+                            From
+                        </label>
+
+                        <input type="date"
+                               id="fromDate"
+                               name="fromDate"
+                               class="form-control"
+                               value="@fromDate" />
+
+                    </div>
+
+
+                    <!-- TO -->
+
+                    <div class="col-md-4 mb-3"
+                         id="toDateDiv"
+                         style="display:none;">
+
+                        <label class="form-label fw-bold">
+                            To
+                        </label>
+
+                        <input type="date"
+                               id="toDate"
+                               name="toDate"
+                               class="form-control"
+                               value="@toDate" />
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     BUTTONS
+                ================================================== -->
+
+                <div class="mt-2">
+
+                    <button type="submit"
+                            class="btn btn-success me-2">
+
+                        <i class="bi bi-funnel-fill"></i>
+                        Filter
+
+                    </button>
+
+
+                    <a asp-controller="ItemRanking"
+                       asp-action="Index"
+                       class="btn btn-secondary">
+
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                        Reset
+
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         SUMMARY
+    ====================================================== -->
+
+    <div class="row mb-4">
+
+        <!-- TOTAL ITEMS -->
+
+        <div class="col-md-4">
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-body">
+
+                    <h6 class="text-muted">
+                        Total Items
+                    </h6>
+
+                    <h3 class="fw-bold">
+                        @ViewBag.TotalItems
+                    </h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- TOTAL QUANTITY SOLD -->
+
+        <div class="col-md-4">
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-body">
+
+                    <h6 class="text-muted">
+                        Total Quantity Sold
+                    </h6>
+
+                    <h3 class="fw-bold text-success">
+
+                      @ViewBag.TotalQuantity
+
+                    </h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         ITEM RANKING TABLE
+    ====================================================== -->
+
+    <div class="card shadow-sm">
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover table-bordered align-middle">
+
+                    <!-- TABLE HEADER -->
+
+                    <thead class="table-success">
+
+                        <tr>
+
+                            <th>
+                                Rank
+                            </th>
+
+                            <th>
+                                Item ID
+                            </th>
+
+                            <th>
+                                Item Name
+                            </th>
+
+                            <th>
+                                Category
+                            </th>
+
+                            <th>
+                                Quantity Sold
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <!-- TABLE BODY -->
+
+                    <tbody>
+
+                        @if (rankings != null && rankings.Count > 0)
+                        {
+                            int rank = 1;
+
+                            foreach (var item in rankings)
+                            {
+                                <tr>
+
+                                    <!-- RANK -->
+
+                                    <td class="fw-bold">
+
+                                        #@rank
+
+                                    </td>
+
+
+                                    <!-- ITEM ID -->
+
+                                    <td>
+
+                                        @item.ItemID
+
+                                    </td>
+
+
+                                    <!-- ITEM NAME -->
+
+                                    <td>
+
+                                        @item.ItemName
+
+                                    </td>
+
+
+                                    <!-- CATEGORY -->
+
+                                    <td>
+
+                                        @item.Category
+
+                                    </td>
+
+
+                                    <!-- QUANTITY -->
+
+                                    <td class="fw-bold">
+
+                                        @item.QuantitySold
+
+                                    </td>
+
+                                </tr>
+
+                                rank++;
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+
+                                <td colspan="5"
+                                    class="text-center text-muted py-4">
+
+                                    <i class="bi bi-inbox fs-3"></i>
+
+                                    <br />
+
+                                    No item ranking records found.
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     JAVASCRIPT
+========================================================= -->
+@section Scripts {
+
+    <script>
+
+        const range =
+            document.getElementById("range");
+
+        const fromDateDiv =
+            document.getElementById("fromDateDiv");
+
+        const toDateDiv =
+            document.getElementById("toDateDiv");
+
+
+        function changeDateFields() {
+
+            const selected =
+                range.value;
+
+
+            // DAILY
+
+            if (selected === "daily") {
+
+                fromDateDiv.style.display = "block";
+
+                toDateDiv.style.display = "none";
+
+            }
+
+
+            // WEEKLY
+
+            else if (selected === "weekly") {
+
+                fromDateDiv.style.display = "block";
+
+                toDateDiv.style.display = "none";
+
+            }
+
+
+            // MONTHLY
+
+            else if (selected === "monthly") {
+
+                fromDateDiv.style.display = "block";
+
+                toDateDiv.style.display = "none";
+
+            }
+
+
+            // CUSTOM
+
+            else if (selected === "custom") {
+
+                fromDateDiv.style.display = "block";
+
+                toDateDiv.style.display = "block";
+
+            }
+
+
+            // NONE
+
+            else {
+
+                fromDateDiv.style.display = "none";
+
+                toDateDiv.style.display = "none";
+
+            }
+
+        }
+
+
+        range.addEventListener(
+            "change",
+            changeDateFields
+        );
+
+
+        // Run when page loads
+
+        changeDateFields();
+
+    </script>
+
+}
