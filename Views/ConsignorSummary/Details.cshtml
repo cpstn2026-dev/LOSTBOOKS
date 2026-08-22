@@ -1,0 +1,305 @@
+﻿@{
+    ViewData["Title"] = "Consignor Report";
+
+    var consignor = ViewBag.Consignor;
+    var items = ViewBag.Items;
+
+    var fromDate = Context.Request.Query["fromDate"].ToString();
+    var toDate = Context.Request.Query["toDate"].ToString();
+
+    bool hasPrevious = ViewBag.HasPreviousPeriod;
+}
+
+<div class="container-fluid">
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <h2 class="fw-bold text-success mb-0">
+
+            <i class="bi bi-person-lines-fill"></i>
+            @consignor.ConsignorName
+
+            <small class="text-muted">
+                (CON-@(((int)consignor.ConsignorID).ToString("D4")))
+            </small>
+
+        </h2>
+
+        <div>
+
+            <a asp-controller="ConsignorSummary"
+               asp-action="Index"
+               class="btn btn-outline-secondary me-2">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+
+            <a asp-controller="ConsignorSummary"
+               asp-action="ViewPdf"
+               asp-route-id="@consignor.ConsignorID"
+               asp-route-fromDate="@fromDate"
+               asp-route-toDate="@toDate"
+               target="_blank"
+               class="btn btn-success">
+                <i class="bi bi-download"></i> Download Report
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         DATE RANGE FILTER
+    ====================================================== -->
+
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <form asp-controller="ConsignorSummary"
+                  asp-action="Details"
+                  method="get">
+
+                <input type="hidden" name="id" value="@consignor.ConsignorID" />
+
+                <div class="row align-items-end">
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label fw-bold">From</label>
+                        <input type="date" name="fromDate" class="form-control" value="@fromDate" />
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label fw-bold">To</label>
+                        <input type="date" name="toDate" class="form-control" value="@toDate" />
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+
+                        <button type="submit" class="btn btn-success me-2">
+                            Filter
+                        </button>
+
+                        <a asp-controller="ConsignorSummary"
+                           asp-action="Details"
+                           asp-route-id="@consignor.ConsignorID"
+                           class="btn btn-outline-secondary">
+                            Reset
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         SALES BREAKDOWN
+    ====================================================== -->
+
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <h5 class="fw-bold mb-3">Sales Breakdown</h5>
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead>
+                        <tr>
+                            <th>Item ID</th>
+                            <th>Item Name</th>
+                            <th>Category</th>
+                            <th>Qty Sold</th>
+                            <th>Selling Price</th>
+                            <th>Total Sales</th>
+                            <th>Store Share</th>
+                            <th>Consignor Share</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @if (items != null && items.Count > 0)
+                        {
+                            foreach (var item in items)
+                            {
+                                <tr>
+
+                                    <td>@item.ItemID</td>
+
+                                    <td>@item.ItemName</td>
+
+                                    <td>@item.Category</td>
+
+                                    <td>@item.QuantitySold</td>
+
+                                    <td>₱@(((decimal)item.UnitPrice).ToString("N2"))</td>
+
+                                    <td>₱@(((decimal)item.TotalSales).ToString("N2"))</td>
+
+                                    <td>₱@(((decimal)item.StoreShare).ToString("N2"))</td>
+
+                                    <td>₱@(((decimal)item.ConsignorShare).ToString("N2"))</td>
+
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">
+                                    No sales found for this consignor in the selected period.
+                                </td>
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         TOTALS
+    ====================================================== -->
+
+    <div class="row mb-4">
+
+        <div class="col-md-2 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="text-muted">Items Sold</h6>
+                    <h4 class="fw-bold text-success">@ViewBag.TotalItemsSold</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="text-muted">Quantity Sold</h6>
+                    <h4 class="fw-bold text-success">@ViewBag.TotalQuantitySold</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Sales</h6>
+                    <h4 class="fw-bold text-success">
+                        ₱@(((decimal)(ViewBag.TotalSales ?? 0m)).ToString("N2"))
+                    </h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="text-muted">Lost Books Share</h6>
+                    <h4 class="fw-bold text-success">
+                        ₱@(((decimal)(ViewBag.TotalStoreShare ?? 0m)).ToString("N2"))
+                    </h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="text-muted">Consignor Share</h6>
+                    <h4 class="fw-bold text-success">
+                        ₱@(((decimal)(ViewBag.TotalConsignorShare ?? 0m)).ToString("N2"))
+                    </h4>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         OPTIONAL ANALYSIS
+         (only shown when a date range is selected, since a
+         previous-period comparison needs a defined period)
+    ====================================================== -->
+    @if (hasPrevious)
+    {
+        decimal? changePercent = (decimal?)ViewBag.ChangePercent;
+        decimal changeAmount = (decimal)(ViewBag.ChangeAmount ?? 0m);
+        decimal previousTotal = (decimal)(ViewBag.PreviousTotalSales ?? 0m);
+        decimal currentTotal = (decimal)(ViewBag.TotalSales ?? 0m);
+
+        string? highestItemName = ViewBag.HighestSellingItem?.ItemName;
+
+        string? increaseItemName = ViewBag.LargestIncreaseItem?.ItemName;
+        decimal? increasePercent = ViewBag.LargestIncreaseItem != null
+            ? (decimal?)ViewBag.LargestIncreaseItem.ChangePercent
+            : null;
+
+        string? decreaseItemName = ViewBag.LargestDecreaseItem?.ItemName;
+        decimal? decreasePercent = ViewBag.LargestDecreaseItem != null
+            ? (decimal?)ViewBag.LargestDecreaseItem.ChangePercent
+            : null;
+
+        <div class="card shadow-sm mb-4">
+
+            <div class="card-body">
+
+                <h5 class="fw-bold mb-3">Analysis</h5>
+
+                <p>
+                    @if (changePercent.HasValue)
+                    {
+                        <text>
+                            Sales for this consignor @(changeAmount >= 0 ? "increased" : "decreased") by
+                            @Math.Abs(changePercent.Value).ToString("N2")% (₱@Math.Abs(changeAmount).ToString("N2"))
+                            compared with the previous period
+                            (₱@previousTotal.ToString("N2") → ₱@currentTotal.ToString("N2")).
+                        </text>
+                    }
+                    else
+                    {
+                        <text>No prior-period sales are available for comparison.</text>
+                    }
+                </p>
+
+                @if (highestItemName != null)
+                {
+                    <p>@highestItemName had the highest quantity sold for this consignor in the selected period.</p>
+                }
+
+                @if (increaseItemName != null && increasePercent.HasValue)
+                {
+                    <p>@increaseItemName had the largest increase in quantity sold, at @increasePercent.Value.ToString("N2")%.</p>
+                }
+
+                @if (decreaseItemName != null && decreasePercent.HasValue)
+                {
+                    <p>@decreaseItemName had the largest decrease in quantity sold, at @Math.Abs(decreasePercent.Value).ToString("N2")%.</p>
+                }
+
+            </div>
+
+        </div>
+    }
+
+</div>

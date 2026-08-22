@@ -304,6 +304,21 @@
 
         </div>
 
+        <!-- TOTAL SALES -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="text-muted">
+                        Total Sales
+                    </h6>
+
+                    <h3 class="fw-bold text-success">
+                        ₱@(((decimal)(ViewBag.TotalSales ?? 0m)).ToString("N2"))
+                    </h3>
+                </div>
+            </div>
+        </div>
+    </div>
     </div>
 
 
@@ -328,23 +343,21 @@
                             <th>
                                 Rank
                             </th>
-
                             <th>
                                 Item ID
                             </th>
-
                             <th>
                                 Item Name
                             </th>
-
                             <th>
                                 Category
                             </th>
-
                             <th>
                                 Quantity Sold
                             </th>
-
+                            <th>
+                                Total Sales
+                            </th>
                         </tr>
 
                     </thead>
@@ -405,6 +418,15 @@
                                         @item.QuantitySold
 
                                     </td>
+
+                                    
+                                <!-- TOTAL SALES -->
+
+                                <td class="fw-bold text-success">
+
+                                    ₱@(((decimal)item.TotalSales).ToString("N2"))
+
+                                </td>
 
                                 </tr>
 

@@ -61,6 +61,9 @@ CREATE TABLE Services (
     AssessedPrice DECIMAL(10,2)
 );
 
+
+
+
 SELECT *
 FROM dbo.SalesRecordings
 ORDER BY TransactionDate DESC;

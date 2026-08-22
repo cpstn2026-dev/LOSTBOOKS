@@ -220,6 +220,8 @@ namespace LOSTBOOKS.Controllers
                                 {
                                     table.ColumnsDefinition(columns =>
                                     {
+                                        //Transaction ID
+                                        columns.RelativeColumn(1.0f);
                                         // Date & Time
                                         columns.RelativeColumn(1.8f);
 
@@ -252,6 +254,10 @@ namespace LOSTBOOKS.Controllers
 
                                     table.Header(header =>
                                     {
+                                        header.Cell()
+                                            .Element(HeaderStyle)
+                                            .Text("Transaction ID");
+
                                         header.Cell()
                                             .Element(HeaderStyle)
                                             .Text("Date & Time");
@@ -299,6 +305,13 @@ namespace LOSTBOOKS.Controllers
                                             item.SellingPrice *
                                             item.QuantitySold;
 
+                                      //TransactionID
+
+                                        table.Cell()
+                                            .Element(CellStyle)
+                                            .Text(
+                                                  item.TransactionID);
+                                        
 
                                         // DATE & TIME
 
@@ -567,7 +580,8 @@ namespace LOSTBOOKS.Controllers
                                 {
                                     table.ColumnsDefinition(columns =>
                                     {
-                                        columns.RelativeColumn(1.8f);
+                                        columns.RelativeColumn(1.0f);
+                                        columns.RelativeColumn(1.7f);
                                         columns.RelativeColumn(1.0f);
                                         columns.RelativeColumn(2.3f);
                                         columns.RelativeColumn(1.25f);
@@ -582,15 +596,15 @@ namespace LOSTBOOKS.Controllers
                                     {
                                         header.Cell()
                                             .Element(HeaderStyle)
+                                            .Text("Transaction ID");
+
+                                        header.Cell()
+                                            .Element(HeaderStyle)
                                             .Text("Date & Time");
 
                                         header.Cell()
                                             .Element(HeaderStyle)
                                             .Text("Item ID");
-
-                                        header.Cell()
-                                            .Element(HeaderStyle)
-                                            .Text("Item Name");
 
                                         header.Cell()
                                             .Element(HeaderStyle)
@@ -622,6 +636,11 @@ namespace LOSTBOOKS.Controllers
                                         decimal itemTotal =
                                             item.SellingPrice *
                                             item.QuantitySold;
+
+                                        table.Cell()
+                                            .Element(CellStyle)
+                                            .Text(
+                                                 item.TransactionID);
 
                                         table.Cell()
                                             .Element(CellStyle)

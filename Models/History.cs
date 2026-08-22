@@ -28,5 +28,8 @@ namespace LOSTBOOKS.Models
         public decimal? StoreSharePercentage { get; set; }
 
         public string PaymentType{ get; set; } = "";
+
+        [NotMapped]
+        public string TransactionID => $"TX-{HistoryID:D4}";
     }
 }

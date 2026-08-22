@@ -113,8 +113,11 @@ namespace LOSTBOOKS.Controllers
                     ItemName = x.Key.ItemName,
                     Category = x.Key.Category,
 
+
                     QuantitySold = x.Sum(y =>
-                        y.QuantitySold)
+                        y.QuantitySold),
+                    TotalSales = x.Sum(y =>
+                        y.SellingPrice * y.QuantitySold)
                 })
                 .OrderByDescending(x => x.QuantitySold)
                 .ToList();
@@ -131,6 +134,8 @@ namespace LOSTBOOKS.Controllers
             ViewBag.TotalQuantity = rankings.Sum(x =>
                 x.QuantitySold);
 
+            ViewBag.TotalSales = rankings.Sum(x =>
+                x.TotalSales);
             return View();
         }
 
@@ -232,7 +237,9 @@ namespace LOSTBOOKS.Controllers
                     Category = x.Key.Category,
 
                     QuantitySold = x.Sum(y =>
-                        y.QuantitySold)
+                        y.QuantitySold),
+                      TotalSales = x.Sum(y =>
+                        y.SellingPrice * y.QuantitySold)
                 })
                 .OrderByDescending(x => x.QuantitySold)
                 .ToList();
@@ -281,6 +288,10 @@ namespace LOSTBOOKS.Controllers
             int totalQuantity =
                 rankings.Sum(x =>
                     x.QuantitySold);
+
+            decimal totalSales =
+            rankings.Sum(x =>
+                    x.TotalSales);
 
 
             // =====================================================
@@ -410,6 +421,17 @@ namespace LOSTBOOKS.Controllers
                                         .Element(SummaryValueStyle)
                                         .Text(
                                             totalQuantity.ToString());
+
+                                    table.Cell()
+                                        .Element(SummaryLabelStyle)
+                                        .Text(
+                                            "Total Sales");
+
+                                    table.Cell()
+                                        .Element(SummaryValueStyle)
+                                        .Text(
+                                            $"₱{totalSales:N2}");
+
                                 });
 
 
@@ -452,6 +474,9 @@ namespace LOSTBOOKS.Controllers
 
                                         // Quantity Sold
                                         columns.RelativeColumn(1.5f);
+
+                                        //Total Sales
+                                        columns.RelativeColumn(1.7f);
                                     });
 
 
@@ -486,6 +511,11 @@ namespace LOSTBOOKS.Controllers
                                             .Element(HeaderStyle)
                                             .AlignRight()
                                             .Text("Quantity Sold");
+
+                                        header.Cell()
+                                            .Element(HeaderStyle)
+                                            .AlignRight()
+                                            .Text("Total Sales");
                                     });
 
 
@@ -540,6 +570,11 @@ namespace LOSTBOOKS.Controllers
                                                 item.QuantitySold
                                                     .ToString());
 
+                                        table.Cell()
+                                            .Element(CellStyle)
+                                            .AlignRight()
+                                            .Text(
+                                                $"₱{item.TotalSales:N2}");
 
                                         rank++;
                                     }
@@ -554,7 +589,7 @@ namespace LOSTBOOKS.Controllers
                                 .PaddingTop(12)
                                 .AlignRight()
                                 .Text(
-                                    $"TOTAL QUANTITY SOLD: {totalQuantity}")
+                                    $"TOTAL QUANTITY SOLD: {totalQuantity}    |    TOTAL SALES: ₱{totalSales:N2}")
                                 .Bold()
                                 .FontSize(13);
                         });

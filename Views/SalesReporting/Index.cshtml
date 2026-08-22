@@ -1,4 +1,7 @@
-﻿@{
+﻿@using LOSTBOOKS.ViewModels
+@using LOSTBOOKS.ViewModels.SalesAnalysisViewModel
+
+@{
     ViewData["Title"] = "Sales Reporting";
 
     decimal totalSales =
@@ -39,564 +42,225 @@
 
     string topItemsJson =
         ViewBag.TopItemsJson ?? "[]";
+
+
+    // =====================================================
+    // ANALYSIS DATA
+    // =====================================================
+
+    var growth =
+        (SalesGrowthAnalysis)ViewBag.SalesGrowth;
+
+    var catAnalysis =
+        (CategoryAnalysisSummary)ViewBag.CategoryAnalysis;
+
+    var itemAnalysis =
+        (ItemAnalysisSummary)ViewBag.ItemAnalysis;
+
+    var trend =
+        (TrendAnalysis)ViewBag.TrendAnalysis;
 }
 
+<!-- =========================================================
+     CHART.JS
+========================================================== -->
 
-<!DOCTYPE html>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 
-<html>
+<div class="container-fluid">
 
-<head>
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
 
-    <meta charset="utf-8" />
+    <div class="d-flex justify-content-between align-items-center mb-4">
 
-    <title>
-        Sales Reporting - LOSTBOOKS
-    </title>
+        <h2 class="fw-bold text-success mb-0">
+
+            <i class="bi bi-graph-up-arrow"></i>
+            Sales Reporting &amp; Analysis
+
+        </h2>
+
+
+        <!-- VIEW PDF -->
+
+        <a asp-controller="SalesReporting"
+           asp-action="ViewPdf"
+           asp-route-range="@selectedRange"
+           asp-route-fromDate="@fromDate"
+           asp-route-toDate="@toDate"
+           asp-route-category="@selectedCategory"
+           target="_blank"
+           class="btn btn-success">
+
+            <i class="bi bi-eye"></i>
+
+            View
+
+        </a>
+
+    </div>
 
 
     <!-- =====================================================
-         CHART.JS
+         FILTER CARD
     ====================================================== -->
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <div class="card shadow-sm mb-4">
 
-
-    <style>
-
-        * {
-        box-sizing: border-box;
-        }
-
-
-        body {
-        margin: 0;
-        padding: 0;
-        background: #f5f5f5;
-        font-family: Arial, Helvetica, sans-serif;
-        }
-
-
-        /* =====================================================
-        MAIN CONTENT
-        ===================================================== */
-
-        .sales-report-container {
-        width: calc(100% - 100px);
-        margin-left: 100px;
-        padding: 30px 40px 50px 40px;
-        }
-
-
-        /* =====================================================
-        HEADER
-        ===================================================== */
-
-        .page-title {
-        font-size: 25px;
-        font-weight: 700;
-        color: #198754;
-        margin-bottom: 20px;
-        }
-
-
-        /* =====================================================
-        FILTER
-        ===================================================== */
-
-        .filter-card {
-        background: white;
-        border-radius: 10px;
-        padding: 20px;
-        margin-bottom: 25px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-
-
-        .filter-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 15px;
-        align-items: end;
-        }
-
-
-        .filter-group {
-        display: flex;
-        flex-direction: column;
-        min-width: 160px;
-        }
-
-
-        .filter-group label {
-        font-size: 13px;
-        font-weight: 600;
-        margin-bottom: 6px;
-        color: #444;
-        }
-
-
-        .filter-group select,
-        .filter-group input {
-        height: 38px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        padding: 5px 10px;
-        font-size: 14px;
-        background: white;
-        }
-
-
-        .filter-button {
-        height: 38px;
-        border: none;
-        background: #198754;
-        color: white;
-        border-radius: 6px;
-        padding: 0 20px;
-        font-weight: 600;
-        cursor: pointer;
-        }
-
-
-        .filter-button:hover {
-        background: #157347;
-        }
-
-
-        .view-pdf-button {
-        height: 38px;
-        border: none;
-        background: #ffc107;
-        color: #222;
-        border-radius: 6px;
-        padding: 0 20px;
-        font-weight: 600;
-        cursor: pointer;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        }
-
-
-        .view-pdf-button:hover {
-        background: #e0a800;
-        color: #222;
-        }
-
-
-        /* =====================================================
-        SUMMARY
-        ===================================================== */
-
-        .summary-grid {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 18px;
-        margin-bottom: 25px;
-        }
-
-
-        .summary-card {
-        background: white;
-        border-radius: 10px;
-        padding: 18px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-
-
-        .summary-label {
-        font-size: 13px;
-        color: #777;
-        margin-bottom: 8px;
-        }
-
-
-        .summary-value {
-        font-size: 22px;
-        font-weight: 700;
-        color: #198754;
-        }
-
-
-        /* =====================================================
-        REPORT INFORMATION
-        ===================================================== */
-
-        .report-info {
-        background: white;
-        border-radius: 10px;
-        padding: 15px 20px;
-        margin-bottom: 25px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        font-size: 14px;
-        color: #555;
-        }
-
-
-        /* =====================================================
-        CHART GRID
-        ===================================================== */
-
-        .chart-grid {
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 28px;
-        margin-bottom: 28px;
-        }
-
-
-        /* =====================================================
-        CHART CARD
-        ===================================================== */
-
-        .chart-card {
-        background: white;
-        border-radius: 10px;
-        overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.10);
-        min-height: 500px;
-        }
-
-
-        .chart-title {
-        background: #198754;
-        color: white;
-        padding: 15px 18px;
-        font-size: 18px;
-        font-weight: 700;
-        }
-
-
-        .chart-body {
-        height: 420px;
-        padding: 20px;
-        position: relative;
-        }
-
-
-        .chart-body canvas {
-        width: 100% !important;
-        height: 100% !important;
-        }
-
-
-        /* =====================================================
-        TOP ITEMS
-        ===================================================== */
-
-        .top-items-card {
-        background: white;
-        border-radius: 10px;
-        overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.10);
-        margin-bottom: 30px;
-        }
-
-
-        .top-items-body {
-        height: 430px;
-        padding: 20px;
-        position: relative;
-        }
-
-
-        .top-items-body canvas {
-        width: 100% !important;
-        height: 100% !important;
-        }
-
-
-        /* =====================================================
-        NO DATA
-        ===================================================== */
-
-        .no-data {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #888;
-        font-size: 15px;
-        }
-
-
-        /* =====================================================
-        RESPONSIVE
-        ===================================================== */
-
-        @@media (max-width: 1000px) {
-
-        .sales-report-container {
-        width: 100%;
-        margin-left: 0;
-        padding: 20px;
-        }
-
-
-        .summary-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-
-
-        .chart-grid {
-        grid-template-columns: 1fr;
-        }
-        }
-
-
-        @@media (max-width: 600px) {
-
-        .summary-grid {
-        grid-template-columns: 1fr;
-        }
-
-
-        .filter-row {
-        flex-direction: column;
-        align-items: stretch;
-        }
-
-
-        .filter-group {
-        width: 100%;
-        }
-
-
-        .filter-button,
-        .view-pdf-button {
-        width: 100%;
-        justify-content: center;
-        }
-        }
-
-    </style>
-
-</head>
-
-
-<body>
-
-
-    <div class="sales-report-container">
-
-
-        <!-- =====================================================
-         TITLE
-    ====================================================== -->
-
-        <div class="page-title">
-
-            Sales Reporting & Analysis
-
-        </div>
-
-
-
-        <!-- =====================================================
-         FILTER
-    ====================================================== -->
-
-        <div class="filter-card">
+        <div class="card-body">
 
             <form method="get"
                   asp-controller="SalesReporting"
                   asp-action="Index">
 
+                <div class="row align-items-end">
 
-                <div class="filter-row">
 
+                    <!-- RANGE -->
 
-                    <!-- =================================================
-                     RANGE
-                ================================================== -->
+                    <div class="col-md-3 mb-3">
 
-                    <div class="filter-group">
-
-                        <label>
+                        <label for="range" class="form-label fw-bold">
                             Report Period
                         </label>
 
-
                         <select name="range"
-                                id="range">
-
+                                id="range"
+                                class="form-select">
 
                             <option value=""
                                     selected="@(selectedRange == "" ? "selected" : null)">
-
                                 All Dates
-
                             </option>
-
 
                             <option value="daily"
                                     selected="@(selectedRange.Equals("daily", StringComparison.OrdinalIgnoreCase) ? "selected" : null)">
-
                                 Daily
-
                             </option>
-
 
                             <option value="weekly"
                                     selected="@(selectedRange.Equals("weekly", StringComparison.OrdinalIgnoreCase) ? "selected" : null)">
-
                                 Weekly
-
                             </option>
-
 
                             <option value="monthly"
                                     selected="@(selectedRange.Equals("monthly", StringComparison.OrdinalIgnoreCase) ? "selected" : null)">
-
                                 Monthly
-
                             </option>
-
 
                             <option value="custom"
                                     selected="@(selectedRange.Equals("custom", StringComparison.OrdinalIgnoreCase) ? "selected" : null)">
-
                                 Custom
-
                             </option>
-
 
                         </select>
 
                     </div>
 
 
+                    <!-- FROM DATE -->
 
-                    <!-- =================================================
-                     FROM DATE
-                ================================================== -->
+                    <div class="col-md-3 mb-3">
 
-                    <div class="filter-group">
-
-                        <label>
+                        <label for="fromDate" class="form-label fw-bold">
                             From Date
                         </label>
 
-
                         <input type="date"
+                               id="fromDate"
                                name="fromDate"
+                               class="form-control"
                                value="@fromDate" />
 
                     </div>
 
 
+                    <!-- TO DATE -->
 
-                    <!-- =================================================
-                     TO DATE
-                ================================================== -->
+                    <div class="col-md-3 mb-3">
 
-                    <div class="filter-group">
-
-                        <label>
+                        <label for="toDate" class="form-label fw-bold">
                             To Date
                         </label>
 
-
                         <input type="date"
+                               id="toDate"
                                name="toDate"
+                               class="form-control"
                                value="@toDate" />
 
                     </div>
 
 
+                    <!-- CATEGORY -->
 
-                    <!-- =================================================
-                     CATEGORY
-                ================================================== -->
+                    <div class="col-md-3 mb-3">
 
-                    <div class="filter-group">
-
-                        <label>
+                        <label for="category" class="form-label fw-bold">
                             Category
                         </label>
 
-
-                        <select name="category">
-
+                        <select name="category"
+                                id="category"
+                                class="form-select">
 
                             <option value="All"
                                     selected="@(selectedCategory == "All" ? "selected" : null)">
-
                                 All Categories
-
                             </option>
-
 
                             <option value="Books"
                                     selected="@(selectedCategory == "Books" ? "selected" : null)">
-
                                 Books
-
                             </option>
-
 
                             <option value="Products"
                                     selected="@(selectedCategory == "Products" ? "selected" : null)">
-
                                 Products
-
                             </option>
-
 
                             <option value="Merchandise"
                                     selected="@(selectedCategory == "Merchandise" ? "selected" : null)">
-
                                 Merchandise
-
                             </option>
-
 
                             <option value="Services"
                                     selected="@(selectedCategory == "Services" ? "selected" : null)">
-
                                 Services
-
                             </option>
-
 
                         </select>
 
                     </div>
 
+                </div>
 
 
-                    <!-- =================================================
-                     APPLY
-                ================================================== -->
+                <!-- APPLY + RESET -->
+
+                <div class="mt-2">
 
                     <button type="submit"
-                            class="filter-button">
+                            class="btn btn-success me-2">
+
+                        <i class="bi bi-funnel-fill"></i>
 
                         Apply
 
                     </button>
 
 
+                    <a asp-controller="SalesReporting"
+                       asp-action="Index"
+                       class="btn btn-secondary">
 
-                    <!-- =================================================
-                     VIEW
-                ================================================== -->
+                        <i class="bi bi-arrow-counterclockwise"></i>
 
-                    <a class="view-pdf-button"
-                       asp-controller="SalesReporting"
-                       asp-action="ViewPdf"
-                       asp-route-range="@selectedRange"
-                       asp-route-fromDate="@fromDate"
-                       asp-route-toDate="@toDate"
-                       asp-route-category="@selectedCategory"
-                       target="_blank">
-
-                        View
+                        Reset
 
                     </a>
-
 
                 </div>
 
@@ -604,227 +268,30 @@
 
         </div>
 
+    </div>
 
 
-        <!-- =====================================================
+    <!-- =====================================================
          SUMMARY
     ====================================================== -->
 
-        <div class="summary-grid">
+    <div class="row mb-4">
 
+        <!-- TOTAL SALES -->
 
-            <!-- TOTAL SALES -->
+        <div class="col-md-3 mb-3">
 
-            <div class="summary-card">
+            <div class="card shadow-sm border-0 h-100">
 
-                <div class="summary-label">
+                <div class="card-body">
 
-                    Total Sales
+                    <h6 class="text-muted">
+                        Total Sales
+                    </h6>
 
-                </div>
-
-
-                <div class="summary-value">
-
-                    ₱@totalSales.ToString("N2")
-
-                </div>
-
-            </div>
-
-
-
-            <!-- TOTAL TRANSACTIONS -->
-
-            <div class="summary-card">
-
-                <div class="summary-label">
-
-                    Total Transactions
-
-                </div>
-
-
-                <div class="summary-value"
-                     style="color:#222;">
-
-                    @totalTransactions
-
-                </div>
-
-            </div>
-
-
-
-            <!-- TOP ITEM -->
-
-            <div class="summary-card">
-
-                <div class="summary-label">
-
-                    Top Selling Item
-
-                </div>
-
-
-                <div class="summary-value"
-                     style="font-size:18px;">
-
-                    @topItem
-
-                </div>
-
-            </div>
-
-
-
-            <!-- BEST CATEGORY -->
-
-            <div class="summary-card">
-
-                <div class="summary-label">
-
-                    Best Performing Category
-
-                </div>
-
-
-                <div class="summary-value"
-                     style="font-size:18px;">
-
-                    @bestCategory
-
-                </div>
-
-            </div>
-
-
-        </div>
-
-
-
-        <!-- =====================================================
-         REPORT INFORMATION
-    ====================================================== -->
-
-        <div class="report-info">
-
-            <strong>
-                Report Period:
-            </strong>
-
-            @periodText
-
-
-            &nbsp;&nbsp;&nbsp;
-
-
-            <strong>
-                Category:
-            </strong>
-
-            @categoryText
-
-        </div>
-
-
-
-        <!-- =====================================================
-         SALES TREND + CATEGORY PERFORMANCE
-    ====================================================== -->
-
-        <div class="chart-grid">
-
-
-            <!-- =================================================
-             SALES TREND
-        ================================================== -->
-
-            <div class="chart-card">
-
-                <div class="chart-title">
-
-                    Sales Trend
-
-                </div>
-
-
-                <div class="chart-body">
-
-                    <canvas id="salesTrendChart"></canvas>
-
-                    <div id="salesTrendNoData"
-                         class="no-data"
-                         style="display:none;">
-
-                        No sales trend data available.
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-
-            <!-- =================================================
-             CATEGORY PERFORMANCE
-        ================================================== -->
-
-            <div class="chart-card">
-
-                <div class="chart-title">
-
-                    Category Performance
-
-                </div>
-
-
-                <div class="chart-body">
-
-                    <canvas id="categoryPerformanceChart"></canvas>
-
-                    <div id="categoryNoData"
-                         class="no-data"
-                         style="display:none;">
-
-                        No category data available.
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-        </div>
-
-
-
-        <!-- =====================================================
-         TOP SELLING ITEMS
-    ====================================================== -->
-
-        <div class="top-items-card">
-
-
-            <div class="chart-title">
-
-                Top Selling Items
-
-            </div>
-
-
-            <div class="top-items-body">
-
-                <canvas id="topItemsChart"></canvas>
-
-
-                <div id="topItemsNoData"
-                     class="no-data"
-                     style="display:none;">
-
-                    No top-selling item data available.
+                    <h3 class="fw-bold text-success">
+                        ₱@totalSales.ToString("N2")
+                    </h3>
 
                 </div>
 
@@ -832,741 +299,694 @@
 
         </div>
 
+
+        <!-- TOTAL TRANSACTIONS -->
+
+        <div class="col-md-3 mb-3">
+
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-body">
+
+                    <h6 class="text-muted">
+                        Total Transactions
+                    </h6>
+
+                    <h3 class="fw-bold">
+                        @totalTransactions
+                    </h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- TOP ITEM -->
+
+        <div class="col-md-3 mb-3">
+
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-body">
+
+                    <h6 class="text-muted">
+                        Top Selling Item
+                    </h6>
+
+                    <h5 class="fw-bold text-success">
+                        @topItem
+                    </h5>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- BEST CATEGORY -->
+
+        <div class="col-md-3 mb-3">
+
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-body">
+
+                    <h6 class="text-muted">
+                        Best Performing Category
+                    </h6>
+
+                    <h5 class="fw-bold text-success">
+                        @bestCategory
+                    </h5>
+
+                </div>
+
+            </div>
+
+        </div>
 
     </div>
 
 
+    <!-- =====================================================
+         OVERALL SALES ANALYSIS
+    ====================================================== -->
+    @if (growth.HasPreviousPeriod || totalTransactions > 0)
+    {
+        <div class="alert alert-success border-start border-success border-4 mb-4"
+             style="background-color:#f1f9f4;">
 
-    <!-- =========================================================
+            <strong>Analysis:</strong>
+
+            @if (!growth.HasPreviousPeriod)
+            {
+                <span>
+                    The current report shows
+                    ₱@totalSales.ToString("N2")
+                    in total sales from
+                    @totalTransactions
+                    transaction(s).
+                </span>
+            }
+            else
+            {
+                <span>
+                    Sales @(growth.Direction.ToLower())
+                    by @Math.Abs(growth.ChangePercent ?? 0).ToString("N2")%
+                    (₱@growth.ChangeAmount.ToString("N2"))
+                    compared with the previous period
+                    (₱@growth.PreviousTotal.ToString("N2") to
+                    ₱@growth.CurrentTotal.ToString("N2")).
+                </span>
+            }
+
+        </div>
+    }
+
+
+    <!-- =====================================================
+         REPORT INFORMATION
+    ====================================================== -->
+
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <strong>Report Period:</strong> @periodText
+            &nbsp;&nbsp;&nbsp;
+            <strong>Category:</strong> @categoryText
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         SALES TREND + CATEGORY PERFORMANCE
+    ====================================================== -->
+
+    <div class="row mb-4">
+
+
+        <!-- SALES TREND -->
+
+        <div class="col-lg-8 mb-3">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-header bg-success text-white fw-bold">
+                    Sales Trend
+                </div>
+
+                <div class="card-body" style="height:380px; position:relative;">
+
+                    <canvas id="salesTrendChart"></canvas>
+
+                    <div id="salesTrendNoData"
+                         class="text-center text-muted d-none h-100 d-flex align-items-center justify-content-center">
+                        No sales trend data available.
+                    </div>
+
+                </div>
+
+                <div class="card-footer" style="background-color:#f1f9f4;">
+
+                    <strong class="text-success">Analysis:</strong>
+
+                    @if (!trend.HasData)
+                    {
+                        <span>
+                            No sales trend data available for the selected period.
+                        </span>
+                    }
+                    else
+                    {
+                        <span>
+
+                            Sales reached their highest point on
+                            @trend.HighestSalesDate?.ToString("MMMM dd, yyyy")
+                            at
+                            ₱@trend.HighestSalesDateTotal.ToString("N2"),
+
+                            while the lowest sales were recorded on
+                            @trend.LowestSalesDate?.ToString("MMMM dd, yyyy")
+                            at
+                            ₱@trend.LowestSalesDateTotal.ToString("N2").
+
+                            @if (trend.ChangePercent.HasValue)
+                            {
+                                <text>
+                                    Between the beginning and end of the selected period,
+                                    sales
+                                    @(trend.ChangeAmount > 0
+                                        ? "increased"
+                                        : trend.ChangeAmount < 0
+                                            ? "decreased"
+                                            : "remained unchanged")
+                                    by
+                                    @Math.Abs(trend.ChangePercent.Value).ToString("N2")%.
+                                </text>
+                            }
+
+                        </span>
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- CATEGORY PERFORMANCE -->
+
+        <div class="col-lg-4 mb-3">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-header bg-success text-white fw-bold">
+                    Category Performance
+                </div>
+
+                <div class="card-body" style="height:380px; position:relative;">
+
+                    <canvas id="categoryPerformanceChart"></canvas>
+
+                    <div id="categoryNoData"
+                         class="text-center text-muted d-none h-100 d-flex align-items-center justify-content-center">
+                        No category data available.
+                    </div>
+
+                </div>
+
+                <div class="card-footer" style="background-color:#f1f9f4;">
+
+                    <strong class="text-success">Analysis:</strong>
+
+                    @if (catAnalysis.Categories.Count == 0)
+                    {
+                        <span>
+                            No category data available for the selected period.
+                        </span>
+                    }
+                    else
+                    {
+                        <span>
+
+                            @(catAnalysis.HighestPerformingCategory ?? "-")
+                            is currently the highest-performing category.
+
+                            @if (catAnalysis.HasPreviousPeriod &&
+                                 catAnalysis.LargestIncreaseCategory != null)
+                            {
+                                <text>
+                                    @catAnalysis.LargestIncreaseCategory
+                                    recorded the largest increase at
+                                    @catAnalysis.LargestIncreasePercent?.ToString("N2")%.
+                                </text>
+                            }
+
+                            @if (catAnalysis.HasPreviousPeriod &&
+                                 catAnalysis.LargestDecreaseCategory != null)
+                            {
+                                <text>
+                                    @catAnalysis.LargestDecreaseCategory
+                                    recorded the largest decrease at
+                                    @Math.Abs(catAnalysis.LargestDecreasePercent ?? 0).ToString("N2")%.
+                                </text>
+                            }
+
+                        </span>
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         CATEGORY DETAILS
+    ====================================================== -->
+    @if (catAnalysis.Categories.Count > 0)
+    {
+        <div class="card shadow-sm mb-4">
+
+            <div class="card-header bg-success text-white fw-bold">
+                Category Analysis
+            </div>
+
+            <div class="card-body">
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover table-bordered align-middle mb-0">
+
+                        <thead class="table-success">
+
+                            <tr>
+
+                                <th>Category</th>
+
+                                <th class="text-end">Current Sales</th>
+
+                                @if (catAnalysis.HasPreviousPeriod)
+                                {
+                                    <th class="text-end">Previous Sales</th>
+
+                                    <th class="text-end">Change %</th>
+                                }
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var cat in catAnalysis.Categories)
+                            {
+                                <tr>
+
+                                    <td>@cat.Category</td>
+
+                                    <td class="text-end">
+                                        ₱@cat.CurrentSales.ToString("N2")
+                                    </td>
+
+                                    @if (catAnalysis.HasPreviousPeriod)
+                                    {
+                                        <td class="text-end">
+                                            ₱@cat.PreviousSales.ToString("N2")
+                                        </td>
+
+                                        <td class="text-end">
+
+                                            @(cat.ChangePercent.HasValue
+                                                ? (cat.ChangePercent.Value >= 0 ? "+" : "")
+                                                  + cat.ChangePercent.Value.ToString("N2")
+                                                  + "%"
+                                                : "-")
+
+                                        </td>
+                                    }
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+    }
+
+
+    <!-- =====================================================
+         TOP SELLING ITEMS
+    ====================================================== -->
+
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-header bg-success text-white fw-bold">
+            Top Selling Items
+        </div>
+
+        <div class="card-body" style="height:400px; position:relative;">
+
+            <canvas id="topItemsChart"></canvas>
+
+            <div id="topItemsNoData"
+                 class="text-center text-muted d-none h-100 d-flex align-items-center justify-content-center">
+                No top-selling item data available.
+            </div>
+
+        </div>
+
+        <div class="card-footer" style="background-color:#f1f9f4;">
+
+            <strong class="text-success">Analysis:</strong>
+
+            @if (itemAnalysis.HighestQuantityItem == null)
+            {
+                <span>
+                    No item data available for the selected period.
+                </span>
+            }
+            else
+            {
+                <span>
+
+                    @if (itemAnalysis.HighestSalesItem != null)
+                    {
+                        <text>
+                            @itemAnalysis.HighestSalesItem.ItemName
+                            generated the highest total sales at
+                            ₱@itemAnalysis.HighestSalesItem.CurrentSales.ToString("N2").
+                        </text>
+                    }
+
+                    @if (itemAnalysis.HighestQuantityItem != null)
+                    {
+                        <text>
+                            @itemAnalysis.HighestQuantityItem.ItemName
+                            had the highest quantity sold at
+                            @itemAnalysis.HighestQuantityItem.CurrentQuantity
+                            unit(s).
+                        </text>
+                    }
+
+                </span>
+            }
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         PERFORMANCE CHANGES
+    ====================================================== -->
+    @if (catAnalysis.HasPreviousPeriod)
+    {
+        var increasedCategories =
+            catAnalysis.Categories
+                .Where(c => c.ChangePercent.HasValue &&
+                            c.ChangePercent.Value > 0)
+                .OrderByDescending(c => c.ChangePercent)
+                .ToList();
+
+        var decreasedCategories =
+            catAnalysis.Categories
+                .Where(c => c.ChangePercent.HasValue &&
+                            c.ChangePercent.Value < 0)
+                .OrderBy(c => c.ChangePercent)
+                .ToList();
+
+
+        if (increasedCategories.Count > 0 ||
+            decreasedCategories.Count > 0)
+        {
+            <div class="alert alert-success border-start border-success border-4 mb-4"
+                 style="background-color:#f1f9f4;">
+
+                <strong>Performance Changes:</strong>
+
+                @if (increasedCategories.Count > 0)
+                {
+                    <div>
+                        @string.Join(
+                            ", ",
+                            increasedCategories.Select(c => c.Category)
+                        )
+                        increased compared with the previous period.
+                    </div>
+                }
+
+                @if (decreasedCategories.Count > 0)
+                {
+                    <div>
+                        @string.Join(
+                            ", ",
+                            decreasedCategories.Select(c => c.Category)
+                        )
+                        decreased compared with the previous period.
+                    </div>
+                }
+
+            </div>
+        }
+    }
+
+</div>
+
+
+<!-- =============================================================
      JAVASCRIPT
-========================================================= -->
-
-    <script>
-
-        document.addEventListener(
-        "DOMContentLoaded",
-        function () {
-
-        // =====================================================
-        // CHECK CHART.JS
-        // =====================================================
-
-        if (typeof Chart === "undefined") {
-
-        console.error(
-        "Chart.js failed to load."
-        );
-
-        return;
-        }
-
-
-        // =====================================================
-        // GET DATA FROM CONTROLLER
-        // =====================================================
-
-        const salesTrendData =
-        @Html.Raw(salesTrendJson);
-
-
-        const categoryPerformanceData =
-        @Html.Raw(categoryPerformanceJson);
-
-
-        const topItemsData =
-        @Html.Raw(topItemsJson);
-
-
-
-        // =====================================================
-        // DEBUG
-        // =====================================================
-
-        console.log(
-        "Sales Trend:",
-        salesTrendData
-        );
-
-
-        console.log(
-        "Category Performance:",
-        categoryPerformanceData
-        );
-
-
-        console.log(
-        "Top Items:",
-        topItemsData
-        );
-
-
-
-        // =====================================================
-        // SALES TREND
-        // =====================================================
-
-        const salesTrendCanvas =
-        document.getElementById(
-        "salesTrendChart"
-        );
-
-
-        const salesTrendNoData =
-        document.getElementById(
-        "salesTrendNoData"
-        );
-
-
-        if (
-        salesTrendCanvas &&
-        salesTrendData &&
-        salesTrendData.length > 0
-        ) {
-
-        const labels =
-        salesTrendData.map(
-        function (item) {
-
-        return item.Date;
-
-        }
-        );
-
-
-        const values =
-        salesTrendData.map(
-        function (item) {
-
-        return Number(
-        item.Total
-        );
-
-        }
-        );
-
-
-        new Chart(
-        salesTrendCanvas,
-        {
-
-        type: "line",
-
-
-        data: {
-
-        labels: labels,
-
-
-        datasets: [
-
-        {
-
-        label:
-        "Total Sales",
-
-        data:
-        values,
-
-        borderColor:
-        "#198754",
-
-        backgroundColor:
-        "rgba(25,135,84,0.12)",
-
-        borderWidth:
-        3,
-
-        pointBackgroundColor:
-        "#198754",
-
-        pointBorderColor:
-        "#198754",
-
-        pointRadius:
-        4,
-
-        pointHoverRadius:
-        6,
-
-        tension:
-        0.3,
-
-        fill:
-        true
-
-        }
-
-        ]
-
-        },
-
-
-        options: {
-
-        responsive:
-        true,
-
-        maintainAspectRatio:
-        false,
-
-
-        interaction: {
-
-        intersect:
-        false,
-
-        mode:
-        "index"
-
-        },
-
-
-        plugins: {
-
-        legend: {
-
-        display:
-        true,
-
-        position:
-        "top"
-
-        },
-
-
-        tooltip: {
-
-        callbacks: {
-
-        label:
-        function (context) {
-
-        return "₱" +
-        Number(
-        context.raw
-        ).toLocaleString(
-        "en-PH",
-        {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-        }
-        );
-
-        }
-
-        }
-
-        }
-
-        },
-
-
-        scales: {
-
-        x: {
-
-        title: {
-
-        display:
-        true,
-
-        text:
-        "Date"
-
-        },
-
-        grid: {
-
-        display:
-        false
-
-        }
-
-        },
-
-
-        y: {
-
-        beginAtZero:
-        true,
-
-        title: {
-
-        display:
-        true,
-
-        text:
-        "Sales"
-
-        },
-
-        ticks: {
-
-        callback:
-        function (value) {
-
-        return "₱" +
-        Number(
-        value
-        ).toLocaleString(
-        "en-PH"
-        );
-
-        }
-
-        }
-
-        }
-
-        }
-
-        }
-
-        }
-        );
-
-        }
-
-        else {
-
-        if (salesTrendCanvas) {
-
-        salesTrendCanvas.style.display =
-        "none";
-
-        }
-
-
-        if (salesTrendNoData) {
-
-        salesTrendNoData.style.display =
-        "flex";
-
-        }
-
-        }
-
-
-
-        // =====================================================
-        // CATEGORY PERFORMANCE
-        // =====================================================
-
-        const categoryCanvas =
-        document.getElementById(
-        "categoryPerformanceChart"
-        );
-
-
-        const categoryNoData =
-        document.getElementById(
-        "categoryNoData"
-        );
-
-
-        if (
-        categoryCanvas &&
-        categoryPerformanceData &&
-        categoryPerformanceData.length > 0
-        ) {
-
-        const labels =
-        categoryPerformanceData.map(
-        function (item) {
-
-        return item.Category;
-
-        }
-        );
-
-
-        const values =
-        categoryPerformanceData.map(
-        function (item) {
-
-        return Number(
-        item.Total
-        );
-
-        }
-        );
-
-
-        new Chart(
-        categoryCanvas,
-        {
-
-        type: "pie",
-
-
-        data: {
-
-        labels: labels,
-
-
-        datasets: [
-
-        {
-
-        label:
-        "Category Sales",
-
-        data:
-        values,
-
-        backgroundColor: [
-
-        "#198754",
-        "#ffc107",
-        "#0d6efd",
-        "#dc3545",
-        "#6f42c1",
-        "#20c997"
-
-        ],
-
-        borderColor:
-        "#ffffff",
-
-        borderWidth:
-        2
-
-        }
-
-        ]
-
-        },
-
-
-        options: {
-
-        responsive:
-        true,
-
-        maintainAspectRatio:
-        false,
-
-
-        plugins: {
-
-        legend: {
-
-        display:
-        true,
-
-        position:
-        "bottom"
-
-        },
-
-
-        tooltip: {
-
-        callbacks: {
-
-        label:
-        function (context) {
-
-        const value =
-        Number(
-        context.raw
-        );
-
-
-        const total =
-        context.dataset.data
-        .reduce(
-        function (
-        sum,
-        number
-        ) {
-
-        return sum +
-        Number(
-        number
-        );
-
-        },
-        0
-        );
-
-
-        const percentage =
-        total > 0
-        ? (
-        value /
-        total *
-        100
-        ).toFixed(1)
-        : 0;
-
-
-        return (
-        context.label +
-        ": ₱" +
-        value.toLocaleString(
-        "en-PH",
-        {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-        }
-        ) +
-        " (" +
-        percentage +
-        "%)"
-        );
-
-        }
-
-        }
-
-        }
-
-        }
-
-        }
-
-        }
-        );
-
-        }
-
-        else {
-
-        if (categoryCanvas) {
-
-        categoryCanvas.style.display =
-        "none";
-
-        }
-
-
-        if (categoryNoData) {
-
-        categoryNoData.style.display =
-        "flex";
-
-        }
-
-        }
-
-
-
-        // =====================================================
-        // TOP SELLING ITEMS
-        // =====================================================
-
-        const topItemsCanvas =
-        document.getElementById(
-        "topItemsChart"
-        );
-
-
-        const topItemsNoData =
-        document.getElementById(
-        "topItemsNoData"
-        );
-
-
-        if (
-        topItemsCanvas &&
-        topItemsData &&
-        topItemsData.length > 0
-        ) {
-
-        const labels =
-        topItemsData.map(
-        function (item) {
-
-        return item.ItemName;
-
-        }
-        );
-
-
-        const quantities =
-        topItemsData.map(
-        function (item) {
-
-        return Number(
-        item.Quantity
-        );
-
-        }
-        );
-
-
-        new Chart(
-        topItemsCanvas,
-        {
-
-        type: "bar",
-
-
-        data: {
-
-        labels: labels,
-
-
-        datasets: [
-
-        {
-
-        label:
-        "Quantity Sold",
-
-        data:
-        quantities,
-
-        backgroundColor:
-        "#198754",
-
-        borderColor:
-        "#157347",
-
-        borderWidth:
-        1,
-
-        borderRadius:
-        5,
-
-        maxBarThickness:
-        70
-
-        }
-
-        ]
-
-        },
-
-
-        options: {
-
-        responsive:
-        true,
-
-        maintainAspectRatio:
-        false,
-
-
-        plugins: {
-
-        legend: {
-
-        display:
-        true,
-
-        position:
-        "top"
-
-        },
-
-
-        tooltip: {
-
-        callbacks: {
-
-        label:
-        function (context) {
-
-        return (
-        "Quantity Sold: " +
-        Number(
-        context.raw
-        ).toLocaleString()
-        );
-
-        }
-
-        }
-
-        }
-
-        },
-
-
-        scales: {
-
-        x: {
-
-        title: {
-
-        display:
-        true,
-
-        text:
-        "Item"
-
-        },
-
-        grid: {
-
-        display:
-        false
-
-        }
-
-        },
-
-
-        y: {
-
-        beginAtZero:
-        true,
-
-        ticks: {
-
-        precision:
-        0
-
-        },
-
-        title: {
-
-        display:
-        true,
-
-        text:
-        "Quantity Sold"
-
-        }
-
-        }
-
-        }
-
-        }
-
-        }
-        );
-
-        }
-
-        else {
-
-        if (topItemsCanvas) {
-
-        topItemsCanvas.style.display =
-        "none";
-
-        }
-
-
-        if (topItemsNoData) {
-
-        topItemsNoData.style.display =
-        "flex";
-
-        }
-
-        }
-
-        }
-        );
-
-    </script>
-
-
-</body>
-
-</html>
+============================================================== -->
+
+<script>
+
+    document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+    if (typeof Chart === "undefined") {
+    console.error("Chart.js failed to load.");
+    return;
+    }
+
+
+    const salesTrendData =
+    @Html.Raw(salesTrendJson);
+
+    const categoryPerformanceData =
+    @Html.Raw(categoryPerformanceJson);
+
+    const topItemsData =
+    @Html.Raw(topItemsJson);
+
+
+    /* =====================================================
+    SALES TREND
+    ===================================================== */
+
+    const salesTrendCanvas =
+    document.getElementById("salesTrendChart");
+
+    const salesTrendNoData =
+    document.getElementById("salesTrendNoData");
+
+
+    if (salesTrendCanvas &&
+    Array.isArray(salesTrendData) &&
+    salesTrendData.length > 0) {
+
+    const labels = salesTrendData.map(item => item.Date);
+    const values = salesTrendData.map(item => Number(item.Total));
+
+    new Chart(salesTrendCanvas, {
+    type: "line",
+    data: {
+    labels: labels,
+    datasets: [{
+    label: "Total Sales",
+    data: values,
+    borderColor: "#198754",
+    backgroundColor: "rgba(25,135,84,0.12)",
+    borderWidth: 3,
+    pointBackgroundColor: "#198754",
+    pointBorderColor: "#198754",
+    pointRadius: 4,
+    pointHoverRadius: 6,
+    tension: 0.3,
+    fill: true
+    }]
+    },
+    options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { intersect: false, mode: "index" },
+    plugins: {
+    legend: { display: true, position: "top" },
+    tooltip: {
+    callbacks: {
+    label: function (context) {
+    return "₱" + Number(context.raw).toLocaleString(
+    "en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    }
+    }
+    },
+    scales: {
+    x: { title: { display: true, text: "Date" }, grid: { display: false } },
+    y: {
+    beginAtZero: true,
+    title: { display: true, text: "Sales" },
+    ticks: {
+    callback: function (value) {
+    return "₱" + Number(value).toLocaleString("en-PH");
+    }
+    }
+    }
+    }
+    }
+    });
+
+    } else {
+    if (salesTrendCanvas) salesTrendCanvas.style.display = "none";
+    if (salesTrendNoData) salesTrendNoData.classList.remove("d-none");
+    }
+
+
+    /* =====================================================
+    CATEGORY PERFORMANCE
+    ===================================================== */
+
+    const categoryCanvas =
+    document.getElementById("categoryPerformanceChart");
+
+    const categoryNoData =
+    document.getElementById("categoryNoData");
+
+
+    if (categoryCanvas &&
+    Array.isArray(categoryPerformanceData) &&
+    categoryPerformanceData.length > 0) {
+
+    const labels = categoryPerformanceData.map(item => item.Category);
+    const values = categoryPerformanceData.map(item => Number(item.Total));
+
+    new Chart(categoryCanvas, {
+    type: "pie",
+    data: {
+    labels: labels,
+    datasets: [{
+    label: "Category Sales",
+    data: values,
+    backgroundColor: ["#198754", "#ffc107", "#0d6efd", "#dc3545", "#6f42c1", "#20c997"],
+    borderColor: "#ffffff",
+    borderWidth: 2
+    }]
+    },
+    options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+    legend: { display: true, position: "bottom" },
+    tooltip: {
+    callbacks: {
+    label: function (context) {
+    const value = Number(context.raw);
+    const total = context.dataset.data.reduce((sum, n) => sum + Number(n), 0);
+    const percentage = total > 0 ? (value / total * 100).toFixed(1) : 0;
+    return context.label + ": ₱" + value.toLocaleString(
+    "en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) +
+    " (" + percentage + "%)";
+    }
+    }
+    }
+    }
+    }
+    });
+
+    } else {
+    if (categoryCanvas) categoryCanvas.style.display = "none";
+    if (categoryNoData) categoryNoData.classList.remove("d-none");
+    }
+
+
+    /* =====================================================
+    TOP SELLING ITEMS
+    ===================================================== */
+
+    const topItemsCanvas =
+    document.getElementById("topItemsChart");
+
+    const topItemsNoData =
+    document.getElementById("topItemsNoData");
+
+
+    if (topItemsCanvas &&
+    Array.isArray(topItemsData) &&
+    topItemsData.length > 0) {
+
+    const labels = topItemsData.map(item => item.ItemName);
+    const quantities = topItemsData.map(item => Number(item.Quantity));
+
+    new Chart(topItemsCanvas, {
+    type: "bar",
+    data: {
+    labels: labels,
+    datasets: [{
+    label: "Quantity Sold",
+    data: quantities,
+    backgroundColor: "#198754",
+    borderColor: "#157347",
+    borderWidth: 1,
+    borderRadius: 5,
+    maxBarThickness: 70
+    }]
+    },
+    options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+    legend: { display: true, position: "top" },
+    tooltip: {
+    callbacks: {
+    label: function (context) {
+    return "Quantity Sold: " + Number(context.raw).toLocaleString();
+    }
+    }
+    }
+    },
+    scales: {
+    x: { title: { display: true, text: "Item" }, grid: { display: false } },
+    y: {
+    beginAtZero: true,
+    ticks: { precision: 0 },
+    title: { display: true, text: "Quantity Sold" }
+    }
+    }
+    }
+    });
+
+    } else {
+    if (topItemsCanvas) topItemsCanvas.style.display = "none";
+    if (topItemsNoData) topItemsNoData.classList.remove("d-none");
+    }
+
+    }
+    );
+
+</script>
