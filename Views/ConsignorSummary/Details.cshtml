@@ -104,6 +104,9 @@
 
     <!-- =====================================================
          SALES BREAKDOWN
+         NEW: "Date Sold" column added so the consignor sees
+         exactly when each item left the shelf, instead of just
+         the date-range filter that was applied to the report.
     ====================================================== -->
 
     <div class="card shadow-sm mb-4">
@@ -121,6 +124,7 @@
                             <th>Item ID</th>
                             <th>Item Name</th>
                             <th>Category</th>
+                            <th>Date Sold</th>
                             <th>Qty Sold</th>
                             <th>Selling Price</th>
                             <th>Total Sales</th>
@@ -143,6 +147,8 @@
 
                                     <td>@item.Category</td>
 
+                                    <td>@(((DateTime)item.SaleDate).ToString("MMM dd, yyyy"))</td>
+
                                     <td>@item.QuantitySold</td>
 
                                     <td>₱@(((decimal)item.UnitPrice).ToString("N2"))</td>
@@ -159,7 +165,7 @@
                         else
                         {
                             <tr>
-                                <td colspan="8" class="text-center text-muted py-4">
+                                <td colspan="9" class="text-center text-muted py-4">
                                     No sales found for this consignor in the selected period.
                                 </td>
                             </tr>

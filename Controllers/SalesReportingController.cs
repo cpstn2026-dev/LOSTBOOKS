@@ -119,7 +119,8 @@ namespace LOSTBOOKS.Controllers
                     ? totalSales / totalTransactions
                     : 0m;
 
-            ViewBag.TotalSales = totalSales;
+            ViewBag.TotalSales =
+                totalSales;
 
             ViewBag.TotalTransactions =
                 totalTransactions;
@@ -169,7 +170,7 @@ namespace LOSTBOOKS.Controllers
                     toDate);
 
             // =====================================================
-            // JSON
+            // JSON DATA FOR WEB CHARTS
             // =====================================================
 
             var options =
@@ -271,6 +272,15 @@ namespace LOSTBOOKS.Controllers
             ViewBag.TrendAnalysis =
                 trendAnalysis;
 
+            ViewBag.GrowthInsight =
+                BuildOverallGrowthInsight(
+                    salesGrowth,
+                    categoryAnalysis);
+
+            ViewBag.TrendInsight =
+                BuildTrendInsight(
+                    sales);
+
             // =====================================================
             // COMPOSITION
             // =====================================================
@@ -329,15 +339,21 @@ namespace LOSTBOOKS.Controllers
                     "No sales records found.");
             }
 
+            // =====================================================
+            // BASIC REPORT VALUES
+            // =====================================================
+
             decimal totalSales =
                 sales.Sum(x =>
-                    x.SellingPrice * x.QuantitySold);
+                    x.SellingPrice *
+                    x.QuantitySold);
 
             int totalTransactions =
                 sales.Count;
 
             int totalQuantitySold =
-                sales.Sum(x => x.QuantitySold);
+                sales.Sum(x =>
+                    x.QuantitySold);
 
             decimal averageTransactionValue =
                 totalTransactions > 0
@@ -425,6 +441,10 @@ namespace LOSTBOOKS.Controllers
                     })
                     .ToList();
 
+            // =====================================================
+            // PERIOD / CATEGORY TEXT
+            // =====================================================
+
             string categoryText =
                 string.IsNullOrWhiteSpace(category) ||
                 category.Equals(
@@ -457,84 +477,6 @@ namespace LOSTBOOKS.Controllers
 
             bool pdfHasPreviousPeriod =
                 false;
-
-            // =====================================================
-            // TREND
-            // =====================================================
-
-            if (sales.Count > 0)
-            {
-                pdfTrend.HasData =
-                    true;
-
-                var dailyTotals =
-                    sales
-                        .GroupBy(x =>
-                            x.TransactionDate.Date)
-                        .Select(g => new
-                        {
-                            Date = g.Key,
-
-                            Total =
-                                g.Sum(x =>
-                                    x.SellingPrice *
-                                    x.QuantitySold)
-                        })
-                        .OrderBy(x => x.Date)
-                        .ToList();
-
-                if (dailyTotals.Count > 0)
-                {
-                    var highestDay =
-                        dailyTotals
-                            .OrderByDescending(
-                                x => x.Total)
-                            .First();
-
-                    var lowestDay =
-                        dailyTotals
-                            .OrderBy(
-                                x => x.Total)
-                            .First();
-
-                    var beginningDay =
-                        dailyTotals.First();
-
-                    var endingDay =
-                        dailyTotals.Last();
-
-                    pdfTrend.HighestSalesDate =
-                        highestDay.Date;
-
-                    pdfTrend.HighestSalesDateTotal =
-                        highestDay.Total;
-
-                    pdfTrend.LowestSalesDate =
-                        lowestDay.Date;
-
-                    pdfTrend.LowestSalesDateTotal =
-                        lowestDay.Total;
-
-                    pdfTrend.BeginningTotal =
-                        beginningDay.Total;
-
-                    pdfTrend.EndingTotal =
-                        endingDay.Total;
-
-                    pdfTrend.ChangeAmount =
-                        endingDay.Total -
-                        beginningDay.Total;
-
-                    if (beginningDay.Total != 0)
-                    {
-                        pdfTrend.ChangePercent =
-                            Math.Round(
-                                (pdfTrend.ChangeAmount /
-                                 beginningDay.Total) * 100m,
-                                2);
-                    }
-                }
-            }
 
             // =====================================================
             // PREVIOUS PERIOD
@@ -570,7 +512,7 @@ namespace LOSTBOOKS.Controllers
                         currentStart.AddDays(-1);
 
                     previousEnd =
-                        previousStart.AddDays(1);
+                        currentStart;
                 }
                 else if (range.Equals(
                     "weekly",
@@ -613,7 +555,7 @@ namespace LOSTBOOKS.Controllers
                         currentStart.AddDays(-1);
 
                     previousEnd =
-                        previousStart.AddDays(1);
+                        currentStart;
                 }
 
                 previousSales =
@@ -660,7 +602,8 @@ namespace LOSTBOOKS.Controllers
                     pdfGrowth.ChangePercent =
                         Math.Round(
                             (pdfGrowth.ChangeAmount /
-                             previousTotal) * 100m,
+                             previousTotal) *
+                            100m,
                             2);
                 }
 
@@ -679,6 +622,23 @@ namespace LOSTBOOKS.Controllers
                     pdfGrowth.Direction =
                         "Unchanged";
                 }
+            }
+            else
+            {
+                pdfGrowth.CurrentTotal =
+                    currentTotal;
+
+                pdfGrowth.PreviousTotal =
+                    0m;
+
+                pdfGrowth.ChangeAmount =
+                    currentTotal;
+
+                pdfGrowth.HasPreviousPeriod =
+                    false;
+
+                pdfGrowth.Direction =
+                    "No Comparison";
             }
 
             // =====================================================
@@ -775,10 +735,14 @@ namespace LOSTBOOKS.Controllers
                     });
             }
 
-            var highestCategory =
+            pdfCategoryAnalysis.Categories =
                 pdfCategoryAnalysis.Categories
                     .OrderByDescending(
                         x => x.CurrentSales)
+                    .ToList();
+
+            var highestCategory =
+                pdfCategoryAnalysis.Categories
                     .FirstOrDefault();
 
             if (highestCategory != null)
@@ -796,7 +760,8 @@ namespace LOSTBOOKS.Controllers
                             x.ChangePercent.HasValue &&
                             x.ChangePercent.Value > 0)
                         .OrderByDescending(
-                            x => x.ChangePercent.Value)
+                            x =>
+                                x.ChangePercent.Value)
                         .FirstOrDefault();
 
                 if (increase != null)
@@ -816,7 +781,8 @@ namespace LOSTBOOKS.Controllers
                             x.ChangePercent.HasValue &&
                             x.ChangePercent.Value < 0)
                         .OrderBy(
-                            x => x.ChangePercent.Value)
+                            x =>
+                                x.ChangePercent.Value)
                         .FirstOrDefault();
 
                 if (decrease != null)
@@ -845,6 +811,14 @@ namespace LOSTBOOKS.Controllers
                     pdfHasPreviousPeriod);
 
             // =====================================================
+            // TREND ANALYSIS
+            // =====================================================
+
+            pdfTrend =
+                BuildTrendAnalysis(
+                    sales);
+
+            // =====================================================
             // COMPOSITION
             // =====================================================
 
@@ -864,69 +838,17 @@ namespace LOSTBOOKS.Controllers
                     pdfCategoryAnalysis);
 
             // =====================================================
-            // ANALYSIS TEXT
+            // WRITTEN ANALYSIS
             // =====================================================
 
-            string overallAnalysisText;
+            string overallAnalysisText =
+                BuildOverallGrowthInsight(
+                    pdfGrowth,
+                    pdfCategoryAnalysis);
 
-            if (!pdfHasPreviousPeriod)
-            {
-                overallAnalysisText =
-                    $"The current report shows ₱{totalSales:N2} " +
-                    $"in total sales from " +
-                    $"{totalTransactions} transaction(s).";
-            }
-            else
-            {
-                overallAnalysisText =
-                    $"Sales {pdfGrowth.Direction.ToLower()} by " +
-                    $"{Math.Abs(pdfGrowth.ChangePercent ?? 0):N2}% " +
-                    $"(₱{pdfGrowth.ChangeAmount:N2}) compared with " +
-                    $"the previous period " +
-                    $"(₱{pdfGrowth.PreviousTotal:N2} to " +
-                    $"₱{pdfGrowth.CurrentTotal:N2}).";
-            }
-
-            // =====================================================
-            // TREND ANALYSIS TEXT
-            // =====================================================
-
-            string trendAnalysisText;
-
-            if (!pdfTrend.HasData)
-            {
-                trendAnalysisText =
-                    "No sales trend data available for the selected period.";
-            }
-            else
-            {
-                trendAnalysisText =
-                    $"Sales reached their highest point on " +
-                    $"{pdfTrend.HighestSalesDate:MMMM dd, yyyy} at " +
-                    $"₱{pdfTrend.HighestSalesDateTotal:N2}, while the " +
-                    $"lowest sales were recorded on " +
-                    $"{pdfTrend.LowestSalesDate:MMMM dd, yyyy} at " +
-                    $"₱{pdfTrend.LowestSalesDateTotal:N2}.";
-
-                if (pdfTrend.ChangePercent.HasValue)
-                {
-                    string direction =
-                        pdfTrend.ChangeAmount > 0
-                            ? "increased"
-                            : pdfTrend.ChangeAmount < 0
-                                ? "decreased"
-                                : "remained unchanged";
-
-                    trendAnalysisText +=
-                        $" Between the beginning and end of the selected " +
-                        $"period, sales {direction} by " +
-                        $"{Math.Abs(pdfTrend.ChangePercent.Value):N2}%.";
-                }
-            }
-
-            // =====================================================
-            // COMPOSITION ANALYSIS TEXT
-            // =====================================================
+            string trendAnalysisText =
+                BuildTrendInsight(
+                    sales);
 
             string compositionAnalysisText;
 
@@ -939,7 +861,8 @@ namespace LOSTBOOKS.Controllers
             {
                 var topComposition =
                     pdfComposition.Rows
-                        .OrderByDescending(x => x.Total)
+                        .OrderByDescending(
+                            x => x.Total)
                         .First();
 
                 compositionAnalysisText =
@@ -952,10 +875,6 @@ namespace LOSTBOOKS.Controllers
                     );
             }
 
-            // =====================================================
-            // ITEM ANALYSIS TEXT
-            // =====================================================
-
             string itemAnalysisText;
 
             if (pdfItemAnalysis.HighestQuantityItem == null)
@@ -965,27 +884,31 @@ namespace LOSTBOOKS.Controllers
             }
             else
             {
-                itemAnalysisText = "";
+                var itemParts =
+                    new List<string>();
 
                 if (pdfItemAnalysis.HighestSalesItem != null)
                 {
-                    itemAnalysisText +=
+                    itemParts.Add(
                         $"{pdfItemAnalysis.HighestSalesItem.ItemName} " +
                         $"generated the highest total sales at " +
-                        $"₱{pdfItemAnalysis.HighestSalesItem.CurrentSales:N2}. ";
+                        $"₱{pdfItemAnalysis.HighestSalesItem.CurrentSales:N2}.");
                 }
 
                 if (pdfItemAnalysis.HighestQuantityItem != null)
                 {
-                    itemAnalysisText +=
+                    itemParts.Add(
                         $"{pdfItemAnalysis.HighestQuantityItem.ItemName} " +
                         $"had the highest quantity sold at " +
-                        $"{pdfItemAnalysis.HighestQuantityItem.CurrentQuantity} unit(s).";
+                        $"{pdfItemAnalysis.HighestQuantityItem.CurrentQuantity} unit(s).");
                 }
+
+                itemAnalysisText =
+                    string.Join(" ", itemParts);
             }
 
             // =====================================================
-            // TEMP CHART FOLDER
+            // TEMPORARY CHART FILES
             // =====================================================
 
             string tempFolder =
@@ -1013,6 +936,10 @@ namespace LOSTBOOKS.Controllers
 
             try
             {
+                // =====================================================
+                // CREATE CHARTS
+                // =====================================================
+
                 CreateSalesTrendChart(
                     sales,
                     lineChartPath);
@@ -1090,7 +1017,9 @@ namespace LOSTBOOKS.Controllers
                                 {
                                     col.Spacing(10);
 
+                                    // =================================================
                                     // SUMMARY
+                                    // =================================================
 
                                     col.Item()
                                         .Text("SUMMARY")
@@ -1163,7 +1092,9 @@ namespace LOSTBOOKS.Controllers
                                                     bestCategory?.Category ?? "-");
                                         });
 
-                                    // DAILY SUMMARY
+                                    // =================================================
+                                    // DAILY SALES SUMMARY
+                                    // =================================================
 
                                     col.Item()
                                         .PaddingTop(6)
@@ -1226,7 +1157,9 @@ namespace LOSTBOOKS.Controllers
                                             }
                                         });
 
+                                    // =================================================
                                     // CATEGORY SUMMARY
+                                    // =================================================
 
                                     col.Item()
                                         .PaddingTop(6)
@@ -1288,40 +1221,12 @@ namespace LOSTBOOKS.Controllers
                                             }
                                         });
 
-                                    // WRITTEN SALES ANALYSIS
+                                    // =================================================
+                                    // GRAND TOTAL
+                                    // =================================================
 
                                     col.Item()
-                                        .PaddingTop(10)
-                                        .Text("SALES ANALYSIS")
-                                        .Bold()
-                                        .FontSize(13);
-
-                                    col.Item()
-                                        .LineHorizontal(1);
-
-                                    col.Item()
-                                        .PaddingTop(4)
-                                        .Text(
-                                            overallAnalysisText)
-                                        .FontSize(9);
-
-                                    col.Item()
-                                        .Text(
-                                            trendAnalysisText)
-                                        .FontSize(9);
-
-                                    col.Item()
-                                        .Text(
-                                            compositionAnalysisText)
-                                        .FontSize(9);
-
-                                    col.Item()
-                                        .Text(
-                                            itemAnalysisText)
-                                        .FontSize(9);
-
-                                    col.Item()
-                                        .PaddingTop(10)
+                                        .PaddingTop(12)
                                         .AlignRight()
                                         .Text(
                                             $"GRAND TOTAL SALES: ₱{totalSales:N2}")
@@ -1337,7 +1242,7 @@ namespace LOSTBOOKS.Controllers
                         });
 
                         // =================================================
-                        // PAGE 2 — VISUAL ANALYSIS (PORTRAIT, STACKED)
+                        // PAGE 2 — SALES ANALYSIS VISUALS
                         // =================================================
 
                         container.Page(page =>
@@ -1381,7 +1286,9 @@ namespace LOSTBOOKS.Controllers
                                 {
                                     col.Spacing(12);
 
+                                    // =================================================
                                     // SALES TREND
+                                    // =================================================
 
                                     col.Item()
                                         .Border(1)
@@ -1429,7 +1336,9 @@ namespace LOSTBOOKS.Controllers
                                                 });
                                         });
 
-                                    // COMPOSITION
+                                    // =================================================
+                                    // CATEGORY / COMPOSITION
+                                    // =================================================
 
                                     col.Item()
                                         .Border(1)
@@ -1478,7 +1387,9 @@ namespace LOSTBOOKS.Controllers
                                                 });
                                         });
 
+                                    // =================================================
                                     // TOP SELLING ITEMS
+                                    // =================================================
 
                                     col.Item()
                                         .Border(1)
@@ -1580,8 +1491,13 @@ namespace LOSTBOOKS.Controllers
                                 {
                                     col.Spacing(12);
 
+                                    // =================================================
+                                    // ITEM PERFORMANCE TABLE
+                                    // =================================================
+
                                     col.Item()
-                                        .Text("ITEM PERFORMANCE TABLE")
+                                        .Text(
+                                            "ITEM PERFORMANCE TABLE")
                                         .Bold()
                                         .FontSize(13);
 
@@ -1627,7 +1543,9 @@ namespace LOSTBOOKS.Controllers
 
                                             int rank = 1;
 
-                                            foreach (var item in pdfItemAnalysis.AllItems)
+                                            foreach (
+                                                var item
+                                                in pdfItemAnalysis.AllItems)
                                             {
                                                 table.Cell()
                                                     .Element(CellStyle)
@@ -1667,11 +1585,14 @@ namespace LOSTBOOKS.Controllers
                                             }
                                         });
 
-                                    // FINAL SUMMARY
+                                    // =================================================
+                                    // FINAL ANALYSIS SUMMARY
+                                    // =================================================
 
                                     col.Item()
                                         .PaddingTop(15)
-                                        .Text("FINAL ANALYSIS SUMMARY")
+                                        .Text(
+                                            "FINAL ANALYSIS SUMMARY")
                                         .Bold()
                                         .FontSize(13);
 
@@ -1731,8 +1652,11 @@ namespace LOSTBOOKS.Controllers
 
             double[] xs =
                 Enumerable
-                    .Range(0, grouped.Count)
-                    .Select(x => (double)x)
+                    .Range(
+                        0,
+                        grouped.Count)
+                    .Select(x =>
+                        (double)x)
                     .ToArray();
 
             double[] ys =
@@ -1759,9 +1683,11 @@ namespace LOSTBOOKS.Controllers
                         xs,
                         ys);
 
-                scatter.LineWidth = 3;
+                scatter.LineWidth =
+                    3;
 
-                scatter.MarkerSize = 7;
+                scatter.MarkerSize =
+                    7;
 
                 scatter.Color =
                     ScottPlot.Color.FromHex(
@@ -1772,11 +1698,14 @@ namespace LOSTBOOKS.Controllers
                     labels);
             }
 
-            plot.Title("Sales Trend");
+            plot.Title(
+                "Sales Trend");
 
-            plot.XLabel("Date");
+            plot.XLabel(
+                "Date");
 
-            plot.YLabel("Sales (₱)");
+            plot.YLabel(
+                "Sales (₱)");
 
             plot.SavePng(
                 path,
@@ -1806,7 +1735,8 @@ namespace LOSTBOOKS.Controllers
                         .Select(g => new
                         {
                             Label =
-                                string.IsNullOrWhiteSpace(g.Key)
+                                string.IsNullOrWhiteSpace(
+                                    g.Key)
                                     ? "Unknown"
                                     : g.Key,
 
@@ -1823,7 +1753,8 @@ namespace LOSTBOOKS.Controllers
                         .Select(g => new
                         {
                             Label =
-                                string.IsNullOrWhiteSpace(g.Key)
+                                string.IsNullOrWhiteSpace(
+                                    g.Key)
                                     ? "Unknown"
                                     : g.Key,
 
@@ -1854,15 +1785,17 @@ namespace LOSTBOOKS.Controllers
                 var slices =
                     new List<PieSlice>();
 
-                for (int i = 0;
-                     i < grouped.Count;
-                     i++)
+                for (
+                    int i = 0;
+                    i < grouped.Count;
+                    i++)
                 {
                     slices.Add(
                         new PieSlice
                         {
                             Value =
-                                (double)grouped[i].Total,
+                                (double)
+                                grouped[i].Total,
 
                             Label =
                                 grouped[i].Label,
@@ -1870,11 +1803,13 @@ namespace LOSTBOOKS.Controllers
                             FillColor =
                                 ScottPlot.Color.FromHex(
                                     palette[
-                                        i % palette.Length])
+                                        i %
+                                        palette.Length])
                         });
                 }
 
-                plot.Add.Pie(slices);
+                plot.Add.Pie(
+                    slices);
 
                 plot.ShowLegend();
             }
@@ -1991,7 +1926,8 @@ namespace LOSTBOOKS.Controllers
                     .AsNoTracking()
                     .AsQueryable();
 
-            if (range == "daily" &&
+            if (
+                range == "daily" &&
                 fromDate.HasValue)
             {
                 DateTime start =
@@ -2005,8 +1941,9 @@ namespace LOSTBOOKS.Controllers
                         x.TransactionDate >= start &&
                         x.TransactionDate < end);
             }
-            else if (range == "weekly" &&
-                     fromDate.HasValue)
+            else if (
+                range == "weekly" &&
+                fromDate.HasValue)
             {
                 DateTime start =
                     fromDate.Value.Date;
@@ -2019,8 +1956,9 @@ namespace LOSTBOOKS.Controllers
                         x.TransactionDate >= start &&
                         x.TransactionDate < end);
             }
-            else if (range == "monthly" &&
-                     fromDate.HasValue)
+            else if (
+                range == "monthly" &&
+                fromDate.HasValue)
             {
                 DateTime start =
                     new DateTime(
@@ -2036,9 +1974,10 @@ namespace LOSTBOOKS.Controllers
                         x.TransactionDate >= start &&
                         x.TransactionDate < end);
             }
-            else if (range == "custom" &&
-                     fromDate.HasValue &&
-                     toDate.HasValue)
+            else if (
+                range == "custom" &&
+                fromDate.HasValue &&
+                toDate.HasValue)
             {
                 DateTime start =
                     fromDate.Value.Date;
@@ -2052,7 +1991,8 @@ namespace LOSTBOOKS.Controllers
                         x.TransactionDate < end);
             }
 
-            if (!string.IsNullOrWhiteSpace(category) &&
+            if (
+                !string.IsNullOrWhiteSpace(category) &&
                 !category.Equals(
                     "All",
                     StringComparison.OrdinalIgnoreCase))
@@ -2080,7 +2020,8 @@ namespace LOSTBOOKS.Controllers
                 DateTime? fromDate,
                 DateTime? toDate)
         {
-            if (range == "daily" &&
+            if (
+                range == "daily" &&
                 fromDate.HasValue)
             {
                 DateTime start =
@@ -2091,7 +2032,8 @@ namespace LOSTBOOKS.Controllers
                     start.AddDays(1));
             }
 
-            if (range == "weekly" &&
+            if (
+                range == "weekly" &&
                 fromDate.HasValue)
             {
                 DateTime start =
@@ -2102,7 +2044,8 @@ namespace LOSTBOOKS.Controllers
                     start.AddDays(7));
             }
 
-            if (range == "monthly" &&
+            if (
+                range == "monthly" &&
                 fromDate.HasValue)
             {
                 DateTime start =
@@ -2116,7 +2059,8 @@ namespace LOSTBOOKS.Controllers
                     start.AddMonths(1));
             }
 
-            if (range == "custom" &&
+            if (
+                range == "custom" &&
                 fromDate.HasValue &&
                 toDate.HasValue)
             {
@@ -2150,16 +2094,20 @@ namespace LOSTBOOKS.Controllers
                     .AsNoTracking()
                     .AsQueryable();
 
-            if (start.HasValue &&
+            if (
+                start.HasValue &&
                 end.HasValue)
             {
                 query =
                     query.Where(x =>
-                        x.TransactionDate >= start.Value &&
-                        x.TransactionDate < end.Value);
+                        x.TransactionDate >=
+                            start.Value &&
+                        x.TransactionDate <
+                            end.Value);
             }
 
-            if (!string.IsNullOrWhiteSpace(category) &&
+            if (
+                !string.IsNullOrWhiteSpace(category) &&
                 !category.Equals(
                     "All",
                     StringComparison.OrdinalIgnoreCase))
@@ -2202,7 +2150,8 @@ namespace LOSTBOOKS.Controllers
                 previousTotal != 0
                     ? Math.Round(
                         (changeAmount /
-                         previousTotal) * 100m,
+                         previousTotal) *
+                        100m,
                         2)
                     : null;
 
@@ -2236,6 +2185,104 @@ namespace LOSTBOOKS.Controllers
         }
 
         // =====================================================
+        // A2. OVERALL GROWTH INSIGHT
+        // =====================================================
+
+        private static string BuildOverallGrowthInsight(
+            SalesGrowthAnalysis growth,
+            CategoryAnalysisSummary catAnalysis)
+        {
+            if (!growth.HasPreviousPeriod)
+            {
+                return
+                    $"The current report for the selected period shows " +
+                    $"₱{growth.CurrentTotal:N2} in total sales. " +
+                    "No previous equivalent period is available for comparison.";
+            }
+
+            string direction =
+                growth.ChangeAmount > 0
+                    ? "increased"
+                    : growth.ChangeAmount < 0
+                        ? "decreased"
+                        : "remained unchanged";
+
+            string overallSentence =
+                $"Sales {direction} from " +
+                $"₱{growth.PreviousTotal:N2} to " +
+                $"₱{growth.CurrentTotal:N2}, " +
+                $"a change of " +
+                $"₱{Math.Abs(growth.ChangeAmount):N2}" +
+                (
+                    growth.ChangePercent.HasValue
+                        ? $" or {Math.Abs(growth.ChangePercent.Value):N2}%."
+                        : "."
+                );
+
+            if (
+                growth.ChangeAmount == 0 ||
+                catAnalysis.Categories.Count == 0)
+            {
+                return overallSentence;
+            }
+
+            CategoryAnalysisRow? driver =
+                growth.ChangeAmount > 0
+                    ? catAnalysis.Categories
+                        .Where(c =>
+                            c.ChangeAmount > 0)
+                        .OrderByDescending(
+                            c =>
+                                c.ChangeAmount)
+                        .FirstOrDefault()
+                    : catAnalysis.Categories
+                        .Where(c =>
+                            c.ChangeAmount < 0)
+                        .OrderBy(
+                            c =>
+                                c.ChangeAmount)
+                        .FirstOrDefault();
+
+            if (driver == null)
+            {
+                return
+                    overallSentence +
+                    " The available data does not identify a specific category driving this change.";
+            }
+
+            decimal driverContributionPercent =
+                growth.ChangeAmount != 0
+                    ? Math.Round(
+                        Math.Abs(
+                            driver.ChangeAmount /
+                            growth.ChangeAmount) *
+                        100m,
+                        2)
+                    : 0m;
+
+            string driverSentence =
+                $"{driver.Category} sales moved from " +
+                $"₱{driver.PreviousSales:N2} to " +
+                $"₱{driver.CurrentSales:N2}, " +
+                $"a change of " +
+                $"₱{Math.Abs(driver.ChangeAmount):N2}" +
+                (
+                    driver.ChangePercent.HasValue
+                        ? $" or {Math.Abs(driver.ChangePercent.Value):N2}%, "
+                        : ", "
+                ) +
+                $"accounting for roughly " +
+                $"{driverContributionPercent:N2}% of the overall " +
+                $"{(growth.ChangeAmount > 0 ? "increase" : "decrease")}, " +
+                "making it the strongest contributor to this period's change.";
+
+            return
+                overallSentence +
+                " " +
+                driverSentence;
+        }
+
+        // =====================================================
         // B. CATEGORY PERFORMANCE
         // =====================================================
 
@@ -2246,10 +2293,12 @@ namespace LOSTBOOKS.Controllers
         {
             var currentTotals =
                 currentSales
-                    .GroupBy(x => x.Category)
+                    .GroupBy(x =>
+                        x.Category)
                     .Select(g => new
                     {
-                        Category = g.Key,
+                        Category =
+                            g.Key,
 
                         Total =
                             g.Sum(x =>
@@ -2260,10 +2309,12 @@ namespace LOSTBOOKS.Controllers
 
             var previousTotals =
                 previousSales
-                    .GroupBy(x => x.Category)
+                    .GroupBy(x =>
+                        x.Category)
                     .Select(g => new
                     {
-                        Category = g.Key,
+                        Category =
+                            g.Key,
 
                         Total =
                             g.Sum(x =>
@@ -2274,10 +2325,12 @@ namespace LOSTBOOKS.Controllers
 
             var categoryNames =
                 currentTotals
-                    .Select(x => x.Category)
+                    .Select(x =>
+                        x.Category)
                     .Union(
                         previousTotals
-                            .Select(x => x.Category))
+                            .Select(x =>
+                                x.Category))
                     .Where(x =>
                         !string.IsNullOrWhiteSpace(x))
                     .Distinct()
@@ -2286,18 +2339,22 @@ namespace LOSTBOOKS.Controllers
             var rows =
                 new List<CategoryAnalysisRow>();
 
-            foreach (var cat in categoryNames)
+            foreach (
+                var cat
+                in categoryNames)
             {
                 decimal current =
                     currentTotals
                         .FirstOrDefault(
-                            x => x.Category == cat)
+                            x =>
+                                x.Category == cat)
                         ?.Total ?? 0m;
 
                 decimal previous =
                     previousTotals
                         .FirstOrDefault(
-                            x => x.Category == cat)
+                            x =>
+                                x.Category == cat)
                         ?.Total ?? 0m;
 
                 decimal changeAmount =
@@ -2308,7 +2365,8 @@ namespace LOSTBOOKS.Controllers
                     previous != 0
                         ? Math.Round(
                             (changeAmount /
-                             previous) * 100m,
+                             previous) *
+                            100m,
                             2)
                         : null;
 
@@ -2335,7 +2393,8 @@ namespace LOSTBOOKS.Controllers
             rows =
                 rows
                     .OrderByDescending(
-                        x => x.CurrentSales)
+                        x =>
+                            x.CurrentSales)
                     .ToList();
 
             var summary =
@@ -2351,7 +2410,8 @@ namespace LOSTBOOKS.Controllers
             var highestPerforming =
                 rows
                     .OrderByDescending(
-                        x => x.CurrentSales)
+                        x =>
+                            x.CurrentSales)
                     .FirstOrDefault();
 
             summary.HighestPerformingCategory =
@@ -2365,7 +2425,8 @@ namespace LOSTBOOKS.Controllers
                             x.ChangePercent.HasValue &&
                             x.ChangePercent.Value > 0)
                         .OrderByDescending(
-                            x => x.ChangePercent.Value)
+                            x =>
+                                x.ChangePercent.Value)
                         .FirstOrDefault();
 
                 if (largestIncrease != null)
@@ -2383,7 +2444,8 @@ namespace LOSTBOOKS.Controllers
                             x.ChangePercent.HasValue &&
                             x.ChangePercent.Value < 0)
                         .OrderBy(
-                            x => x.ChangePercent.Value)
+                            x =>
+                                x.ChangePercent.Value)
                         .FirstOrDefault();
 
                 if (largestDecrease != null)
@@ -2478,10 +2540,13 @@ namespace LOSTBOOKS.Controllers
                         decimal? quantityChangePercent =
                             previousQuantity != 0
                                 ? Math.Round(
-                                    ((decimal)
-                                        (c.Quantity -
-                                         previousQuantity) /
-                                     previousQuantity) *
+                                    (
+                                        (decimal)(
+                                            c.Quantity -
+                                            previousQuantity)
+                                        /
+                                        previousQuantity
+                                    ) *
                                     100m,
                                     2)
                                 : null;
@@ -2489,9 +2554,14 @@ namespace LOSTBOOKS.Controllers
                         decimal? revenueChangePercent =
                             previousSalesTotal != 0
                                 ? Math.Round(
-                                    ((c.Sales -
-                                      previousSalesTotal) /
-                                     previousSalesTotal) *
+                                    (
+                                        (
+                                            c.Sales -
+                                            previousSalesTotal
+                                        )
+                                        /
+                                        previousSalesTotal
+                                    ) *
                                     100m,
                                     2)
                                 : null;
@@ -2527,7 +2597,8 @@ namespace LOSTBOOKS.Controllers
                         };
                     })
                     .OrderByDescending(
-                        x => x.CurrentQuantity)
+                        x =>
+                            x.CurrentQuantity)
                     .ToList();
 
             var summary =
@@ -2542,13 +2613,15 @@ namespace LOSTBOOKS.Controllers
                     HighestQuantityItem =
                         rows
                             .OrderByDescending(
-                                x => x.CurrentQuantity)
+                                x =>
+                                    x.CurrentQuantity)
                             .FirstOrDefault(),
 
                     HighestSalesItem =
                         rows
                             .OrderByDescending(
-                                x => x.CurrentSales)
+                                x =>
+                                    x.CurrentSales)
                             .FirstOrDefault()
                 };
 
@@ -2593,7 +2666,8 @@ namespace LOSTBOOKS.Controllers
                         x =>
                             x.TransactionDate.Date)
                     .OrderBy(
-                        g => g.Key)
+                        g =>
+                            g.Key)
                     .Select(g => new
                     {
                         Date =
@@ -2610,20 +2684,23 @@ namespace LOSTBOOKS.Controllers
             {
                 return new TrendAnalysis
                 {
-                    HasData = false
+                    HasData =
+                        false
                 };
             }
 
             var highest =
                 dailyTotals
                     .OrderByDescending(
-                        x => x.Total)
+                        x =>
+                            x.Total)
                     .First();
 
             var lowest =
                 dailyTotals
                     .OrderBy(
-                        x => x.Total)
+                        x =>
+                            x.Total)
                     .First();
 
             decimal beginningTotal =
@@ -2640,7 +2717,8 @@ namespace LOSTBOOKS.Controllers
                 beginningTotal != 0
                     ? Math.Round(
                         (changeAmount /
-                         beginningTotal) * 100m,
+                         beginningTotal) *
+                        100m,
                         2)
                     : null;
 
@@ -2673,6 +2751,162 @@ namespace LOSTBOOKS.Controllers
                 ChangePercent =
                     changePercent
             };
+        }
+
+        // =====================================================
+        // D2. TREND INSIGHT
+        // =====================================================
+
+        private static string BuildTrendInsight(
+            List<History> sales)
+        {
+            var dailyTotals =
+                sales
+                    .GroupBy(
+                        x =>
+                            x.TransactionDate.Date)
+                    .Select(g => new
+                    {
+                        Date =
+                            g.Key,
+
+                        Total =
+                            g.Sum(x =>
+                                x.SellingPrice *
+                                x.QuantitySold)
+                    })
+                    .OrderBy(
+                        x =>
+                            x.Date)
+                    .ToList();
+
+            if (dailyTotals.Count == 0)
+            {
+                return
+                    "No sales trend data available for the selected period.";
+            }
+
+            var highest =
+                dailyTotals
+                    .OrderByDescending(
+                        x =>
+                            x.Total)
+                    .First();
+
+            var lowest =
+                dailyTotals
+                    .OrderBy(
+                        x =>
+                            x.Total)
+                    .First();
+
+            decimal beginningTotal =
+                dailyTotals.First().Total;
+
+            decimal endingTotal =
+                dailyTotals.Last().Total;
+
+            decimal changeAmount =
+                endingTotal -
+                beginningTotal;
+
+            decimal? changePercent =
+                beginningTotal != 0
+                    ? Math.Round(
+                        (changeAmount /
+                         beginningTotal) *
+                        100m,
+                        2)
+                    : null;
+
+            var parts =
+                new List<string>();
+
+            parts.Add(
+                $"Sales reached their highest point on " +
+                $"{highest.Date:MMMM dd, yyyy} at " +
+                $"₱{highest.Total:N2}, while the lowest sales were " +
+                $"recorded on {lowest.Date:MMMM dd, yyyy} at " +
+                $"₱{lowest.Total:N2}.");
+
+            if (
+                changePercent.HasValue &&
+                dailyTotals.Count > 1)
+            {
+                string direction =
+                    changeAmount > 0
+                        ? "increased"
+                        : changeAmount < 0
+                            ? "decreased"
+                            : "remained unchanged";
+
+                parts.Add(
+                    $"Between the beginning " +
+                    $"({dailyTotals.First().Date:MMMM dd}) " +
+                    $"and end " +
+                    $"({dailyTotals.Last().Date:MMMM dd}) " +
+                    $"of the selected period, sales {direction} by " +
+                    $"{Math.Abs(changePercent.Value):N2}%.");
+            }
+
+            // =================================================
+            // SALES CONCENTRATION
+            // =================================================
+
+            decimal grandTotal =
+                dailyTotals.Sum(
+                    d =>
+                        d.Total);
+
+            if (
+                dailyTotals.Count >= 3 &&
+                grandTotal > 0)
+            {
+                int topCount =
+                    Math.Min(
+                        3,
+                        dailyTotals.Count);
+
+                var topDays =
+                    dailyTotals
+                        .OrderByDescending(
+                            d =>
+                                d.Total)
+                        .Take(
+                            topCount)
+                        .ToList();
+
+                decimal topShare =
+                    Math.Round(
+                        (
+                            topDays.Sum(
+                                d =>
+                                    d.Total)
+                            /
+                            grandTotal
+                        ) *
+                        100m,
+                        2);
+
+                if (topShare >= 50m)
+                {
+                    parts.Add(
+                        $"The {topCount} highest-selling day(s) alone " +
+                        $"accounted for {topShare:N2}% of total sales " +
+                        "during the selected period, indicating that " +
+                        "sales performance was concentrated around a " +
+                        "small number of days rather than spread evenly " +
+                        "throughout the period.");
+                }
+            }
+
+            parts.Add(
+                "The available data shows when these changes occurred " +
+                "but does not establish what caused them.");
+
+            return string.Join(
+                " ",
+                parts);
         }
 
         // =====================================================
@@ -2710,7 +2944,9 @@ namespace LOSTBOOKS.Controllers
             {
                 var groups =
                     sales
-                        .GroupBy(x => x.Category)
+                        .GroupBy(
+                            x =>
+                                x.Category)
                         .Select(g => new
                         {
                             Label =
@@ -2725,7 +2961,8 @@ namespace LOSTBOOKS.Controllers
                                     x.QuantitySold)
                         })
                         .OrderByDescending(
-                            x => x.Total);
+                            x =>
+                                x.Total);
 
                 foreach (var g in groups)
                 {
@@ -2741,8 +2978,10 @@ namespace LOSTBOOKS.Controllers
                             Percent =
                                 grandTotal != 0
                                     ? Math.Round(
-                                        (g.Total /
-                                         grandTotal) *
+                                        (
+                                            g.Total /
+                                            grandTotal
+                                        ) *
                                         100m,
                                         2)
                                     : 0m
@@ -2753,7 +2992,9 @@ namespace LOSTBOOKS.Controllers
             {
                 var groups =
                     sales
-                        .GroupBy(x => x.ItemName)
+                        .GroupBy(
+                            x =>
+                                x.ItemName)
                         .Select(g => new
                         {
                             Label =
@@ -2768,7 +3009,8 @@ namespace LOSTBOOKS.Controllers
                                     x.QuantitySold)
                         })
                         .OrderByDescending(
-                            x => x.Total);
+                            x =>
+                                x.Total);
 
                 foreach (var g in groups)
                 {
@@ -2784,8 +3026,10 @@ namespace LOSTBOOKS.Controllers
                             Percent =
                                 grandTotal != 0
                                     ? Math.Round(
-                                        (g.Total /
-                                         grandTotal) *
+                                        (
+                                            g.Total /
+                                            grandTotal
+                                        ) *
                                         100m,
                                         2)
                                     : 0m
@@ -2808,16 +3052,26 @@ namespace LOSTBOOKS.Controllers
             var parts =
                 new List<string>();
 
-            if (growth.HasPreviousPeriod &&
+            if (
+                growth.HasPreviousPeriod &&
                 growth.ChangePercent.HasValue)
             {
                 parts.Add(
                     $"Sales {growth.Direction.ToLower()} by " +
                     $"{Math.Abs(growth.ChangePercent.Value):N2}% " +
-                    "compared with the previous period.");
+                    "compared with the previous equivalent period.");
+            }
+            else
+            {
+                parts.Add(
+                    $"The selected period generated " +
+                    $"₱{growth.CurrentTotal:N2} in total sales. " +
+                    "A comparative growth rate is not available " +
+                    "because no previous equivalent period was found.");
             }
 
-            if (itemAnalysis.HighestQuantityItem != null &&
+            if (
+                itemAnalysis.HighestQuantityItem != null &&
                 itemAnalysis.HighestSalesItem != null &&
                 itemAnalysis.HighestQuantityItem.ItemID !=
                 itemAnalysis.HighestSalesItem.ItemID)
@@ -2830,14 +3084,16 @@ namespace LOSTBOOKS.Controllers
                     "the top-selling item by volume is not always " +
                     "the top earner.");
             }
-            else if (itemAnalysis.HighestQuantityItem != null)
+            else if (
+                itemAnalysis.HighestQuantityItem != null)
             {
                 parts.Add(
                     $"{itemAnalysis.HighestQuantityItem.ItemName} " +
                     "led in both quantity sold and revenue generated.");
             }
 
-            if (catAnalysis.HasPreviousPeriod &&
+            if (
+                catAnalysis.HasPreviousPeriod &&
                 catAnalysis.LargestIncreaseCategory != null &&
                 catAnalysis.LargestDecreaseCategory != null)
             {
@@ -2850,11 +3106,11 @@ namespace LOSTBOOKS.Controllers
                     $"({catAnalysis.LargestDecreasePercent:N2}%).");
             }
 
-            if (parts.Count == 0)
+            if (catAnalysis.HighestPerformingCategory != null)
             {
-                return
-                    "There is not yet enough historical data for the " +
-                    "selected filters to generate a comparative summary.";
+                parts.Add(
+                    $"{catAnalysis.HighestPerformingCategory} was the " +
+                    "highest-performing category based on current-period sales.");
             }
 
             return string.Join(
@@ -2871,7 +3127,8 @@ namespace LOSTBOOKS.Controllers
             DateTime? fromDate,
             DateTime? toDate)
         {
-            if (range == "daily" &&
+            if (
+                range == "daily" &&
                 fromDate.HasValue)
             {
                 return fromDate.Value
@@ -2879,7 +3136,8 @@ namespace LOSTBOOKS.Controllers
                         "MMMM dd, yyyy");
             }
 
-            if (range == "weekly" &&
+            if (
+                range == "weekly" &&
                 fromDate.HasValue)
             {
                 var end =
@@ -2890,7 +3148,8 @@ namespace LOSTBOOKS.Controllers
                     $"{end:MMMM dd, yyyy}";
             }
 
-            if (range == "monthly" &&
+            if (
+                range == "monthly" &&
                 fromDate.HasValue)
             {
                 return fromDate.Value
@@ -2898,7 +3157,8 @@ namespace LOSTBOOKS.Controllers
                         "MMMM yyyy");
             }
 
-            if (range == "custom" &&
+            if (
+                range == "custom" &&
                 fromDate.HasValue &&
                 toDate.HasValue)
             {
@@ -2967,19 +3227,22 @@ namespace LOSTBOOKS.Controllers
         // DELETE TEMP FILE
         // =====================================================
 
-
         private static void DeleteFile(
             string path)
         {
             try
             {
-                if (System.IO.File.Exists(path))
+                if (
+                    System.IO.File.Exists(
+                        path))
                 {
-                    System.IO.File.Delete(path);
+                    System.IO.File.Delete(
+                        path);
                 }
             }
             catch
             {
+                // Ignore cleanup errors.
             }
         }
     }

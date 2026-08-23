@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
-
 namespace LOSTBOOKS.Models
 {
     public class Consignor
@@ -20,15 +19,14 @@ namespace LOSTBOOKS.Models
         [EmailAddress(ErrorMessage = "Invalid email format")]
         public string EmailAddress { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Home Address is required")]
-        public string HomeAddress { get; set; } = string.Empty;
+        // REMOVED: HomeAddress, GcashNumber, BankName,
+        // BankAccountNumber, AccountName
+        // Reason: Sales reports are communicated manually by
+        // management. Only Name / Contact / Email are needed
+        // for record purposes.
 
-        [Required(ErrorMessage = "GCash Number is required")]
-        public string GcashNumber { get; set; } = string.Empty;
-
-        public string? BankName { get; set; }
-        public string? BankAccountNumber { get; set; }
-        public string? AccountName { get; set; }
+        // NEW: for Deactivate instead of hard Delete
+        public bool IsActive { get; set; } = true;
 
         public ICollection<Book>? Books { get; set; }
         public ICollection<Merchandise>? Merchandises { get; set; }

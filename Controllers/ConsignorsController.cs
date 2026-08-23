@@ -20,9 +20,16 @@ namespace LOSTBOOKS.Controllers
         }
 
         // GET: Consignors
-        public async Task<IActionResult> Index(string searchString)
+        public async Task<IActionResult> Index(string searchString, bool showInactive = false)
         {
             var consignors = _context.Consignors.AsQueryable();
+
+            // NEW: by default, hide deactivated consignors
+            // (showInactive=true shows everyone, active + inactive)
+            if (!showInactive)
+            {
+                consignors = consignors.Where(c => c.IsActive);
+            }
 
             if (!string.IsNullOrEmpty(searchString))
             {
@@ -30,17 +37,15 @@ namespace LOSTBOOKS.Controllers
                     c.ConsignorID.ToString().Contains(searchString) ||
                     c.ConsignorName.Contains(searchString) ||
                     c.ContactNumber.ToString().Contains(searchString) ||
-                    c.EmailAddress.Contains(searchString) ||
-                    c.HomeAddress.Contains(searchString) ||
-                    c.GcashNumber.Contains(searchString) ||
-                    (c.BankName != null && c.BankName.Contains(searchString)) ||
-                    (c.BankAccountNumber != null && c.BankAccountNumber.Contains(searchString)) ||
-                    (c.AccountName != null && c.AccountName.Contains(searchString))
+                    c.EmailAddress.Contains(searchString)
                 );
             }
 
+            ViewBag.ShowInactive = showInactive;
+
             return View(await consignors.ToListAsync());
         }
+
         // GET: Consignors/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -57,7 +62,7 @@ namespace LOSTBOOKS.Controllers
                 return NotFound();
             }
 
-            return View(consignor); // FIX: show details instead of redirect
+            return View(consignor);
         }
 
         // GET: Consignors/Create
@@ -67,11 +72,9 @@ namespace LOSTBOOKS.Controllers
         }
 
         // POST: Consignors/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ConsignorID,ConsignorName,ContactNumber,EmailAddress,HomeAddress,GcashNumber,BankName,BankAccountNumber,AccountName")] Consignor consignor)
+        public async Task<IActionResult> Create([Bind("ConsignorID,ConsignorName,ContactNumber,EmailAddress")] Consignor consignor)
         {
             if (ModelState.IsValid)
             {
@@ -80,7 +83,6 @@ namespace LOSTBOOKS.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // IMPORTANT: return view so errors + input stays
             return View(consignor);
         }
 
@@ -99,15 +101,13 @@ namespace LOSTBOOKS.Controllers
                 return NotFound();
             }
 
-            return View(consignor); // FIX: must return View, not redirect
+            return View(consignor);
         }
 
         // POST: Consignors/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ConsignorID,ConsignorName,ContactNumber,EmailAddress,HomeAddress,GcashNumber,BankName,BankAccountNumber,AccountName")] Consignor consignor)
+        public async Task<IActionResult> Edit(int id, [Bind("ConsignorID,ConsignorName,ContactNumber,EmailAddress,IsActive")] Consignor consignor)
         {
             if (id != consignor.ConsignorID)
             {
@@ -139,8 +139,12 @@ namespace LOSTBOOKS.Controllers
             return View(consignor);
         }
 
-        // GET: Consignors/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        // =====================================================
+        // DEACTIVATE (replaces hard Delete)
+        // =====================================================
+
+        // GET: Consignors/Deactivate/5
+        public async Task<IActionResult> Deactivate(int? id)
         {
             if (id == null)
             {
@@ -155,22 +159,41 @@ namespace LOSTBOOKS.Controllers
                 return NotFound();
             }
 
-            return View(consignor); // FIX: must show confirmation page
+            return View(consignor);
         }
 
-        // POST: Consignors/Delete/5
-        [HttpPost, ActionName("Delete")]
+        // POST: Consignors/Deactivate/5
+        [HttpPost, ActionName("Deactivate")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DeactivateConfirmed(int id)
         {
             var consignor = await _context.Consignors.FindAsync(id);
 
             if (consignor != null)
             {
-                _context.Consignors.Remove(consignor);
+                consignor.IsActive = false;
+                await _context.SaveChangesAsync();
             }
 
-            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        // =====================================================
+        // REACTIVATE
+        // =====================================================
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Reactivate(int id)
+        {
+            var consignor = await _context.Consignors.FindAsync(id);
+
+            if (consignor != null)
+            {
+                consignor.IsActive = true;
+                await _context.SaveChangesAsync();
+            }
+
             return RedirectToAction(nameof(Index));
         }
 

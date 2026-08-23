@@ -117,7 +117,7 @@
     <thead>
         <tr style="background-color: #f2f2f2;">
             <th>ID</th>
-             <th>Customer</th>
+            <th>Customer</th>
             <th>Contact Number</th>
             <th>Service Type</th>
             <th>Size</th>
@@ -134,8 +134,8 @@
         {
             <tr>
                 <td>@item.ServiceID</td>
-                 <td>@item.CustomerName</td>
-                 <td>@item.ContactNumber
+                <td>@item.CustomerName</td>
+                <td>@item.ContactNumber</td>
                 <td>@item.ServiceType</td>
                 <td>@item.Size</td>
                 <td>@item.NumberOfPages</td>
@@ -164,33 +164,53 @@
     </tbody>
 </table>
 
-@section Scripts{
+@section Scripts {
 
-<script>
+    <script>
 
-function togglePrice(){
+        function togglePrice(){
 
-    var status =
-        document.querySelector('input[name="Status"]:checked').value;
+            var status =
+                document.querySelector('input[name="Status"]:checked').value;
 
-    if(status=="Ready for Payment"){
+            if(status=="Ready for Payment"){
 
-        document.getElementById("priceSection").style.display="block";
+                document.getElementById("priceSection").style.display="block";
 
-    }
+            }
 
-    else{
+            else{
 
-        document.getElementById("priceSection").style.display="none";
+                document.getElementById("priceSection").style.display="none";
 
-        document.getElementById("AssessedPrice").value="";
+                document.getElementById("AssessedPrice").value="";
 
-    }
+            }
 
-}
+        }
 
-window.onload=togglePrice;
+        // NEW: kung Rush ang gipili, auto-check "Ready for Payment"
+        // ug ipakita dayon ang Assessed Price field
+        document.querySelectorAll('input[name="ServiceType"]').forEach(function (radio) {
 
-</script>
+            radio.addEventListener('change', function () {
+
+                if (this.value === "Rush") {
+
+                    document.querySelector(
+                        'input[name="Status"][value="Ready for Payment"]'
+                    ).checked = true;
+
+                    togglePrice();
+
+                }
+
+            });
+
+        });
+
+        window.onload=togglePrice;
+
+    </script>
 
 }

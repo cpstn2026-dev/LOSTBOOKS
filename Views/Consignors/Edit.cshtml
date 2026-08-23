@@ -9,7 +9,6 @@
 
 <form asp-action="Edit" asp-route-id="@Model.ConsignorID" method="post">
 
-   
     <input type="hidden" asp-for="ConsignorID" />
 
     <p>
@@ -41,39 +40,9 @@
         <span asp-validation-for="EmailAddress" style="color:red; font-size:13px;"></span>
     </div>
 
-    <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
-        <label style="font-size:15px;">Home Address:</label>
-        <input asp-for="HomeAddress" style="width:400px;" required />
-        <span asp-validation-for="HomeAddress" style="color:red; font-size:13px;"></span>
-    </div>
-
-    <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
-        <label style="font-size:15px;">GCash Number:</label>
-        <input asp-for="GcashNumber"
-               pattern="[0-9]*"
-               maxlength="11"
-               inputmode="numeric"
-               required />
-        <span asp-validation-for="GcashNumber" style="color:red; font-size:13px;"></span>
-    </div>
-
-    <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
-        <label style="font-size:15px;">Bank Name:</label>
-        <input asp-for="BankName" />
-        <span asp-validation-for="BankName" style="color:red; font-size:13px;"></span>
-    </div>
-
-    <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
-        <label style="font-size:15px;">Bank Account Number:</label>
-        <input asp-for="BankAccountNumber" />
-        <span asp-validation-for="BankAccountNumber" style="color:red; font-size:13px;"></span>
-    </div>
-
-    <div style="display:flex; align-items:center; gap:15px; margin-bottom:35px;">
-        <label style="font-size:15px;">Account Name:</label>
-        <input asp-for="AccountName" />
-        <span asp-validation-for="AccountName" style="color:red; font-size:13px;"></span>
-    </div>
+    <!-- keep IsActive in the form so it doesn't get reset to
+         default(true) on model binding when editing -->
+    <input type="hidden" asp-for="IsActive" />
 
     <div style="text-align:right;">
         <button type="submit"

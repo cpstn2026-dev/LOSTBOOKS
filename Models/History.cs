@@ -27,7 +27,10 @@ namespace LOSTBOOKS.Models
         [Column(TypeName = "decimal(5,2)")]
         public decimal? StoreSharePercentage { get; set; }
 
-        public string PaymentType{ get; set; } = "";
+        public string PaymentType { get; set; } = "";
+
+        // NEW: sub-type kung Digital Payment (GCash/Maya/Bank Transfer/QRPh/Card/Other)
+        public string? PaymentDetail { get; set; }
 
         [NotMapped]
         public string TransactionID => $"TX-{HistoryID:D4}";

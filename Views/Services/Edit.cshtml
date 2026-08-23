@@ -26,7 +26,7 @@
             <input type="radio" asp-for="ServiceType" value="Regular" /> Regular
         </label>
 
-        </div>
+    </div>
     <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
         <label style="font-size: 15px;">Size:</label>
         <input asp-for="Size" required />
@@ -44,49 +44,49 @@
         <input asp-for="CoverFinish" required />
         <span asp-validation-for="CoverFinish" style="color:red;"></span>
     </div>
-<div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
-    <label style="font-size:15px;">Customer Name:</label>
-    <input asp-for="CustomerName" required />
-    <span asp-validation-for="CustomerName" style="color:red;"></span>
-</div>
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+        <label style="font-size:15px;">Customer Name:</label>
+        <input asp-for="CustomerName" required />
+        <span asp-validation-for="CustomerName" style="color:red;"></span>
+    </div>
 
-<div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
-    <label style="font-size:15px;">Contact Number:</label>
-    <input asp-for="ContactNumber" required />
-    <span asp-validation-for="ContactNumber" style="color:red;"></span>
-</div>
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+        <label style="font-size:15px;">Contact Number:</label>
+        <input asp-for="ContactNumber" required />
+        <span asp-validation-for="ContactNumber" style="color:red;"></span>
+    </div>
 
-<div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
-    <label style="font-size:15px;">Status:</label>
+    <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
+        <label style="font-size:15px;">Status:</label>
 
-    <label>
-        <input type="radio"
-               asp-for="Status"
-               value="Pending Assessment"
-               onclick="togglePrice()" />
-        Pending Assessment
-    </label>
+        <label>
+            <input type="radio"
+                   asp-for="Status"
+                   value="Pending Assessment"
+                   onclick="togglePrice()" />
+            Pending Assessment
+        </label>
 
-    <label>
-        <input type="radio"
-               asp-for="Status"
-               value="Ready for Payment"
-               onclick="togglePrice()" />
-        Ready for Payment
-    </label>
-</div>
+        <label>
+            <input type="radio"
+                   asp-for="Status"
+                   value="Ready for Payment"
+                   onclick="togglePrice()" />
+            Ready for Payment
+        </label>
+    </div>
 
-<div style="display:flex; align-items:center; gap:15px; margin-bottom:35px;">
-    <label style="font-size:15px;">Assessed Price:</label>
+    <div style="display:flex; align-items:center; gap:15px; margin-bottom:35px;">
+        <label style="font-size:15px;">Assessed Price:</label>
 
-    <input asp-for="AssessedPrice" id="price" />
+        <input asp-for="AssessedPrice" id="price" />
 
-    <span asp-validation-for="AssessedPrice"
-          style="color:red;">
-    </span>
-</div>
+        <span asp-validation-for="AssessedPrice"
+              style="color:red;">
+        </span>
+    </div>
 
- <div style="text-align: right;">
+    <div style="text-align: right;">
         <button type="submit"
                 style="background-color: green; color: white; border: none; padding: 5px 15px; cursor: pointer;">
             update
@@ -101,42 +101,62 @@
 
 </form>
 
-@section Scripts{
+@section Scripts {
 
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 
-<script>
+    <script>
 
-    function togglePrice() {
+        function togglePrice() {
 
-        var status =
-            document.querySelector('input[name="Status"]:checked').value;
+            var status =
+                document.querySelector('input[name="Status"]:checked').value;
 
-        var price =
-            document.getElementById("price");
+            var price =
+                document.getElementById("price");
 
-        if (status == "Pending Assessment") {
+            if (status == "Pending Assessment") {
 
-            price.value = "";
-            price.disabled = true;
+                price.value = "";
+                price.disabled = true;
+
+            }
+            else {
+
+                price.disabled = false;
+
+            }
 
         }
-        else {
 
-            price.disabled = false;
+        // NEW: kung Rush ang gipili, auto-check "Ready for Payment"
+        // ug ipa-enable dayon ang Assessed Price field
+        document.querySelectorAll('input[name="ServiceType"]').forEach(function (radio) {
 
-        }
+            radio.addEventListener('change', function () {
 
-    }
+                if (this.value === "Rush") {
 
-    window.onload = function () {
+                    document.querySelector(
+                        'input[name="Status"][value="Ready for Payment"]'
+                    ).checked = true;
 
-        togglePrice();
+                    togglePrice();
 
-    };
+                }
 
-</script>
+            });
+
+        });
+
+        window.onload = function () {
+
+            togglePrice();
+
+        };
+
+    </script>
 
 }

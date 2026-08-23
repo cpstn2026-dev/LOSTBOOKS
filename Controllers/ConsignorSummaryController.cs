@@ -159,10 +159,33 @@ namespace LOSTBOOKS.Controllers
                     .OrderByDescending(x => x.QuantitySold)
                     .FirstOrDefault();
 
-                var itemChanges = items
+                // NEW: compare using ItemID+ItemName grouping only
+                // (previousItems may have multiple date-rows per
+                // item, so aggregate quantity by item first)
+                var currentByItem = items
+                    .GroupBy(x => new { x.ItemID, x.ItemName })
+                    .Select(g => new
+                    {
+                        g.Key.ItemID,
+                        g.Key.ItemName,
+                        QuantitySold = g.Sum(x => x.QuantitySold)
+                    })
+                    .ToList();
+
+                var previousByItem = previousItems
+                    .GroupBy(x => new { x.ItemID, x.ItemName })
+                    .Select(g => new
+                    {
+                        g.Key.ItemID,
+                        g.Key.ItemName,
+                        QuantitySold = g.Sum(x => x.QuantitySold)
+                    })
+                    .ToList();
+
+                var itemChanges = currentByItem
                     .Select(cur =>
                     {
-                        var prev = previousItems
+                        var prev = previousByItem
                             .FirstOrDefault(p => p.ItemID == cur.ItemID);
 
                         int prevQty = prev?.QuantitySold ?? 0;
@@ -307,20 +330,25 @@ namespace LOSTBOOKS.Controllers
 
                             column.Item().LineHorizontal(1);
 
+                            // NEW: added "Date Sold" column so the
+                            // consignor sees exactly when each item
+                            // left the shelf, not just the filter range
+
                             column.Item()
                                 .PaddingTop(4)
                                 .Table(table =>
                                 {
                                     table.ColumnsDefinition(columns =>
                                     {
-                                        columns.RelativeColumn(1.3f);
-                                        columns.RelativeColumn(2.6f);
-                                        columns.RelativeColumn(1.6f);
-                                        columns.RelativeColumn(1.1f);
-                                        columns.RelativeColumn(1.5f);
-                                        columns.RelativeColumn(1.7f);
-                                        columns.RelativeColumn(1.7f);
-                                        columns.RelativeColumn(1.7f);
+                                        columns.RelativeColumn(1.3f); // Item ID
+                                        columns.RelativeColumn(2.3f); // Item Name
+                                        columns.RelativeColumn(1.4f); // Category
+                                        columns.RelativeColumn(1.5f); // Date Sold
+                                        columns.RelativeColumn(0.9f); // Qty
+                                        columns.RelativeColumn(1.3f); // Price
+                                        columns.RelativeColumn(1.5f); // Total Sales
+                                        columns.RelativeColumn(1.5f); // Store Share
+                                        columns.RelativeColumn(1.5f); // Consignor Share
                                     });
 
                                     table.Header(header =>
@@ -328,6 +356,7 @@ namespace LOSTBOOKS.Controllers
                                         header.Cell().Element(HeaderStyle).Text("Item ID");
                                         header.Cell().Element(HeaderStyle).Text("Item Name");
                                         header.Cell().Element(HeaderStyle).Text("Category");
+                                        header.Cell().Element(HeaderStyle).Text("Date Sold");
                                         header.Cell().Element(HeaderStyle).AlignRight().Text("Qty");
                                         header.Cell().Element(HeaderStyle).AlignRight().Text("Price");
                                         header.Cell().Element(HeaderStyle).AlignRight().Text("Total Sales");
@@ -340,6 +369,9 @@ namespace LOSTBOOKS.Controllers
                                         table.Cell().Element(CellStyle).Text(item.ItemID);
                                         table.Cell().Element(CellStyle).Text(item.ItemName);
                                         table.Cell().Element(CellStyle).Text(item.Category);
+
+                                        table.Cell().Element(CellStyle)
+                                            .Text(item.SaleDate.ToString("MMM dd, yyyy"));
 
                                         table.Cell().Element(CellStyle).AlignRight()
                                             .Text(item.QuantitySold.ToString());
@@ -439,11 +471,25 @@ namespace LOSTBOOKS.Controllers
                 .ToList();
         }
 
+        // =====================================================
+        // NEW: grouping now includes the transaction DATE, not
+        // just ItemID/Name/Category. This means an item sold on
+        // two different days shows as two separate rows, each
+        // with its own specific date - instead of being merged
+        // into one row that only shows the filter's date range.
+        // =====================================================
+
         private static List<ConsignorItemRow> BuildItemBreakdown(
             List<History> sales)
         {
             return sales
-                .GroupBy(x => new { x.ItemID, x.ItemName, x.Category })
+                .GroupBy(x => new
+                {
+                    x.ItemID,
+                    x.ItemName,
+                    x.Category,
+                    Date = x.TransactionDate.Date
+                })
                 .Select(g =>
                 {
                     int quantity = g.Sum(x => x.QuantitySold);
@@ -461,6 +507,7 @@ namespace LOSTBOOKS.Controllers
                         ItemID = g.Key.ItemID,
                         ItemName = g.Key.ItemName,
                         Category = g.Key.Category,
+                        SaleDate = g.Key.Date,
                         QuantitySold = quantity,
                         UnitPrice = quantity != 0 ? totalSales / quantity : 0,
                         TotalSales = totalSales,
@@ -468,7 +515,8 @@ namespace LOSTBOOKS.Controllers
                         ConsignorShare = totalSales - storeShare
                     };
                 })
-                .OrderByDescending(x => x.TotalSales)
+                .OrderByDescending(x => x.SaleDate)
+                .ThenByDescending(x => x.TotalSales)
                 .ToList();
         }
 
@@ -552,6 +600,11 @@ namespace LOSTBOOKS.Controllers
         public string ItemID { get; set; } = "";
         public string ItemName { get; set; } = "";
         public string Category { get; set; } = "";
+
+        // NEW: specific date this item(s) were sold - so the
+        // consignor can see exactly when, not just the filter range
+        public DateTime SaleDate { get; set; }
+
         public int QuantitySold { get; set; }
         public decimal UnitPrice { get; set; }
         public decimal TotalSales { get; set; }

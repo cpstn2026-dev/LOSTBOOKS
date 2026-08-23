@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Index";
+    bool showInactive = ViewBag.ShowInactive ?? false;
 }
 <h1>Consignor Management</h1>
 <br />
@@ -19,27 +20,6 @@
         <input type="email" name="EmailAddress" required />
     </p>
 
-    <p>
-        Home Address:
-        <input type="text" name="HomeAddress" required />
-    </p>
-    <p>
-        GCash Number:
-        <input type="text" name="GcashNumber" required />
-    </p>
-
-    <p>
-        Bank Name:
-        <input type="text" name="BankName" />
-    </p>
-
-    <p>
-        Bank Account Number:
-        <input type="text" name="BankAccountNumber" />
-    </p>
-
- 
-
     <button type="submit" style="background-color: blue; color: white; padding: 5px 15px;">
         ADD
     </button>
@@ -50,8 +30,13 @@
 <br />
 
 <form asp-action="Index" method="get" style="margin-bottom: 20px;">
-    <input type="text" name="searchString" placeholder="Search consigners..." value="@Context.Request.Query["searchString"]" />
+    <input type="text" name="searchString" placeholder="Search consignors..." value="@Context.Request.Query["searchString"]" />
     <button type="submit">Search</button>
+
+    <label style="margin-left:20px;">
+        <input type="checkbox" name="showInactive" value="true" onchange="this.form.submit()" checked="@showInactive" />
+        Show deactivated consignors
+    </label>
 </form>
 
 <table border="1" cellpadding="10" style="width:100%; border-collapse: collapse;">
@@ -61,15 +46,12 @@
             <th>Name</th>
             <th>Contact Number</th>
             <th>Email Address</th>
-            <th>Home Address</th>
-            <th>Gcash Numbers</th>
-            <th>Bank Name</th>
-            <th>Bank Account Number</th>
+            <th>Status</th>
             <th>Actions</th>
         </tr>
     </thead>
     <tbody>
-       
+
         @foreach (var item in Model)
         {
             <tr>
@@ -77,14 +59,29 @@
                 <td>@item.ConsignorName</td>
                 <td>@item.ContactNumber</td>
                 <td>@item.EmailAddress</td>
-                <td>@item.HomeAddress</td>
-                <td>@item.GcashNumber </td>
-                <td>@item.BankName  </td>
-                <td>@item.BankAccountNumber  </td>
-               
+                <td>
+                    @if (item.IsActive)
+                    {
+                        <span style="color:green; font-weight:bold;">Active</span>
+                    }
+                    else
+                    {
+                        <span style="color:gray; font-weight:bold;">Deactivated</span>
+                    }
+                </td>
                 <td>
                     <a asp-action="Edit" asp-route-id="@item.ConsignorID" style="background-color: green; color: white; border: none; padding: 5px 15px; text-decoration: none; display: inline-block;">Edit</a>
-                    <a asp-action="Delete" asp-route-id="@item.ConsignorID" style="background-color: red; color: white; border: none; padding: 5px 15px; text-decoration: none; display: inline-block;">Delete</a>
+
+                    @if (item.IsActive)
+                    {
+                        <a asp-action="Deactivate" asp-route-id="@item.ConsignorID" style="background-color: red; color: white; border: none; padding: 5px 15px; text-decoration: none; display: inline-block;">Deactivate</a>
+                    }
+                    else
+                    {
+                        <form asp-action="Reactivate" asp-route-id="@item.ConsignorID" method="post" style="display:inline;">
+                            <button type="submit" style="background-color: #28a745; color: white; border: none; padding: 5px 15px;">Reactivate</button>
+                        </form>
+                    }
                 </td>
             </tr>
         }

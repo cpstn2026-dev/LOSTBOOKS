@@ -510,8 +510,8 @@
                     Cash
                 </option>
 
-                <option value="GCash">
-                    GCash
+                <option value="Digital Payment">
+                    Digital Payment
                 </option>
 
             </select>
@@ -557,17 +557,42 @@
 
 
         <!-- =========================
-             GCASH
+             DIGITAL PAYMENT
         ========================== -->
 
-        <div id="gcashSection"
+        <div id="digitalSection"
              style="display:none;">
 
             <div class="mb-3">
 
                 <label class="form-label fw-bold">
+                    Digital Payment Method
+                </label>
 
-                    GCash Reference No.
+                <select id="paymentDetail"
+                        class="form-select form-select-lg">
+
+                    <option value="GCash">GCash</option>
+
+                    <option value="Maya">Maya</option>
+
+                    <option value="Bank Transfer">Bank Transfer</option>
+
+                    <option value="QRPh">QR Ph</option>
+
+                    <option value="Card">Card</option>
+
+                    <option value="Other">Other</option>
+
+                </select>
+
+            </div>
+
+            <div class="mb-3">
+
+                <label class="form-label fw-bold">
+
+                    Reference No.
 
                 </label>
 
@@ -1186,7 +1211,7 @@
                         .value = "0.00";
 
 
-                    // RESET GCASH
+                    // RESET DIGITAL PAYMENT FIELDS
 
                     document.getElementById("referenceNo")
                         .value = "";
@@ -1261,7 +1286,7 @@
 
 
                         document.getElementById(
-                            "gcashSection"
+                            "digitalSection"
                         ).style.display = "none";
 
 
@@ -1276,7 +1301,7 @@
 
 
                         document.getElementById(
-                            "gcashSection"
+                            "digitalSection"
                         ).style.display = "block";
 
                     }
@@ -1326,6 +1351,9 @@
                         ) || 0;
 
 
+                    let paymentDetail = "";
+
+
                     // =================================================
                     // CASH
                     // =================================================
@@ -1354,10 +1382,16 @@
 
 
                     // =================================================
-                    // GCASH
+                    // DIGITAL PAYMENT
                     // =================================================
 
                     else {
+
+                        paymentDetail =
+                            document.getElementById(
+                                "paymentDetail"
+                            ).value;
+
 
                         let referenceNo =
                             document.getElementById(
@@ -1368,7 +1402,7 @@
                         if (referenceNo === "") {
 
                             alert(
-                                "Please enter GCash Reference Number."
+                                "Please enter Reference Number."
                             );
 
                             return;
@@ -1402,7 +1436,10 @@
                                     item.price,
 
                                 PaymentType:
-                                    paymentType
+                                    paymentType,
+
+                                PaymentDetail:
+                                    paymentDetail
 
                             })
                         );
@@ -1486,7 +1523,7 @@
 
 
                             document.getElementById(
-                                "gcashSection"
+                                "digitalSection"
                             ).style.display = "none";
 
 
@@ -1496,11 +1533,42 @@
 
                         }
 
+                        // =================================================
+                        // FAILED (e.g. naubos na ang stock)
+                        // =================================================
+
                         else {
 
-                            alert(
-                                "Checkout failed."
-                            );
+                            let err = null;
+
+                            try {
+
+                                err = await response.json();
+
+                            }
+                            catch (e) {
+
+                                err = null;
+
+                            }
+
+
+                            if (err && err.items) {
+
+                                alert(
+                                    "Naubos na ang stock sa: " +
+                                    err.items.join(", ") +
+                                    "\nPlease remove/adjust sa cart."
+                                );
+
+                            }
+                            else {
+
+                                alert(
+                                    "Checkout failed."
+                                );
+
+                            }
 
                         }
 
@@ -1530,7 +1598,7 @@
 
 
         document.getElementById(
-            "gcashSection"
+            "digitalSection"
         ).style.display = "none";
 
 

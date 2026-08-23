@@ -4,6 +4,7 @@ using LOSTBOOKS.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LOSTBOOKS.Migrations
 {
     [DbContext(typeof(LOSTBOOKSContext))]
-    partial class LOSTBOOKSContextModelSnapshot : ModelSnapshot
+    [Migration("20260823113100_UpdateConsignorRemovePaymentFieldsAddIsActive")]
+    partial class UpdateConsignorRemovePaymentFieldsAddIsActive
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -60,6 +60,7 @@ namespace LOSTBOOKS.Controllers
             // MERCHANDISE
             // =========================
             items.AddRange(_context.Merchandises
+                .Where(m => m.Quantity > 0)   // NEW: hide out-of-stock merch too
                 .Select(m => new POSViewModels
                 {
                     Id = "MER-" + m.MerchandiseID.ToString("D4"),
@@ -72,8 +73,12 @@ namespace LOSTBOOKS.Controllers
 
             // =========================
             // SERVICES
+            // NEW: only show services that are Ready for Payment
+            // and already have an AssessedPrice. Pending Assessment
+            // items must NOT appear in POS.
             // =========================
             items.AddRange(_context.Services
+                .Where(s => s.Status == "Ready for Payment" && s.AssessedPrice != null)
                 .Select(s => new POSViewModels
                 {
                     Id = "SER-" + s.ServiceID.ToString("D4"),
@@ -128,6 +133,9 @@ namespace LOSTBOOKS.Controllers
                 return BadRequest();
             }
 
+            // NEW: track items nga naubos na ang stock samtang naa sa cart
+            var insufficientItems = new List<string>();
+
             foreach (var item in sales)
             {
                 item.TransactionDate = DateTime.Now;
@@ -140,14 +148,18 @@ namespace LOSTBOOKS.Controllers
                     var book = _context.Books
                         .FirstOrDefault(x => x.BookID == id);
 
-                    if (book != null)
+                    // NEW: check stock before deducting
+                    if (book == null || book.Quantity < item.QuantitySold)
                     {
-                        book.Quantity -= item.QuantitySold;
-
-                        item.ConsignorID = book.ConsignorID;
-                        item.StoreSharePercentage =
-                            book.StoreSharePercentage;
+                        insufficientItems.Add(item.ItemName);
+                        continue;
                     }
+
+                    book.Quantity -= item.QuantitySold;
+
+                    item.ConsignorID = book.ConsignorID;
+                    item.StoreSharePercentage =
+                        book.StoreSharePercentage;
                 }
 
                 // MERCHANDISE
@@ -158,19 +170,34 @@ namespace LOSTBOOKS.Controllers
                     var merchandise = _context.Merchandises
                         .FirstOrDefault(x => x.MerchandiseID == id);
 
-                    if (merchandise != null)
+                    // NEW: check stock before deducting
+                    if (merchandise == null || merchandise.Quantity < item.QuantitySold)
                     {
-                        merchandise.Quantity -= item.QuantitySold;
-
-                        item.ConsignorID = merchandise.ConsignorID;
-                        item.StoreSharePercentage =
-                            merchandise.StoreSharePercentage;
+                        insufficientItems.Add(item.ItemName);
+                        continue;
                     }
+
+                    merchandise.Quantity -= item.QuantitySold;
+
+                    item.ConsignorID = merchandise.ConsignorID;
+                    item.StoreSharePercentage =
+                        merchandise.StoreSharePercentage;
                 }
 
                 // IMPORTANT
-                // Save the selected Cash / GCash
+                // Save the selected Cash / Digital Payment (+ sub-type)
                 _context.Histories.Add(item);
+            }
+
+            // NEW: kung naa'y item nga naubos na ang stock, i-reject
+            // ang TIBUOK transaction (dili mag-partial checkout)
+            if (insufficientItems.Count > 0)
+            {
+                return BadRequest(new
+                {
+                    message = "Naa'y item nga naubos na ang stock samtang naa sa cart:",
+                    items = insufficientItems
+                });
             }
 
             _context.SaveChanges();
