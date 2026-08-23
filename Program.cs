@@ -10,9 +10,14 @@ QuestPDF.Settings.License = LicenseType.Community;
 
 builder.Services.AddDbContext<LOSTBOOKSContext>(options =>
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("LOSTBOOKSContext")   
+        builder.Configuration.GetConnectionString("LOSTBOOKSContext")
         ?? throw new InvalidOperationException(
             "Connection string 'LOSTBOOKSContext' not found."
+        ),
+        sqlOptions => sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(10),
+            errorNumbersToAdd: null
         )
     ));
 

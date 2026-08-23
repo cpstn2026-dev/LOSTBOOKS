@@ -43,10 +43,10 @@
 
         // Reports is active if the current page belongs
         // to any of the Reports controllers.
-        bool reportsActive =
+      bool reportsActive =
             currentController == "SalesReporting" ||
-            currentController == "ItemRanking" ||
             currentController == "ConsignorSummary";
+
     }
 
 
@@ -228,19 +228,7 @@
 
 
 
-                        <!-- ================================================= -->
-                        <!-- ITEM RANKING -->
-                        <!-- ================================================= -->
-
-                        <a asp-controller="ItemRanking"
-                           asp-action="Index"
-                           class="sidebar-link @(currentController == "ItemRanking" ? "active" : "")">
-
-                            <i class="bi bi-bar-chart"></i>
-
-                            <span>Item Ranking</span>
-
-                        </a>
+                        
 
 
 
