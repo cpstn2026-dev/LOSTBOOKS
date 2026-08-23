@@ -62,6 +62,15 @@
     string trendInsight =
         ViewBag.TrendInsight ?? "";
 
+    string compositionInsight =
+    ViewBag.CompositionInsight ?? "";
+
+    string itemInsight =
+        ViewBag.ItemInsight ?? "";
+
+    string itemConcentrationInsight =
+        ViewBag.ItemConcentrationInsight ?? "";
+
 
     // =====================================================
     // ANALYSIS DATA
@@ -527,28 +536,9 @@
                         Analysis:
                     </strong>
 
-                    @if (composition.Rows.Count == 0)
-                    {
-                        <span>
-                            No composition data available for the selected period.
-                        </span>
-                    }
-                    else
-                    {
-                        <span>
-
-                            @composition.Rows[0].Label
-                            contributed
-                            @composition.Rows[0].Percent.ToString("N2")%
-
-                            of
-
-                            @(composition.IsSingleCategory
-                                ? "sales within the selected category."
-                                : "total sales during the selected period.")
-
-                        </span>
-                    }
+                    <span>
+                        @compositionInsight
+                    </span>
 
                 </div>
 
@@ -681,41 +671,9 @@
                 Analysis:
             </strong>
 
-            @if (itemAnalysis.HighestQuantityItem == null)
-            {
-                <span>
-                    No item data available for the selected period.
-                </span>
-            }
-            else
-            {
-                <span>
-
-                    @if (itemAnalysis.HighestSalesItem != null)
-                    {
-                        <text>
-
-                            @itemAnalysis.HighestSalesItem.ItemName
-                            generated the highest total sales at
-                            ₱@itemAnalysis.HighestSalesItem.CurrentSales.ToString("N2").
-
-                        </text>
-                    }
-
-                    @if (itemAnalysis.HighestQuantityItem != null)
-                    {
-                        <text>
-
-                            @itemAnalysis.HighestQuantityItem.ItemName
-                            had the highest quantity sold at
-                            @itemAnalysis.HighestQuantityItem.CurrentQuantity
-                            unit(s).
-
-                        </text>
-                    }
-
-                </span>
-            }
+            <span>
+                @itemInsight
+            </span>
 
         </div>
 
@@ -842,108 +800,13 @@
                 Analysis:
             </strong>
 
-            @if (itemAnalysis.HighestQuantityItem == null)
-            {
-                <span>
-                    No item data available for the selected period.
-                </span>
-            }
-            else if (itemAnalysis.HighestSalesItem != null &&
-                     itemAnalysis.HighestQuantityItem.ItemID !=
-                     itemAnalysis.HighestSalesItem.ItemID)
-            {
-                <span>
-
-                    @itemAnalysis.HighestQuantityItem.ItemName
-                    had the highest quantity sold at
-                    @itemAnalysis.HighestQuantityItem.CurrentQuantity
-                    unit(s), while
-
-                    @itemAnalysis.HighestSalesItem.ItemName
-                    generated the highest revenue at
-                    ₱@itemAnalysis.HighestSalesItem.CurrentSales.ToString("N2")
-
-                    — the item sold in the greatest quantity did not
-                    generate the highest revenue.
-
-                </span>
-            }
-            else
-            {
-                <span>
-
-                    @itemAnalysis.HighestQuantityItem.ItemName
-                    led in both quantity sold
-                    (@itemAnalysis.HighestQuantityItem.CurrentQuantity unit(s))
-                    and revenue
-                    (₱@itemAnalysis.HighestQuantityItem.CurrentSales.ToString("N2")).
-
-                </span>
-            }
+            <span>
+                @itemConcentrationInsight
+            </span>
 
         </div>
 
     </div>
-
-
-    <!-- =====================================================
-         PERFORMANCE CHANGES
-    ====================================================== -->
-    @if (catAnalysis.HasPreviousPeriod)
-    {
-        var increasedCategories =
-            catAnalysis.Categories
-                .Where(c =>
-                    c.ChangePercent.HasValue &&
-                    c.ChangePercent.Value > 0)
-                .OrderByDescending(c => c.ChangePercent)
-                .ToList();
-
-        var decreasedCategories =
-            catAnalysis.Categories
-                .Where(c =>
-                    c.ChangePercent.HasValue &&
-                    c.ChangePercent.Value < 0)
-                .OrderBy(c => c.ChangePercent)
-                .ToList();
-
-        if (increasedCategories.Count > 0 ||
-            decreasedCategories.Count > 0)
-        {
-            <div class="alert alert-success border-start border-success border-4 mb-4"
-                 style="background-color:#f1f9f4;">
-
-                <strong>
-                    Performance Changes:
-                </strong>
-
-                @if (increasedCategories.Count > 0)
-                {
-                    <div>
-
-                        @string.Join(", ",
-                            increasedCategories.Select(c => c.Category))
-
-                        increased compared with the previous period.
-
-                    </div>
-                }
-
-                @if (decreasedCategories.Count > 0)
-                {
-                    <div>
-
-                        @string.Join(", ",
-                            decreasedCategories.Select(c => c.Category))
-
-                        decreased compared with the previous period.
-
-                    </div>
-                }
-
-            </div>
-        }
-    }
 
 
     <!-- =====================================================

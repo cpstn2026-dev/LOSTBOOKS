@@ -296,12 +296,21 @@ namespace LOSTBOOKS.Controllers
             ViewBag.CompositionJson =
                 JsonSerializer.Serialize(
                     composition.Rows.Select(r => new
-                    {
-                        Label = r.Label,
-                        Total = r.Total,
-                        Percent = r.Percent
-                    }),
-                    options);
+                {
+                    Label = r.Label,
+                    Total = r.Total,
+                    Percent = r.Percent
+                }),
+                options);
+
+            ViewBag.CompositionInsight =
+                BuildCompositionInsight(composition);
+
+            ViewBag.ItemInsight =
+                BuildItemInsight(itemAnalysis);
+
+            ViewBag.ItemConcentrationInsight =
+                BuildItemConcentrationInsight(itemAnalysis);
 
             // =====================================================
             // FINAL SUMMARY
@@ -311,7 +320,8 @@ namespace LOSTBOOKS.Controllers
                 BuildFinalSummary(
                     salesGrowth,
                     itemAnalysis,
-                    categoryAnalysis);
+                    categoryAnalysis,
+                    composition);
 
             return View();
         }
@@ -832,10 +842,12 @@ namespace LOSTBOOKS.Controllers
             // =====================================================
 
             string pdfFinalSummary =
-                BuildFinalSummary(
-                    pdfGrowth,
-                    pdfItemAnalysis,
-                    pdfCategoryAnalysis);
+            BuildFinalSummary(
+                pdfGrowth,
+                pdfItemAnalysis,
+                pdfCategoryAnalysis,
+                pdfComposition);
+
 
             // =====================================================
             // WRITTEN ANALYSIS
@@ -850,62 +862,14 @@ namespace LOSTBOOKS.Controllers
                 BuildTrendInsight(
                     sales);
 
-            string compositionAnalysisText;
+            string compositionAnalysisText =
+                BuildCompositionInsight(pdfComposition);
 
-            if (pdfComposition.Rows.Count == 0)
-            {
-                compositionAnalysisText =
-                    "No composition data available for the selected period.";
-            }
-            else
-            {
-                var topComposition =
-                    pdfComposition.Rows
-                        .OrderByDescending(
-                            x => x.Total)
-                        .First();
+            string itemAnalysisText =
+                BuildItemInsight(pdfItemAnalysis);
 
-                compositionAnalysisText =
-                    $"{topComposition.Label} contributed " +
-                    $"{topComposition.Percent:N2}% of " +
-                    (
-                        pdfComposition.IsSingleCategory
-                            ? "sales within the selected category."
-                            : "total sales during the selected period."
-                    );
-            }
-
-            string itemAnalysisText;
-
-            if (pdfItemAnalysis.HighestQuantityItem == null)
-            {
-                itemAnalysisText =
-                    "No item data available for the selected period.";
-            }
-            else
-            {
-                var itemParts =
-                    new List<string>();
-
-                if (pdfItemAnalysis.HighestSalesItem != null)
-                {
-                    itemParts.Add(
-                        $"{pdfItemAnalysis.HighestSalesItem.ItemName} " +
-                        $"generated the highest total sales at " +
-                        $"₱{pdfItemAnalysis.HighestSalesItem.CurrentSales:N2}.");
-                }
-
-                if (pdfItemAnalysis.HighestQuantityItem != null)
-                {
-                    itemParts.Add(
-                        $"{pdfItemAnalysis.HighestQuantityItem.ItemName} " +
-                        $"had the highest quantity sold at " +
-                        $"{pdfItemAnalysis.HighestQuantityItem.CurrentQuantity} unit(s).");
-                }
-
-                itemAnalysisText =
-                    string.Join(" ", itemParts);
-            }
+            string itemConcentrationText =
+                BuildItemConcentrationInsight(pdfItemAnalysis);
 
             // =====================================================
             // TEMPORARY CHART FILES
@@ -1584,6 +1548,15 @@ namespace LOSTBOOKS.Controllers
                                                 rank++;
                                             }
                                         });
+
+                                    col.Item()
+                                        .PaddingTop(6)
+                                        .Background(QuestColors.Green.Lighten5)
+                                        .BorderLeft(3)
+                                        .BorderColor(QuestColors.Green.Darken2)
+                                        .Padding(8)
+                                        .Text(itemConcentrationText)
+                                        .FontSize(8);
 
                                     // =================================================
                                     // FINAL ANALYSIS SUMMARY
@@ -2654,6 +2627,159 @@ namespace LOSTBOOKS.Controllers
         }
 
         // =====================================================
+        // C2. ITEM PERFORMANCE INSIGHT
+        // =====================================================
+
+        private static string BuildItemInsight(ItemAnalysisSummary itemAnalysis)
+        {
+            if (itemAnalysis.HighestQuantityItem == null)
+            {
+                return "No item data available for the selected period.";
+            }
+
+            var parts = new List<string>();
+
+            if (itemAnalysis.HighestSalesItem != null &&
+                itemAnalysis.HighestQuantityItem.ItemID != itemAnalysis.HighestSalesItem.ItemID)
+            {
+                var volumeLeader = itemAnalysis.HighestQuantityItem;
+                var revenueLeader = itemAnalysis.HighestSalesItem;
+
+                decimal revenueDiff = revenueLeader.CurrentSales - volumeLeader.CurrentSales;
+                int unitDiff = volumeLeader.CurrentQuantity - revenueLeader.CurrentQuantity;
+
+                decimal volumeLeaderAvgPrice = volumeLeader.CurrentQuantity > 0
+                    ? volumeLeader.CurrentSales / volumeLeader.CurrentQuantity
+                    : 0;
+
+                decimal revenueLeaderAvgPrice = revenueLeader.CurrentQuantity > 0
+                    ? revenueLeader.CurrentSales / revenueLeader.CurrentQuantity
+                    : 0;
+
+                parts.Add(
+                    $"{volumeLeader.ItemName} sold in the greatest volume at {volumeLeader.CurrentQuantity} unit(s), " +
+                    $"but {revenueLeader.ItemName} generated more revenue overall at ₱{revenueLeader.CurrentSales:N2} " +
+                    $"(₱{revenueDiff:N2} more) despite selling {Math.Max(0, unitDiff)} fewer unit(s)" +
+                    (revenueLeaderAvgPrice > volumeLeaderAvgPrice
+                        ? $" — averaging about ₱{revenueLeaderAvgPrice:N2} per unit versus ₱{volumeLeaderAvgPrice:N2}."
+                        : "."));
+            }
+            else
+            {
+                parts.Add(
+                    $"{itemAnalysis.HighestQuantityItem.ItemName} led in both quantity sold " +
+                    $"({itemAnalysis.HighestQuantityItem.CurrentQuantity} unit(s)) and revenue " +
+                    $"(₱{itemAnalysis.HighestQuantityItem.CurrentSales:N2}), with no other item close on either metric.");
+            }
+
+            if (itemAnalysis.HasPreviousPeriod)
+            {
+                var biggestGain = itemAnalysis.IncreasedItems.FirstOrDefault();
+                var biggestDrop = itemAnalysis.DecreasedItems.FirstOrDefault();
+
+                if (biggestGain != null && biggestDrop != null && biggestGain.ItemID != biggestDrop.ItemID)
+                {
+                    parts.Add(
+                        $"{biggestGain.ItemName} saw the largest jump in demand " +
+                        $"(+{biggestGain.QuantityChangePercent!.Value:N2}%), while {biggestDrop.ItemName} pulled back the most " +
+                        $"({biggestDrop.QuantityChangePercent!.Value:N2}%) compared with the previous period.");
+                }
+                else if (biggestGain != null)
+                {
+                    parts.Add(
+                        $"{biggestGain.ItemName} recorded the largest increase in demand at " +
+                        $"+{biggestGain.QuantityChangePercent!.Value:N2}% compared with the previous period.");
+                }
+                else if (biggestDrop != null)
+                {
+                    parts.Add(
+                        $"{biggestDrop.ItemName} recorded the largest decline in demand at " +
+                        $"{biggestDrop.QuantityChangePercent!.Value:N2}% compared with the previous period.");
+                }
+            }
+
+            return string.Join(" ", parts);
+        }
+
+        // =====================================================
+        // C3. ITEM CONCENTRATION INSIGHT (for the full Item Performance table)
+        // =====================================================
+
+        private static string BuildItemConcentrationInsight(ItemAnalysisSummary itemAnalysis)
+        {
+            if (itemAnalysis.AllItems == null || itemAnalysis.AllItems.Count == 0)
+            {
+                return "No item data available for the selected period.";
+            }
+
+            var byRevenue = itemAnalysis.AllItems
+                .OrderByDescending(i => i.CurrentSales)
+                .ToList();
+
+            decimal grandTotal = byRevenue.Sum(i => i.CurrentSales);
+
+            var parts = new List<string>();
+
+            if (grandTotal > 0)
+            {
+                int topCount = Math.Min(3, byRevenue.Count);
+                var topItems = byRevenue.Take(topCount).ToList();
+                decimal topTotal = topItems.Sum(i => i.CurrentSales);
+                decimal topShare = Math.Round((topTotal / grandTotal) * 100m, 2);
+
+                string itemNames = string.Join(", ", topItems.Select(i => i.ItemName));
+
+                if (byRevenue.Count > topCount)
+                {
+                    int remaining = byRevenue.Count - topCount;
+                    decimal remainingShare = Math.Max(0, 100m - topShare);
+
+                    parts.Add(
+                        $"The top {topCount} item(s) by revenue — {itemNames} — accounted for ₱{topTotal:N2}, " +
+                        $"or {topShare:N2}% of total sales across all {byRevenue.Count} items, leaving the remaining " +
+                        $"{remaining} item(s) to share just {remainingShare:N2}%. " +
+                        (topShare >= 50m
+                            ? "This indicates item-level sales were heavily concentrated in a small number of products."
+                            : "This indicates sales were relatively distributed across the item catalog."));
+                }
+                else
+                {
+                    parts.Add(
+                        $"{itemNames} — the only {byRevenue.Count} item(s) in this period — together generated " +
+                        $"₱{topTotal:N2} in total sales.");
+                }
+            }
+
+            if (itemAnalysis.HasPreviousPeriod)
+            {
+                var biggestGain = itemAnalysis.IncreasedItems.FirstOrDefault();
+                var biggestDrop = itemAnalysis.DecreasedItems.FirstOrDefault();
+
+                if (biggestGain != null && biggestDrop != null && biggestGain.ItemID != biggestDrop.ItemID)
+                {
+                    parts.Add(
+                        $"{biggestGain.ItemName} saw the largest jump in demand " +
+                        $"(+{biggestGain.QuantityChangePercent!.Value:N2}%), while {biggestDrop.ItemName} pulled back the most " +
+                        $"({biggestDrop.QuantityChangePercent!.Value:N2}%) compared with the previous period.");
+                }
+                else if (biggestGain != null)
+                {
+                    parts.Add(
+                        $"{biggestGain.ItemName} recorded the largest increase in demand at " +
+                        $"+{biggestGain.QuantityChangePercent!.Value:N2}% compared with the previous period.");
+                }
+                else if (biggestDrop != null)
+                {
+                    parts.Add(
+                        $"{biggestDrop.ItemName} recorded the largest decline in demand at " +
+                        $"{biggestDrop.QuantityChangePercent!.Value:N2}% compared with the previous period.");
+                }
+            }
+
+            return string.Join(" ", parts);
+        }
+
+        // =====================================================
         // D. SALES TREND
         // =====================================================
 
@@ -2823,11 +2949,59 @@ namespace LOSTBOOKS.Controllers
                 new List<string>();
 
             parts.Add(
-                $"Sales reached their highest point on " +
-                $"{highest.Date:MMMM dd, yyyy} at " +
-                $"₱{highest.Total:N2}, while the lowest sales were " +
-                $"recorded on {lowest.Date:MMMM dd, yyyy} at " +
-                $"₱{lowest.Total:N2}.");
+    $"Sales reached their highest point on " +
+    $"{highest.Date:MMMM dd, yyyy} at " +
+    $"₱{highest.Total:N2}, while the lowest sales were " +
+    $"recorded on {lowest.Date:MMMM dd, yyyy} at " +
+    $"₱{lowest.Total:N2}.");
+
+            // =================================================
+            // PEAK DAY CONTRIBUTING FACTOR
+            // =================================================
+
+            var highestDaySales =
+                sales
+                    .Where(x =>
+                        x.TransactionDate.Date == highest.Date)
+                    .ToList();
+
+            decimal highestDayTotal =
+                highestDaySales.Sum(x =>
+                    x.SellingPrice * x.QuantitySold);
+
+            if (highestDayTotal > 0)
+            {
+                var topCategoryOnPeakDay =
+                    highestDaySales
+                        .GroupBy(x => x.Category)
+                        .Select(g => new
+                        {
+                            Category =
+                                string.IsNullOrWhiteSpace(g.Key)
+                                    ? "Unknown"
+                                    : g.Key,
+
+                            Total =
+                                g.Sum(x =>
+                                    x.SellingPrice * x.QuantitySold)
+                        })
+                        .OrderByDescending(x => x.Total)
+                        .FirstOrDefault();
+
+                if (topCategoryOnPeakDay != null)
+                {
+                    decimal peakDayCategoryShare =
+                        Math.Round(
+                            (topCategoryOnPeakDay.Total / highestDayTotal) * 100m,
+                            2);
+
+                    parts.Add(
+                        $"{topCategoryOnPeakDay.Category} accounted for " +
+                        $"{peakDayCategoryShare:N2}% of sales on the single " +
+                        $"highest-selling day ({highest.Date:MMMM dd, yyyy}), " +
+                        "making it the primary contributor to that peak.");
+                }
+            }
 
             if (
                 changePercent.HasValue &&
@@ -3041,20 +3215,76 @@ namespace LOSTBOOKS.Controllers
         }
 
         // =====================================================
+        // E2. SALES COMPOSITION INSIGHT
+        // =====================================================
+
+        private static string BuildCompositionInsight(CompositionSummary composition)
+        {
+            if (composition.Rows.Count == 0)
+            {
+                return "No composition data available for the selected period.";
+            }
+
+            string noun = composition.IsSingleCategory
+                ? "sales within the selected category"
+                : "total sales";
+
+            string itemWord = composition.IsSingleCategory ? "item" : "category";
+
+            var rows = composition.Rows;
+            var top = rows[0];
+
+            string leadSentence;
+
+            if (rows.Count == 1)
+            {
+                leadSentence =
+                    $"{top.Label} accounted for all {noun} recorded during the selected period.";
+            }
+            else
+            {
+                var second = rows[1];
+                decimal gap = top.Percent - second.Percent;
+
+                leadSentence =
+                    $"{top.Label} led with {top.Percent:N2}% of {noun}, " +
+                    (gap >= 0.01m
+                        ? $"ahead of {second.Label} by {gap:N2} percentage points ({second.Percent:N2}%)."
+                        : $"closely followed by {second.Label} at {second.Percent:N2}%.");
+            }
+
+            int topCount = Math.Min(3, rows.Count);
+            decimal topShare = rows.Take(topCount).Sum(r => r.Percent);
+
+            string concentrationSentence = "";
+
+            if (rows.Count > topCount)
+            {
+                int remaining = rows.Count - topCount;
+
+                concentrationSentence =
+                    $" The top {topCount} {(topCount == 1 ? itemWord : itemWord + "s")} made up " +
+                    $"{topShare:N2}% of {noun}, while the remaining {remaining} " +
+                    $"{(remaining == 1 ? itemWord : itemWord + "s")} shared the other " +
+                    $"{Math.Max(0, 100m - topShare):N2}%.";
+            }
+
+            return leadSentence + concentrationSentence;
+        }
+
+        // =====================================================
         // F. FINAL ANALYSIS SUMMARY
         // =====================================================
 
         private static string BuildFinalSummary(
-            SalesGrowthAnalysis growth,
-            ItemAnalysisSummary itemAnalysis,
-            CategoryAnalysisSummary catAnalysis)
+    SalesGrowthAnalysis growth,
+    ItemAnalysisSummary itemAnalysis,
+    CategoryAnalysisSummary catAnalysis,
+    CompositionSummary composition)
         {
-            var parts =
-                new List<string>();
+            var parts = new List<string>();
 
-            if (
-                growth.HasPreviousPeriod &&
-                growth.ChangePercent.HasValue)
+            if (growth.HasPreviousPeriod && growth.ChangePercent.HasValue)
             {
                 parts.Add(
                     $"Sales {growth.Direction.ToLower()} by " +
@@ -3070,52 +3300,101 @@ namespace LOSTBOOKS.Controllers
                     "because no previous equivalent period was found.");
             }
 
-            if (
-                itemAnalysis.HighestQuantityItem != null &&
-                itemAnalysis.HighestSalesItem != null &&
-                itemAnalysis.HighestQuantityItem.ItemID !=
-                itemAnalysis.HighestSalesItem.ItemID)
+            // =====================================================
+            // CROSS-SECTION ALIGNMENT CHECK
+            // Does the same category drive growth, lead composition,
+            // AND contain the highest-revenue item? Only meaningful
+            // when "All Categories" is selected (composition is
+            // category-level, not item-level).
+            // =====================================================
+
+            string? alignedCategory = null;
+
+            if (!composition.IsSingleCategory &&
+                composition.Rows.Count > 0 &&
+                itemAnalysis.HighestSalesItem != null)
             {
-                parts.Add(
-                    $"{itemAnalysis.HighestQuantityItem.ItemName} " +
-                    $"sold in the greatest volume, but " +
-                    $"{itemAnalysis.HighestSalesItem.ItemName} " +
-                    $"generated more revenue overall, showing that " +
-                    "the top-selling item by volume is not always " +
-                    "the top earner.");
-            }
-            else if (
-                itemAnalysis.HighestQuantityItem != null)
-            {
-                parts.Add(
-                    $"{itemAnalysis.HighestQuantityItem.ItemName} " +
-                    "led in both quantity sold and revenue generated.");
+                string topCompositionCategory = composition.Rows[0].Label;
+
+                CategoryAnalysisRow? driver = null;
+
+                if (growth.HasPreviousPeriod && growth.ChangeAmount != 0)
+                {
+                    driver =
+                        growth.ChangeAmount > 0
+                            ? catAnalysis.Categories
+                                .Where(c => c.ChangeAmount > 0)
+                                .OrderByDescending(c => c.ChangeAmount)
+                                .FirstOrDefault()
+                            : catAnalysis.Categories
+                                .Where(c => c.ChangeAmount < 0)
+                                .OrderBy(c => c.ChangeAmount)
+                                .FirstOrDefault();
+                }
+
+                bool topItemMatches =
+                    itemAnalysis.HighestSalesItem.Category == topCompositionCategory;
+
+                if (driver != null &&
+                    driver.Category == topCompositionCategory &&
+                    topItemMatches)
+                {
+                    alignedCategory = topCompositionCategory;
+                }
             }
 
-            if (
-                catAnalysis.HasPreviousPeriod &&
-                catAnalysis.LargestIncreaseCategory != null &&
-                catAnalysis.LargestDecreaseCategory != null)
+            if (alignedCategory != null)
             {
                 parts.Add(
-                    $"{catAnalysis.LargestIncreaseCategory} gained " +
-                    $"the most ground " +
-                    $"(+{catAnalysis.LargestIncreasePercent:N2}%), " +
-                    $"while {catAnalysis.LargestDecreaseCategory} " +
-                    $"pulled back the most " +
-                    $"({catAnalysis.LargestDecreasePercent:N2}%).");
+                    $"{alignedCategory} was consistently the strongest performer this period — " +
+                    "it drove the overall sales change, led total sales composition, and contained " +
+                    $"{itemAnalysis.HighestSalesItem!.ItemName}, the highest-revenue item overall. " +
+                    "This indicates sales performance was concentrated in a single category rather " +
+                    "than distributed across the business.");
             }
-
-            if (catAnalysis.HighestPerformingCategory != null)
+            else
             {
-                parts.Add(
-                    $"{catAnalysis.HighestPerformingCategory} was the " +
-                    "highest-performing category based on current-period sales.");
+                if (itemAnalysis.HighestQuantityItem != null &&
+                    itemAnalysis.HighestSalesItem != null &&
+                    itemAnalysis.HighestQuantityItem.ItemID != itemAnalysis.HighestSalesItem.ItemID)
+                {
+                    parts.Add(
+                        $"{itemAnalysis.HighestQuantityItem.ItemName} " +
+                        $"sold in the greatest volume, but " +
+                        $"{itemAnalysis.HighestSalesItem.ItemName} " +
+                        $"generated more revenue overall, showing that " +
+                        "the top-selling item by volume is not always " +
+                        "the top earner.");
+                }
+                else if (itemAnalysis.HighestQuantityItem != null)
+                {
+                    parts.Add(
+                        $"{itemAnalysis.HighestQuantityItem.ItemName} " +
+                        "led in both quantity sold and revenue generated.");
+                }
+
+                if (catAnalysis.HasPreviousPeriod &&
+                    catAnalysis.LargestIncreaseCategory != null &&
+                    catAnalysis.LargestDecreaseCategory != null)
+                {
+                    parts.Add(
+                        $"{catAnalysis.LargestIncreaseCategory} gained " +
+                        $"the most ground " +
+                        $"(+{catAnalysis.LargestIncreasePercent:N2}%), " +
+                        $"while {catAnalysis.LargestDecreaseCategory} " +
+                        $"pulled back the most " +
+                        $"({catAnalysis.LargestDecreasePercent:N2}%).");
+                }
+
+                if (catAnalysis.HighestPerformingCategory != null)
+                {
+                    parts.Add(
+                        $"{catAnalysis.HighestPerformingCategory} was the " +
+                        "highest-performing category based on current-period sales.");
+                }
             }
 
-            return string.Join(
-                " ",
-                parts);
+            return string.Join(" ", parts);
         }
 
         // =====================================================
