@@ -272,10 +272,13 @@ namespace LOSTBOOKS.Controllers
             ViewBag.TrendAnalysis =
                 trendAnalysis;
 
-            ViewBag.GrowthInsight =
+            var growthResult =
                 BuildOverallGrowthInsight(
                     salesGrowth,
                     categoryAnalysis);
+
+            ViewBag.GrowthFinding = growthResult.Finding;
+            ViewBag.GrowthConsider = growthResult.Consider;
 
             ViewBag.TrendInsight =
                 BuildTrendInsight(
@@ -306,11 +309,17 @@ namespace LOSTBOOKS.Controllers
             ViewBag.CompositionInsight =
                 BuildCompositionInsight(composition);
 
-            ViewBag.ItemInsight =
+            var itemResult =
                 BuildItemInsight(itemAnalysis);
 
-            ViewBag.ItemConcentrationInsight =
+            ViewBag.ItemFinding = itemResult.Finding;
+            ViewBag.ItemConsider = itemResult.Consider;
+
+            var itemConcentrationResult =
                 BuildItemConcentrationInsight(itemAnalysis);
+
+            ViewBag.ItemConcentrationFinding = itemConcentrationResult.Finding;
+            ViewBag.ItemConcentrationConsider = itemConcentrationResult.Consider;
 
             // =====================================================
             // FINAL SUMMARY
@@ -853,10 +862,13 @@ namespace LOSTBOOKS.Controllers
             // WRITTEN ANALYSIS
             // =====================================================
 
-            string overallAnalysisText =
+            var overallResult =
                 BuildOverallGrowthInsight(
                     pdfGrowth,
                     pdfCategoryAnalysis);
+
+            string overallAnalysisText = overallResult.Finding;
+            string? overallConsiderText = overallResult.Consider;
 
             string trendAnalysisText =
                 BuildTrendInsight(
@@ -865,11 +877,17 @@ namespace LOSTBOOKS.Controllers
             string compositionAnalysisText =
                 BuildCompositionInsight(pdfComposition);
 
-            string itemAnalysisText =
+            var itemResult =
                 BuildItemInsight(pdfItemAnalysis);
 
-            string itemConcentrationText =
+            string itemAnalysisText = itemResult.Finding;
+            string? itemConsiderText = itemResult.Consider;
+
+            var itemConcentrationResult =
                 BuildItemConcentrationInsight(pdfItemAnalysis);
+
+            string itemConcentrationText = itemConcentrationResult.Finding;
+            string? itemConcentrationConsiderText = itemConcentrationResult.Consider;
 
             // =====================================================
             // TEMPORARY CHART FILES
@@ -1186,6 +1204,28 @@ namespace LOSTBOOKS.Controllers
                                         });
 
                                     // =================================================
+                                    // SALES ANALYSIS
+                                    // =================================================
+
+                                    col.Item()
+                                        .PaddingTop(10)
+                                        .Text("SALES ANALYSIS")
+                                        .Bold()
+                                        .FontSize(13);
+
+                                    col.Item()
+                                        .Text(overallAnalysisText)
+                                        .FontSize(9);
+
+                                    if (!string.IsNullOrWhiteSpace(overallConsiderText))
+                                    {
+                                        col.Item()
+                                            .Text($"Consider: {overallConsiderText}")
+                                            .Italic()
+                                            .FontSize(9);
+                                    }
+
+                                    // =================================================
                                     // GRAND TOTAL
                                     // =================================================
 
@@ -1295,8 +1335,17 @@ namespace LOSTBOOKS.Controllers
                                                     text.Item()
                                                         .PaddingTop(3)
                                                         .Text(
-                                                            trendAnalysisText)
+                                                            itemAnalysisText)
                                                         .FontSize(8);
+
+                                                    if (!string.IsNullOrWhiteSpace(itemConsiderText))
+                                                    {
+                                                        text.Item()
+                                                            .PaddingTop(2)
+                                                            .Text($"Consider: {itemConsiderText}")
+                                                            .Italic()
+                                                            .FontSize(7.5f);
+                                                    }
                                                 });
                                         });
 
@@ -1557,6 +1606,17 @@ namespace LOSTBOOKS.Controllers
                                         .Padding(8)
                                         .Text(itemConcentrationText)
                                         .FontSize(8);
+
+                                    if (!string.IsNullOrWhiteSpace(itemConcentrationConsiderText))
+                                    {
+                                        col.Item()
+                                            .PaddingTop(3)
+                                            .Background(QuestColors.Green.Lighten5)
+                                            .Padding(6)
+                                            .Text($"Consider: {itemConcentrationConsiderText}")
+                                            .Italic()
+                                            .FontSize(8);
+                                    }
 
                                     // =================================================
                                     // FINAL ANALYSIS SUMMARY
@@ -2161,98 +2221,125 @@ namespace LOSTBOOKS.Controllers
         // A2. OVERALL GROWTH INSIGHT
         // =====================================================
 
-        private static string BuildOverallGrowthInsight(
-            SalesGrowthAnalysis growth,
-            CategoryAnalysisSummary catAnalysis)
+        private static (string Finding, string? Consider) BuildOverallGrowthInsight(
+    SalesGrowthAnalysis growth,
+    CategoryAnalysisSummary catAnalysis)
         {
             if (!growth.HasPreviousPeriod)
             {
-                return
-                    $"The current report for the selected period shows " +
-                    $"₱{growth.CurrentTotal:N2} in total sales. " +
-                    "No previous equivalent period is available for comparison.";
+                return (
+                    $"The current report for the selected period shows ₱{growth.CurrentTotal:N2} in total sales. " +
+                    "No previous equivalent period is available for comparison.",
+                    null);
             }
 
             string direction =
-                growth.ChangeAmount > 0
-                    ? "increased"
-                    : growth.ChangeAmount < 0
-                        ? "decreased"
-                        : "remained unchanged";
+                growth.ChangeAmount > 0 ? "increased" :
+                growth.ChangeAmount < 0 ? "decreased" : "remained unchanged";
 
             string overallSentence =
-                $"Sales {direction} from " +
-                $"₱{growth.PreviousTotal:N2} to " +
-                $"₱{growth.CurrentTotal:N2}, " +
-                $"a change of " +
-                $"₱{Math.Abs(growth.ChangeAmount):N2}" +
-                (
-                    growth.ChangePercent.HasValue
-                        ? $" or {Math.Abs(growth.ChangePercent.Value):N2}%."
-                        : "."
-                );
+                $"Sales {direction} from ₱{growth.PreviousTotal:N2} to ₱{growth.CurrentTotal:N2}, " +
+                $"a change of ₱{Math.Abs(growth.ChangeAmount):N2}" +
+                (growth.ChangePercent.HasValue ? $" or {Math.Abs(growth.ChangePercent.Value):N2}%." : ".");
 
-            if (
-                growth.ChangeAmount == 0 ||
-                catAnalysis.Categories.Count == 0)
+            if (catAnalysis.Categories.Count == 0)
             {
-                return overallSentence;
+                return (overallSentence, null);
             }
 
-            CategoryAnalysisRow? driver =
-                growth.ChangeAmount > 0
-                    ? catAnalysis.Categories
-                        .Where(c =>
-                            c.ChangeAmount > 0)
-                        .OrderByDescending(
-                            c =>
-                                c.ChangeAmount)
-                        .FirstOrDefault()
-                    : catAnalysis.Categories
-                        .Where(c =>
-                            c.ChangeAmount < 0)
-                        .OrderBy(
-                            c =>
-                                c.ChangeAmount)
-                        .FirstOrDefault();
+            const decimal materialityFloor = 100m;
 
-            if (driver == null)
+            var decreases = catAnalysis.Categories
+                .Where(c => c.ChangeAmount <= -materialityFloor)
+                .OrderBy(c => c.ChangeAmount)
+                .ToList();
+
+            var increases = catAnalysis.Categories
+                .Where(c => c.ChangeAmount >= materialityFloor)
+                .OrderByDescending(c => c.ChangeAmount)
+                .ToList();
+
+            if (decreases.Count == 0 && increases.Count == 0)
             {
-                return
-                    overallSentence +
-                    " The available data does not identify a specific category driving this change.";
+                return (overallSentence, null);
             }
 
-            decimal driverContributionPercent =
-                growth.ChangeAmount != 0
-                    ? Math.Round(
-                        Math.Abs(
-                            driver.ChangeAmount /
-                            growth.ChangeAmount) *
-                        100m,
-                        2)
-                    : 0m;
+            var findingParts = new List<string>();
+            var considerParts = new List<string>();
 
-            string driverSentence =
-                $"{driver.Category} sales moved from " +
-                $"₱{driver.PreviousSales:N2} to " +
-                $"₱{driver.CurrentSales:N2}, " +
-                $"a change of " +
-                $"₱{Math.Abs(driver.ChangeAmount):N2}" +
-                (
-                    driver.ChangePercent.HasValue
-                        ? $" or {Math.Abs(driver.ChangePercent.Value):N2}%, "
-                        : ", "
-                ) +
-                $"accounting for roughly " +
-                $"{driverContributionPercent:N2}% of the overall " +
-                $"{(growth.ChangeAmount > 0 ? "increase" : "decrease")}, " +
-                "making it the strongest contributor to this period's change.";
+            if (decreases.Count > 0)
+            {
+                string decreaseList = string.Join(", ",
+                    decreases.Select(c => $"{c.Category} (-₱{Math.Abs(c.ChangeAmount):N2})"));
 
-            return
-                overallSentence +
-                " " +
-                driverSentence;
+                findingParts.Add($"The largest declines came from {decreaseList}.");
+            }
+
+            if (increases.Count > 0)
+            {
+                string increaseList = string.Join(", ",
+                    increases.Select(c => $"{c.Category} (+₱{c.ChangeAmount:N2})"));
+
+                findingParts.Add(
+                    decreases.Count > 0
+                        ? $"These declines were partially offset by growth in {increaseList}."
+                        : $"The largest gains came from {increaseList}.");
+            }
+
+            if (decreases.Count > 0 && increases.Count > 0)
+            {
+                findingParts.Add(
+                    "Netting these movements against each other, along with any smaller category " +
+                    $"changes, accounts for the overall ₱{Math.Abs(growth.ChangeAmount):N2} " +
+                    $"{(growth.ChangeAmount >= 0 ? "increase" : "decrease")}.");
+            }
+
+            var smallBaseFlags = increases
+                .Where(c =>
+                    c.ChangePercent.HasValue &&
+                    c.ChangePercent.Value >= 300m &&
+                    c.PreviousSales > 0 &&
+                    c.PreviousSales < 1000m)
+                .ToList();
+
+            foreach (var flag in smallBaseFlags)
+            {
+                findingParts.Add(
+                    $"{flag.Category} grew from a small base of ₱{flag.PreviousSales:N2} to " +
+                    $"₱{flag.CurrentSales:N2} (+{flag.ChangePercent:N2}%) — the low starting value means " +
+                    $"the percentage overstates the shift; the ₱{flag.ChangeAmount:N2} absolute increase " +
+                    "is the more reliable measure.");
+
+                considerParts.Add(
+                    $"Watch {flag.Category}'s numbers over a few more periods before treating this " +
+                    "percentage as a meaningful trend — right now it's mostly a reflection of the low " +
+                    "starting base.");
+            }
+
+            var wipeouts = catAnalysis.Categories
+                .Where(c => c.PreviousSales > 0 && c.CurrentSales == 0)
+                .OrderByDescending(c => c.PreviousSales)
+                .ToList();
+
+            if (wipeouts.Count > 0)
+            {
+                string wipeoutList = string.Join(", ",
+                    wipeouts.Select(c => $"{c.Category} (from ₱{c.PreviousSales:N2} to ₱0.00)"));
+
+                findingParts.Add(
+                    $"{(wipeouts.Count == 1 ? "One category" : $"{wipeouts.Count} categories")} dropped " +
+                    $"to zero entirely — {wipeoutList} — a complete stoppage rather than a gradual decline.");
+
+                considerParts.Add(
+                    $"Confirm with staff whether {(wipeouts.Count == 1 ? wipeouts[0].Category : "these categories")} " +
+                    "are still being stocked. If discontinued on purpose, update the records to reflect " +
+                    "that; if not, this may need a closer look.");
+            }
+
+            string finding = overallSentence + " " + string.Join(" ", findingParts);
+            string? consider = considerParts.Count > 0 ? string.Join(" ", considerParts) : null;
+
+            return (finding, consider);
         }
 
         // =====================================================
@@ -2630,14 +2717,15 @@ namespace LOSTBOOKS.Controllers
         // C2. ITEM PERFORMANCE INSIGHT
         // =====================================================
 
-        private static string BuildItemInsight(ItemAnalysisSummary itemAnalysis)
+        private static (string Finding, string? Consider) BuildItemInsight(ItemAnalysisSummary itemAnalysis)
         {
             if (itemAnalysis.HighestQuantityItem == null)
             {
-                return "No item data available for the selected period.";
+                return ("No item data available for the selected period.", null);
             }
 
-            var parts = new List<string>();
+            var findingParts = new List<string>();
+            var considerParts = new List<string>();
 
             if (itemAnalysis.HighestSalesItem != null &&
                 itemAnalysis.HighestQuantityItem.ItemID != itemAnalysis.HighestSalesItem.ItemID)
@@ -2649,24 +2737,28 @@ namespace LOSTBOOKS.Controllers
                 int unitDiff = volumeLeader.CurrentQuantity - revenueLeader.CurrentQuantity;
 
                 decimal volumeLeaderAvgPrice = volumeLeader.CurrentQuantity > 0
-                    ? volumeLeader.CurrentSales / volumeLeader.CurrentQuantity
-                    : 0;
+                    ? volumeLeader.CurrentSales / volumeLeader.CurrentQuantity : 0;
 
                 decimal revenueLeaderAvgPrice = revenueLeader.CurrentQuantity > 0
-                    ? revenueLeader.CurrentSales / revenueLeader.CurrentQuantity
-                    : 0;
+                    ? revenueLeader.CurrentSales / revenueLeader.CurrentQuantity : 0;
 
-                parts.Add(
+                findingParts.Add(
                     $"{volumeLeader.ItemName} sold in the greatest volume at {volumeLeader.CurrentQuantity} unit(s), " +
                     $"but {revenueLeader.ItemName} generated more revenue overall at ₱{revenueLeader.CurrentSales:N2} " +
                     $"(₱{revenueDiff:N2} more) despite selling {Math.Max(0, unitDiff)} fewer unit(s)" +
                     (revenueLeaderAvgPrice > volumeLeaderAvgPrice
                         ? $" — averaging about ₱{revenueLeaderAvgPrice:N2} per unit versus ₱{volumeLeaderAvgPrice:N2}."
                         : "."));
+
+                considerParts.Add(
+                    $"{volumeLeader.ItemName} brings in the most customers, while {revenueLeader.ItemName} " +
+                    "brings in the most money — consider pairing them (a bundle, a combo, or shelf " +
+                    $"placement together) to encourage buyers of {volumeLeader.ItemName} to also pick up " +
+                    $"{revenueLeader.ItemName}.");
             }
             else
             {
-                parts.Add(
+                findingParts.Add(
                     $"{itemAnalysis.HighestQuantityItem.ItemName} led in both quantity sold " +
                     $"({itemAnalysis.HighestQuantityItem.CurrentQuantity} unit(s)) and revenue " +
                     $"(₱{itemAnalysis.HighestQuantityItem.CurrentSales:N2}), with no other item close on either metric.");
@@ -2674,51 +2766,72 @@ namespace LOSTBOOKS.Controllers
 
             if (itemAnalysis.HasPreviousPeriod)
             {
+                int comparableCount = itemAnalysis.AllItems.Count(i => i.QuantityChangePercent.HasValue);
+
                 var biggestGain = itemAnalysis.IncreasedItems.FirstOrDefault();
                 var biggestDrop = itemAnalysis.DecreasedItems.FirstOrDefault();
 
-                if (biggestGain != null && biggestDrop != null && biggestGain.ItemID != biggestDrop.ItemID)
+                if (comparableCount <= 1)
                 {
-                    parts.Add(
+                    var onlyComparable = biggestGain ?? biggestDrop;
+
+                    if (onlyComparable != null)
+                    {
+                        findingParts.Add(
+                            $"{onlyComparable.ItemName} was the only item with prior-period data " +
+                            $"available for comparison, showing a " +
+                            $"{(onlyComparable.QuantityChangePercent!.Value >= 0 ? "+" : "")}" +
+                            $"{onlyComparable.QuantityChangePercent.Value:N2}% change in demand — with " +
+                            "just one comparable item, this isn't yet a meaningful ranking.");
+
+                        considerParts.Add(
+                            "Not enough purchase history yet to act on this — revisit once more " +
+                            "transactions come in.");
+                    }
+                }
+                else if (biggestGain != null && biggestDrop != null && biggestGain.ItemID != biggestDrop.ItemID)
+                {
+                    findingParts.Add(
                         $"{biggestGain.ItemName} saw the largest jump in demand " +
                         $"(+{biggestGain.QuantityChangePercent!.Value:N2}%), while {biggestDrop.ItemName} pulled back the most " +
                         $"({biggestDrop.QuantityChangePercent!.Value:N2}%) compared with the previous period.");
                 }
                 else if (biggestGain != null)
                 {
-                    parts.Add(
+                    findingParts.Add(
                         $"{biggestGain.ItemName} recorded the largest increase in demand at " +
                         $"+{biggestGain.QuantityChangePercent!.Value:N2}% compared with the previous period.");
                 }
                 else if (biggestDrop != null)
                 {
-                    parts.Add(
+                    findingParts.Add(
                         $"{biggestDrop.ItemName} recorded the largest decline in demand at " +
                         $"{biggestDrop.QuantityChangePercent!.Value:N2}% compared with the previous period.");
                 }
             }
 
-            return string.Join(" ", parts);
+            string finding = string.Join(" ", findingParts);
+            string? consider = considerParts.Count > 0 ? string.Join(" ", considerParts) : null;
+
+            return (finding, consider);
         }
 
         // =====================================================
         // C3. ITEM CONCENTRATION INSIGHT (for the full Item Performance table)
         // =====================================================
 
-        private static string BuildItemConcentrationInsight(ItemAnalysisSummary itemAnalysis)
+        private static (string Finding, string? Consider) BuildItemConcentrationInsight(ItemAnalysisSummary itemAnalysis)
         {
             if (itemAnalysis.AllItems == null || itemAnalysis.AllItems.Count == 0)
             {
-                return "No item data available for the selected period.";
+                return ("No item data available for the selected period.", null);
             }
 
-            var byRevenue = itemAnalysis.AllItems
-                .OrderByDescending(i => i.CurrentSales)
-                .ToList();
-
+            var byRevenue = itemAnalysis.AllItems.OrderByDescending(i => i.CurrentSales).ToList();
             decimal grandTotal = byRevenue.Sum(i => i.CurrentSales);
 
-            var parts = new List<string>();
+            var findingParts = new List<string>();
+            var considerParts = new List<string>();
 
             if (grandTotal > 0)
             {
@@ -2734,17 +2847,24 @@ namespace LOSTBOOKS.Controllers
                     int remaining = byRevenue.Count - topCount;
                     decimal remainingShare = Math.Max(0, 100m - topShare);
 
-                    parts.Add(
+                    findingParts.Add(
                         $"The top {topCount} item(s) by revenue — {itemNames} — accounted for ₱{topTotal:N2}, " +
                         $"or {topShare:N2}% of total sales across all {byRevenue.Count} items, leaving the remaining " +
                         $"{remaining} item(s) to share just {remainingShare:N2}%. " +
                         (topShare >= 50m
                             ? "This indicates item-level sales were heavily concentrated in a small number of products."
                             : "This indicates sales were relatively distributed across the item catalog."));
+
+                    if (topShare >= 50m)
+                    {
+                        considerParts.Add(
+                            "A small number of items carry most of your revenue — keep them well-stocked, " +
+                            "and consider promoting or bundling the slower-moving items to spread that reliance.");
+                    }
                 }
                 else
                 {
-                    parts.Add(
+                    findingParts.Add(
                         $"{itemNames} — the only {byRevenue.Count} item(s) in this period — together generated " +
                         $"₱{topTotal:N2} in total sales.");
                 }
@@ -2752,31 +2872,57 @@ namespace LOSTBOOKS.Controllers
 
             if (itemAnalysis.HasPreviousPeriod)
             {
+                int comparableCount = itemAnalysis.AllItems.Count(i => i.QuantityChangePercent.HasValue);
+
                 var biggestGain = itemAnalysis.IncreasedItems.FirstOrDefault();
                 var biggestDrop = itemAnalysis.DecreasedItems.FirstOrDefault();
 
-                if (biggestGain != null && biggestDrop != null && biggestGain.ItemID != biggestDrop.ItemID)
+                if (comparableCount <= 1)
                 {
-                    parts.Add(
+                    var onlyComparable = biggestGain ?? biggestDrop;
+
+                    if (onlyComparable != null)
+                    {
+                        findingParts.Add(
+                            $"{onlyComparable.ItemName} was the only item with prior-period data " +
+                            $"available for comparison, showing a " +
+                            $"{(onlyComparable.QuantityChangePercent!.Value >= 0 ? "+" : "")}" +
+                            $"{onlyComparable.QuantityChangePercent.Value:N2}% change in demand — with " +
+                            "just one comparable item, this isn't yet a meaningful ranking.");
+
+                        if (considerParts.Count == 0)
+                        {
+                            considerParts.Add(
+                                "Not enough purchase history yet to act on this — revisit once more " +
+                                "transactions come in.");
+                        }
+                    }
+                }
+                else if (biggestGain != null && biggestDrop != null && biggestGain.ItemID != biggestDrop.ItemID)
+                {
+                    findingParts.Add(
                         $"{biggestGain.ItemName} saw the largest jump in demand " +
                         $"(+{biggestGain.QuantityChangePercent!.Value:N2}%), while {biggestDrop.ItemName} pulled back the most " +
                         $"({biggestDrop.QuantityChangePercent!.Value:N2}%) compared with the previous period.");
                 }
                 else if (biggestGain != null)
                 {
-                    parts.Add(
+                    findingParts.Add(
                         $"{biggestGain.ItemName} recorded the largest increase in demand at " +
                         $"+{biggestGain.QuantityChangePercent!.Value:N2}% compared with the previous period.");
                 }
                 else if (biggestDrop != null)
                 {
-                    parts.Add(
+                    findingParts.Add(
                         $"{biggestDrop.ItemName} recorded the largest decline in demand at " +
                         $"{biggestDrop.QuantityChangePercent!.Value:N2}% compared with the previous period.");
                 }
             }
 
-            return string.Join(" ", parts);
+            string finding = string.Join(" ", findingParts);
+            string? consider = considerParts.Count > 0 ? string.Join(" ", considerParts) : null;
+
+            return (finding, consider);
         }
 
         // =====================================================

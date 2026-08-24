@@ -65,11 +65,23 @@
     string compositionInsight =
     ViewBag.CompositionInsight ?? "";
 
-    string itemInsight =
-        ViewBag.ItemInsight ?? "";
+    string growthFinding =
+        ViewBag.GrowthFinding ?? "";
 
-    string itemConcentrationInsight =
-        ViewBag.ItemConcentrationInsight ?? "";
+    string? growthConsider =
+        ViewBag.GrowthConsider;
+
+    string itemFinding =
+        ViewBag.ItemFinding ?? "";
+
+    string? itemConsider =
+        ViewBag.ItemConsider;
+
+    string itemConcentrationFinding =
+        ViewBag.ItemConcentrationFinding ?? "";
+
+    string? itemConcentrationConsider =
+        ViewBag.ItemConcentrationConsider;
 
 
     // =====================================================
@@ -421,11 +433,16 @@
         <div class="alert alert-success border-start border-success border-4 mb-4"
              style="background-color:#f1f9f4;">
 
-            <strong>Analysis:</strong>
+            <strong>Finding:</strong>
+            <span>@growthFinding</span>
 
-            <span>
-                @growthInsight
-            </span>
+            @if (!string.IsNullOrWhiteSpace(growthConsider))
+            {
+                <div class="mt-2">
+                    <strong>Consider:</strong>
+                    <span>@growthConsider</span>
+                </div>
+            }
 
         </div>
     }
@@ -667,13 +684,16 @@
         <div class="card-footer"
              style="background-color:#f1f9f4;">
 
-            <strong class="text-success">
-                Analysis:
-            </strong>
+            <strong>Finding:</strong>
+            <span>@itemFinding</span>
 
-            <span>
-                @itemInsight
-            </span>
+            @if (!string.IsNullOrWhiteSpace(itemConsider))
+            {
+                <div class="mt-2">
+                    <strong>Consider:</strong>
+                    <span>@itemConsider</span>
+                </div>
+            }
 
         </div>
 
@@ -796,13 +816,19 @@
         <div class="card-footer"
              style="background-color:#f1f9f4;">
 
-            <strong class="text-success">
-                Analysis:
-            </strong>
+            <strong>Finding:</strong>
+            <span>@growthFinding</span>
 
-            <span>
-                @itemConcentrationInsight
-            </span>
+
+            <span>@itemConcentrationFinding</span>
+
+            @if (!string.IsNullOrWhiteSpace(itemConcentrationConsider))
+            {
+                <div class="mt-2">
+                    <strong>Consider:</strong>
+                    <span>@itemConcentrationConsider</span>
+                </div>
+            }
 
         </div>
 
