@@ -1,5 +1,119 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model List<LOSTBOOKS.Models.ActivityLog>
+@using Microsoft.AspNetCore.Mvc.Rendering
 @{
+    ViewData["Title"] = "Activity Logs";
 }
+<div class="container-fluid">
+    <h2 class="fw-bold text-success mb-4">
+        <i class="bi bi-list-check"></i>
+        Activity Logs
+    </h2>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" aspcontroller="ActivityLogs" asp-action="Index">
+                <div class="row align-items-end">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label
+                        fw-bold">From Date</label>
+                        <input type="date"
+                               name="fromDate" class="form-control"
+                               value="@ViewBag.SelectedFromDate" />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label
+                        fw-bold">To Date</label>
+                        <input type="date"
+                               name="toDate" class="form-control"
+                               value="@ViewBag.SelectedToDate" />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label
+                        fw-bold">User</label>
+                        <select name="userId"
+                                class="form-select"
+                                aspitems="ViewBag.Users">
+                            <option value="">
+                                All
+                                Users
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label
+                        fw-bold">Module</label>
+                        <select name="module"
+                                class="form-select"
+                                aspitems="ViewBag.Modules">
+                            <option value="">
+                                All
+                                Modules
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <button type="submit"
+                            class="btn btn-success me-2">
+                        <i class="bi bi-funnel-
+                        fill"></i>
+                        Filter
+                    </button>
+                    <a aspcontroller="ActivityLogs" asp-action="Index"
+                       class="btn btn-secondary">
+                        <i class="bi bi-arrowcounterclockwise"></i>
+                        Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover
+                    table-bordered align-middle mb-0">
+                    <thead class="table-success">
+                        <tr>
+                            <th>
+                                Date &amp;
+                                Time
+                            </th>
+                            <th>User</th>
+                            <th>Module</th>
+                            <th>Action</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="5"
+                                    class="text-center text-muted py-4">
+                                    No activity
+                                    logs found.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var log in
+                            Model)
+                            {
+                                <tr>
+                                    <td>
+                                        @log.DateTime.ToString("MMM dd, yyyy h:mm tt")
+                                    </td>
+                                    <td>@(log.User?.FullName ?? "-")</td>
+                                    <td>@log.Module</td>
+                                    <td>@log.Action</td>
+                                    <td>@log.Description</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

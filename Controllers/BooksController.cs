@@ -1,22 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using LOSTBOOKS.Data;
+using LOSTBOOKS.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using LOSTBOOKS.Data;
-using LOSTBOOKS.Models;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
+using SkiaSharp;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace LOSTBOOKS.Controllers
 {
     public class BooksController : Controller
     {
         private readonly LOSTBOOKSContext _context;
+        private readonly LOSTBOOKS.Services.IActivityLogger _activityLogger;
 
-        public BooksController(LOSTBOOKSContext context)
+        public BooksController(
+            LOSTBOOKSContext context,
+            LOSTBOOKS.Services.IActivityLogger activityLogger)
         {
             _context = context;
+            _activityLogger = activityLogger;
         }
 
         // GET: Books
@@ -76,11 +82,15 @@ namespace LOSTBOOKS.Controllers
 
                 return View("Index", books);
             }
-            
-            
 
             _context.Add(book);
             await _context.SaveChangesAsync();
+
+            _activityLogger.Log(
+                "Books",
+                "Book Added",
+                $"Book Added — BK -{book.BookID:D4},{book.Title}"
+            );
 
             return RedirectToAction(nameof(Index));
         }
@@ -138,6 +148,12 @@ namespace LOSTBOOKS.Controllers
                         throw;
                 }
 
+                _activityLogger.Log(
+                    "Books",
+                    "Book Edited",
+                    $"Book Edited — BK -{book.BookID:D4},{book.Title}"
+                );
+
                 return RedirectToAction(nameof(Index));
             }
 
@@ -150,14 +166,25 @@ namespace LOSTBOOKS.Controllers
             if (id == null)
                 return NotFound();
 
-            var book = await _context.Books
-                .Include(b => b.Consignor)
-                .FirstOrDefaultAsync(m => m.BookID == id);
+            var book = await _context.Books.FindAsync(id);
 
-            if (book == null)
-                return NotFound();
+            if (book != null)
+            {
+                _context.Books.Remove(book);
+            }
 
-            return View(book);
+            await _context.SaveChangesAsync();
+
+            if (book != null)
+            {
+                _activityLogger.Log(
+                    "Books",
+                    "Book Deleted",
+                    $"Book Deleted — BK -{book.BookID:D4}{book.Title}"
+                );
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
         // POST: Books/Delete/5
@@ -173,6 +200,7 @@ namespace LOSTBOOKS.Controllers
             }
 
             await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
 

@@ -11,13 +11,16 @@ namespace LOSTBOOKS.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly LOSTBOOKSContext _context;
+        private readonly LOSTBOOKS.Services.IActivityLogger _activityLogger;
 
         public HomeController(
             ILogger<HomeController> logger,
-            LOSTBOOKSContext context)
+            LOSTBOOKSContext context,
+            LOSTBOOKS.Services.IActivityLogger activityLogger)
         {
             _logger = logger;
             _context = context;
+            _activityLogger = activityLogger;
         }
 
         // =========================
@@ -201,6 +204,14 @@ namespace LOSTBOOKS.Controllers
             }
 
             _context.SaveChanges();
+
+            decimal saleTotal = sales.Sum(s =>
+                s.SellingPrice * s.QuantitySold);
+
+            _activityLogger.Log(
+                "POS",
+                "Sale Recorded",
+                $"Sale Recorded — {sales.Count} item(s), Total ₱{saleTotal:N2}");
 
             return Ok();
         }

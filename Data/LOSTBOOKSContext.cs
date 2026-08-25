@@ -22,6 +22,14 @@ namespace LOSTBOOKS.Data
         public DbSet<LOSTBOOKS.Models.Book> Books { get; set; } = default!;
 
         public DbSet<History> Histories { get; set; }
+        public DbSet<LOSTBOOKS.Models.User> Users
+        {
+            get;
+            set;
+        } = default!;
+        public DbSet<LOSTBOOKS.Models.ActivityLog>
+        ActivityLogs
+        { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -35,9 +43,21 @@ namespace LOSTBOOKS.Data
 
             // Merchandise → Consignor (USING ID)
             modelBuilder.Entity<Merchandise>()
-                .HasOne(m => m.Consignor)
-                .WithMany(c => c.Merchandises)
-                .HasForeignKey(m => m.ConsignorID);
+            .HasOne(m => m.Consignor)
+            .WithMany(c => c.Merchandises)
+            .HasForeignKey(m => m.ConsignorID);
+
+            // Username must be unique
+            modelBuilder.Entity<User>()
+            .HasIndex(u => u.Username)
+            .IsUnique();
+
+            // ActivityLog → User
+            modelBuilder.Entity<ActivityLog>()
+            .HasOne(a => a.User)
+            .WithMany()
+            .HasForeignKey(a => a.UserID);
         }
+
     }
 }

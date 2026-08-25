@@ -1,6 +1,8 @@
 ﻿namespace LOSTBOOKS.Services
 {
-    public class IActivityLogger
+    public interface IActivityLogger
     {
+        void Log(string module, string action,
+        string description);
     }
 }

@@ -23,6 +23,17 @@ builder.Services.AddDbContext<LOSTBOOKSContext>(options =>
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession();
+
+builder.Services.AddScoped<
+    LOSTBOOKS.Services.ICurrentUserService,
+    LOSTBOOKS.Services.CurrentUserService>();
+
+builder.Services.AddScoped<
+    LOSTBOOKS.Services.IActivityLogger,
+    LOSTBOOKS.Services.ActivityLogger>();
 
 var app = builder.Build();
 
@@ -39,6 +50,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.UseSession();
 
 app.UseAuthorization();
 
