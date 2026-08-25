@@ -11,10 +11,14 @@ namespace LOSTBOOKS.Controllers
     public class ConsignorSummaryController : Controller
     {
         private readonly LOSTBOOKSContext _context;
+        private readonly LOSTBOOKS.Services.IActivityLogger _activityLogger;
 
-        public ConsignorSummaryController(LOSTBOOKSContext context)
+        public ConsignorSummaryController(
+            LOSTBOOKSContext context,
+            LOSTBOOKS.Services.IActivityLogger activityLogger)
         {
             _context = context;
+            _activityLogger = activityLogger;
         }
 
 
@@ -438,6 +442,11 @@ namespace LOSTBOOKS.Controllers
             });
 
             byte[] pdf = document.GeneratePdf();
+
+            _activityLogger.Log(
+                "Reports",
+                "Consignor Report Generated",
+                "Consignor-Based Report generated");
 
             return File(
                 pdf,

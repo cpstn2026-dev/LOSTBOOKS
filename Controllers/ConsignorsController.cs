@@ -13,14 +13,20 @@ namespace LOSTBOOKS.Controllers
     public class ConsignorsController : Controller
     {
         private readonly LOSTBOOKSContext _context;
+        private readonly LOSTBOOKS.Services.IActivityLogger _activityLogger;
 
-        public ConsignorsController(LOSTBOOKSContext context)
+        public ConsignorsController(
+            LOSTBOOKSContext context,
+            LOSTBOOKS.Services.IActivityLogger activityLogger)
         {
             _context = context;
+            _activityLogger = activityLogger;
         }
 
         // GET: Consignors
-        public async Task<IActionResult> Index(string searchString, bool showInactive = false)
+        public async Task<IActionResult> Index(
+            string searchString,
+            bool showInactive = false)
         {
             var consignors = _context.Consignors.AsQueryable();
 
@@ -74,12 +80,21 @@ namespace LOSTBOOKS.Controllers
         // POST: Consignors/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ConsignorID,ConsignorName,ContactNumber,EmailAddress")] Consignor consignor)
+        public async Task<IActionResult> Create(
+            [Bind("ConsignorID,ConsignorName,ContactNumber,EmailAddress")]
+            Consignor consignor)
         {
             if (ModelState.IsValid)
             {
                 _context.Add(consignor);
                 await _context.SaveChangesAsync();
+
+                _activityLogger.Log(
+                    "Consigners",
+                    "Consigner Added",
+                    $"Consigner Added — {consignor.ConsignorName}"
+                );
+
                 return RedirectToAction(nameof(Index));
             }
 
@@ -107,7 +122,10 @@ namespace LOSTBOOKS.Controllers
         // POST: Consignors/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ConsignorID,ConsignorName,ContactNumber,EmailAddress,IsActive")] Consignor consignor)
+        public async Task<IActionResult> Edit(
+            int id,
+            [Bind("ConsignorID,ConsignorName,ContactNumber,EmailAddress,IsActive")]
+            Consignor consignor)
         {
             if (id != consignor.ConsignorID)
             {
@@ -120,6 +138,12 @@ namespace LOSTBOOKS.Controllers
                 {
                     _context.Update(consignor);
                     await _context.SaveChangesAsync();
+
+                    _activityLogger.Log(
+                        "Consigners",
+                        "Consigner Edited",
+                        $"Consigner Edited — {consignor.ConsignorName}"
+                    );
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -173,6 +197,12 @@ namespace LOSTBOOKS.Controllers
             {
                 consignor.IsActive = false;
                 await _context.SaveChangesAsync();
+
+                _activityLogger.Log(
+                    "Consigners",
+                    "Consigner Deleted",
+                    $"Consigner Deleted — {consignor.ConsignorName}"
+                );
             }
 
             return RedirectToAction(nameof(Index));

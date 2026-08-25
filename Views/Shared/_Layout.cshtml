@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@inject LOSTBOOKS.Services.ICurrentUserService CurrentUserService
+@inject LOSTBOOKS.Data.LOSTBOOKSContext DbContext
+
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -31,7 +34,6 @@
 
 </head>
 
-
 <body>
 
     @{
@@ -43,22 +45,21 @@
 
         // Reports is active if the current page belongs
         // to any of the Reports controllers.
-      bool reportsActive =
+       bool reportsActive =
             currentController == "SalesReporting" ||
             currentController == "ConsignorSummary";
-
+            bool adminActive =
+            currentController == "Users" ||
+            currentController == "ActivityLogs";
     }
 
-
     <div class="d-flex">
-
 
         <!-- ===================================================== -->
         <!-- SIDEBAR -->
         <!-- ===================================================== -->
 
         <aside id="sidebar">
-
 
             <!-- ================= SIDEBAR HEADER ================= -->
 
@@ -69,8 +70,6 @@
                 <span>LOSTBOOKS</span>
 
             </div>
-
-
 
             <!-- ================= DASHBOARD ================= -->
 
@@ -84,8 +83,6 @@
 
             </a>
 
-
-
             <!-- ================= PRODUCTS ================= -->
 
             <a asp-controller="Products"
@@ -97,8 +94,6 @@
                 <span>Products</span>
 
             </a>
-
-
 
             <!-- ================= SERVICES ================= -->
 
@@ -112,8 +107,6 @@
 
             </a>
 
-
-
             <!-- ================= CONSIGNORS ================= -->
 
             <a asp-controller="Consignors"
@@ -125,8 +118,6 @@
                 <span>Consignors</span>
 
             </a>
-
-
 
             <!-- ================= MERCHANDISE ================= -->
 
@@ -140,8 +131,6 @@
 
             </a>
 
-
-
             <!-- ================= BOOKS ================= -->
 
             <a asp-controller="Books"
@@ -153,8 +142,6 @@
                 <span>Books</span>
 
             </a>
-
-
 
             <!-- ================= HISTORY ================= -->
 
@@ -168,14 +155,11 @@
 
             </a>
 
-
-
             <!-- ================================================= -->
             <!-- REPORTS DROPDOWN -->
             <!-- ================================================= -->
 
             <div class="sidebar-dropdown">
-
 
                 <!-- ================= REPORTS BUTTON ================= -->
 
@@ -186,7 +170,6 @@
                    aria-expanded="@(reportsActive.ToString().ToLower())"
                    aria-controls="reportsMenu">
 
-
                     <span>
 
                         <i class="bi bi-bar-chart-line-fill"></i>
@@ -195,22 +178,16 @@
 
                     </span>
 
-
                     <i class="bi bi-chevron-down"></i>
 
-
                 </a>
-
-
 
                 <!-- ================= REPORTS SUB MENU ================= -->
 
                 <div class="collapse @(reportsActive ? "show" : "")"
                      id="reportsMenu">
 
-
                     <div class="ms-3">
-
 
                         <!-- ================================================= -->
                         <!-- SALES REPORTING & ANALYSIS -->
@@ -226,12 +203,6 @@
 
                         </a>
 
-
-
-                        
-
-
-
                         <!-- ================================================= -->
                         <!-- CONSIGNOR-BASED SUMMARY -->
                         <!-- ================================================= -->
@@ -246,17 +217,74 @@
 
                         </a>
 
+                    </div>
+
+                </div>
+            </div>
+
+            <!--
+            =================================================
+            -->
+            <!-- ADMINISTRATION DROPDOWN (Manager only) -->
+            <!--
+            =================================================
+            -->
+
+                      @if (CurrentUserService.IsManager)
+            {
+                <div class="sidebar-dropdown">
+
+                    <a class="sidebar-link d-flex align-items-center justify-content-between @(adminActive ? "active" : "")"
+                       data-bs-toggle="collapse"
+                       href="#adminMenu"
+                       role="button"
+                       aria-expanded="@(adminActive.ToString().ToLower())"
+                       aria-controls="adminMenu">
+
+                        <span>
+
+                            <i class="bi bi-shield-lock-fill"></i>
+
+                            <span>Administration</span>
+
+                        </span>
+
+                        <i class="bi bi-chevron-down"></i>
+
+                    </a>
+
+                    <div class="collapse @(adminActive ? "show" : "")"
+                         id="adminMenu">
+
+                        <div class="ms-3">
+
+                            <a asp-controller="Users"
+                               asp-action="Index"
+                               class="sidebar-link @(currentController == "Users" ? "active" : "")">
+
+                                <i class="bi bi-people-fill"></i>
+
+                                <span>Users</span>
+
+                            </a>
+
+                            <a asp-controller="ActivityLogs"
+                               asp-action="Index"
+                               class="sidebar-link @(currentController == "ActivityLogs" ? "active" : "")">
+
+                                <i class="bi bi-list-check"></i>
+
+                                <span>Activity Logs</span>
+
+                            </a>
+
+                        </div>
 
                     </div>
 
                 </div>
-
-            </div>
-
-
+            }
         </aside>
-
-
 
         <!-- ===================================================== -->
         <!-- MAIN CONTENT -->
@@ -264,14 +292,11 @@
 
         <div class="main-content">
 
-
             <!-- ================= TOPBAR ================= -->
 
             <nav class="navbar navbar-expand-lg bg-white shadow-sm px-4">
 
-
                 <div class="container-fluid">
-
 
                     <!-- ================= TOGGLE BUTTON ================= -->
 
@@ -282,8 +307,6 @@
 
                     </button>
 
-
-
                     <!-- ================= PAGE TITLE ================= -->
 
                     <h4 class="fw-bold text-success m-0">
@@ -292,12 +315,9 @@
 
                     </h4>
 
-
-
                     <!-- ================= RIGHT SIDE ================= -->
 
                     <div class="ms-auto d-flex align-items-center">
-
 
                         <!-- ================= DATE & TIME ================= -->
 
@@ -306,32 +326,87 @@
 
                         </span>
 
+                        <!-- ================= CURRENT USER (temporary —
+                        replaced by Login later) ================= -->
 
+                        @{
+                            var activeUsers = DbContext.Users
+                                .Where(u => u.Status == "Active")
+                                .OrderBy(u => u.FullName)
+                                .ToList();
 
-                        <!-- ================= USER ================= -->
+                            int? currentUserId = CurrentUserService.UserID;
 
-                        <div class="d-flex align-items-center">
+                            string currentUserName =
+                                CurrentUserService.FullName ?? "No Active User";
 
-                            <i class="bi bi-person-circle fs-3 text-success"></i>
+                            string currentUserRole =
+                                CurrentUserService.Role ?? "-";
+                        }
 
-                            <span class="ms-2 fw-semibold">
+                        <div class="dropdown">
 
-                                Admin
+                            <button class="btn bg-transparent border-0 dflex align-items-center dropdown-toggle"
+                                    type="button"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false">
 
-                            </span>
+                                <i class="bi bi-person-circle fs-3 textsuccess"></i>
+
+                                <span class="ms-2 fw-semibold text-start">
+
+                                    @currentUserName
+                                    <br />
+
+                                    <small class="textmuted">
+                                        @currentUserRole
+                                    </small>
+
+                                </span>
+
+                            </button>
+
+                            <ul class="dropdown-menu dropdown-menu-end">
+
+                                @foreach (var u in activeUsers)
+                                {
+                                    <li>
+
+                                        <form asp-controller="CurrentUser"
+                                              asp-action="Switch"
+                                              method="post"
+                                              class="px-1">
+
+                                            <input type="hidden"
+                                                   name="userId"
+                                                   value="@u.UserID" />
+
+                                            <input type="hidden"
+                                                   name="returnUrl"
+                                                   value="@Context.Request.Path" />
+
+                                            <button type="submit"
+                                                    class="dropdown-item
+                                                    @(u.UserID == currentUserId ? "active" : "")">
+
+                                                @u.FullName — @u.Role
+
+                                            </button>
+
+                                        </form>
+
+                                    </li>
+                                }
+
+                            </ul>
 
                         </div>
 
-
                     </div>
-
 
                 </div>
 
-
             </nav>
-
-
 
             <!-- ================= PAGE CONTENT ================= -->
 
@@ -341,13 +416,9 @@
 
             </main>
 
-
         </div>
 
-
     </div>
-
-
 
     <!-- ===================================================== -->
     <!-- JAVASCRIPT -->
@@ -357,23 +428,18 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
 
-
     <!-- Bootstrap -->
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-
 
     <!-- Site JS -->
 
     <script src="~/js/site.js"
             asp-append-version="true"></script>
 
-
     <!-- Chart.js -->
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-
 
     <!-- ===================================================== -->
     <!-- SIDEBAR TOGGLE -->
@@ -391,7 +457,6 @@
         const toggleBtn =
             document.getElementById("toggleBtn");
 
-
         // ===========================
         // RESTORE SIDEBAR STATE
         // ===========================
@@ -405,7 +470,6 @@
 
         }
 
-
         // ===========================
         // TOGGLE SIDEBAR
         // ===========================
@@ -415,7 +479,6 @@
             function () {
 
                 sidebar.classList.toggle("collapsed");
-
 
                 // ===========================
                 // SAVE SIDEBAR STATE
@@ -443,8 +506,6 @@
             }
         );
 
-
-
         // =====================================================
         // DATE & TIME
         // =====================================================
@@ -452,7 +513,6 @@
         function updateDateTime() {
 
             const now = new Date();
-
 
             const options = {
 
@@ -472,10 +532,8 @@
 
             };
 
-
             const dateTime =
                 document.getElementById("dateTime");
-
 
             if (dateTime) {
 
@@ -489,11 +547,9 @@
 
         }
 
-
         // Run immediately
 
         updateDateTime();
-
 
         // Update every second
 
@@ -504,8 +560,6 @@
 
     </script>
 
-
-
     <!-- ===================================================== -->
     <!-- PAGE-SPECIFIC SCRIPTS -->
     <!-- ===================================================== -->
@@ -514,7 +568,6 @@
         "Scripts",
         required: false
     )
-
 
 </body>
 

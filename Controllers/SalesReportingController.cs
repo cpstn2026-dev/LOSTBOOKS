@@ -8,6 +8,8 @@ using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using ScottPlot;
+using SkiaSharp;
+using System.Composition;
 using System.Text.Json;
 
 using QuestColors = QuestPDF.Helpers.Colors;
@@ -17,10 +19,14 @@ namespace LOSTBOOKS.Controllers
     public class SalesReportingController : Controller
     {
         private readonly LOSTBOOKSContext _context;
+        private readonly LOSTBOOKS.Services.IActivityLogger _activityLogger;
 
-        public SalesReportingController(LOSTBOOKSContext context)
+        public SalesReportingController(
+            LOSTBOOKSContext context,
+            LOSTBOOKS.Services.IActivityLogger activityLogger)
         {
             _context = context;
+            _activityLogger = activityLogger;
         }
 
         // =====================================================
@@ -1265,15 +1271,15 @@ namespace LOSTBOOKS.Controllers
                                         .PaddingTop(4)
                                         .Column(analysisCol =>
                                         {
-                                                RenderFindings(
-                                                analysisCol,
-                                                overallFindings,
-                                                overallInsightText,
-                                                overallConsiderText,
-                                                overallBasisText,
-                                                findingFontSize: 9,
-                                                considerFontSize: 9,
-                                                basisFontSize: 8);
+                                            RenderFindings(
+                                            analysisCol,
+                                            overallFindings,
+                                            overallInsightText,
+                                            overallConsiderText,
+                                            overallBasisText,
+                                            findingFontSize: 9,
+                                            considerFontSize: 9,
+                                            basisFontSize: 8);
                                         });
 
                                     // =================================================
@@ -1693,9 +1699,13 @@ namespace LOSTBOOKS.Controllers
      .FontSize(8);
                         });
                     });
-
                 byte[] pdf =
                     document.GeneratePdf();
+
+                _activityLogger.Log(
+                    "Reports",
+                    "Sales Report Generated",
+                    "Sales Reporting and Analysis report generated");
 
                 return File(
                     pdf,
@@ -1707,7 +1717,8 @@ namespace LOSTBOOKS.Controllers
                 DeleteFile(pieChartPath);
                 DeleteFile(barChartPath);
             }
-        }
+
+    }
 
         // =====================================================
         // RENDER FINDINGS AS BULLETS (PDF)

@@ -1,22 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using LOSTBOOKS.Data;
+using LOSTBOOKS.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using LOSTBOOKS.Data;
-using LOSTBOOKS.Models;
+using SkiaSharp;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace LOSTBOOKS.Controllers
 {
     public class ProductsController : Controller
     {
         private readonly LOSTBOOKSContext _context;
+        private readonly LOSTBOOKS.Services.IActivityLogger _activityLogger;
 
-        public ProductsController(LOSTBOOKSContext context)
+        public ProductsController(
+            LOSTBOOKSContext context,
+            LOSTBOOKS.Services.IActivityLogger activityLogger)
         {
             _context = context;
+            _activityLogger = activityLogger;
         }
 
         // GET: Products
@@ -27,10 +32,10 @@ namespace LOSTBOOKS.Controllers
             if (!string.IsNullOrEmpty(searchString))
             {
                 products = products.Where(p =>
-           p.ProductID.ToString().Contains(searchString) ||
-           p.ProductName.Contains(searchString) ||
-           p.Category.Contains(searchString) ||
-           p.SellingPrice.ToString().Contains(searchString));
+                    p.ProductID.ToString().Contains(searchString) ||
+                    p.ProductName.Contains(searchString) ||
+                    p.Category.Contains(searchString) ||
+                    p.SellingPrice.ToString().Contains(searchString));
             }
 
             return View(await products.ToListAsync());
@@ -46,6 +51,7 @@ namespace LOSTBOOKS.Controllers
 
             var product = await _context.Products
                 .FirstOrDefaultAsync(m => m.ProductID == id);
+
             if (product == null)
             {
                 return NotFound();
@@ -65,14 +71,23 @@ namespace LOSTBOOKS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ProductID,ProductName,Category,SellingPrice")] Product product)
+        public async Task<IActionResult> Create(
+            [Bind("ProductID,ProductName,Category,SellingPrice")] Product product)
         {
             if (ModelState.IsValid)
             {
                 _context.Add(product);
                 await _context.SaveChangesAsync();
+
+                _activityLogger.Log(
+                    "Products",
+                    "Product Added",
+                    $"Product Added — {product.ProductName}"
+                );
+
                 return RedirectToAction(nameof(Index));
             }
+
             return View(product);
         }
 
@@ -85,10 +100,12 @@ namespace LOSTBOOKS.Controllers
             }
 
             var product = await _context.Products.FindAsync(id);
+
             if (product == null)
             {
                 return NotFound();
             }
+
             return View(product);
         }
 
@@ -97,7 +114,9 @@ namespace LOSTBOOKS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ProductID,ProductName,Category,SellingPrice")] Product product)
+        public async Task<IActionResult> Edit(
+            int id,
+            [Bind("ProductID,ProductName,Category,SellingPrice")] Product product)
         {
             if (id != product.ProductID)
             {
@@ -122,8 +141,16 @@ namespace LOSTBOOKS.Controllers
                         throw;
                     }
                 }
+
+                _activityLogger.Log(
+                    "Products",
+                    "Product Edited",
+                    $"Product Edited — {product.ProductName}"
+                );
+
                 return RedirectToAction(nameof(Index));
             }
+
             return View(product);
         }
 
@@ -137,6 +164,7 @@ namespace LOSTBOOKS.Controllers
 
             var product = await _context.Products
                 .FirstOrDefaultAsync(m => m.ProductID == id);
+
             if (product == null)
             {
                 return NotFound();
@@ -151,12 +179,23 @@ namespace LOSTBOOKS.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var product = await _context.Products.FindAsync(id);
+
             if (product != null)
             {
                 _context.Products.Remove(product);
             }
 
             await _context.SaveChangesAsync();
+
+            if (product != null)
+            {
+                _activityLogger.Log(
+                    "Products",
+                    "Product Deleted",
+                    $"Product Deleted — {product.ProductName}"
+                );
+            }
+
             return RedirectToAction(nameof(Index));
         }
 

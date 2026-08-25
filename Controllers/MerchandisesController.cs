@@ -7,15 +7,20 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using LOSTBOOKS.Data;
 using LOSTBOOKS.Models;
+
 namespace LOSTBOOKS.Controllers
 {
     public class MerchandisesController : Controller
     {
         private readonly LOSTBOOKSContext _context;
+        private readonly LOSTBOOKS.Services.IActivityLogger _activityLogger;
 
-        public MerchandisesController(LOSTBOOKSContext context)
+        public MerchandisesController(
+            LOSTBOOKSContext context,
+            LOSTBOOKS.Services.IActivityLogger activityLogger)
         {
             _context = context;
+            _activityLogger = activityLogger;
         }
 
         // GET: Merchandises
@@ -57,6 +62,13 @@ namespace LOSTBOOKS.Controllers
             {
                 _context.Add(merchandise);
                 await _context.SaveChangesAsync();
+
+                _activityLogger.Log(
+                    "Merchandises",
+                    "Merchandise Added",
+                    $"Merchandise Added — {merchandise.MerchandiseName}"
+                );
+
                 return RedirectToAction(nameof(Index));
             }
 
@@ -97,7 +109,9 @@ namespace LOSTBOOKS.Controllers
         // POST: Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Merchandise merchandise)
+        public async Task<IActionResult> Edit(
+            int id,
+            Merchandise merchandise)
         {
             if (id != merchandise.MerchandiseID)
                 return NotFound();
@@ -106,6 +120,13 @@ namespace LOSTBOOKS.Controllers
             {
                 _context.Update(merchandise);
                 await _context.SaveChangesAsync();
+
+                _activityLogger.Log(
+                    "Merchandises",
+                    "Merchandise Edited",
+                    $"Merchandise Edited — {merchandise.MerchandiseName}"
+                );
+
                 return RedirectToAction(nameof(Index));
             }
 
@@ -145,6 +166,12 @@ namespace LOSTBOOKS.Controllers
             {
                 _context.Merchandises.Remove(merchandise);
                 await _context.SaveChangesAsync();
+
+                _activityLogger.Log(
+                    "Merchandises",
+                    "Merchandise Deleted",
+                    $"Merchandise Deleted — {merchandise.MerchandiseName}"
+                );
             }
 
             return RedirectToAction(nameof(Index));

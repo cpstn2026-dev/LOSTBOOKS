@@ -1,5 +1,468 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model List<LOSTBOOKS.Models.User>
 @{
+    ViewData["Title"] = "User Management";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <h2 class="fw-bold text-success mb-0">
+            <i class="bi bi-people-fill"></i>
+            User Management
+        </h2>
+
+        <button type="button"
+                class="btn btn-success"
+                data-bs-toggle="modal"
+                data-bs-target="#addUserModal">
+            <i class="bi bi-plus-circle"></i>
+            Add User
+        </button>
+    </div>
+
+    @if (TempData["UserError"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["UserError"]
+        </div>
+    }
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover
+                    table-bordered align-middle mb-0">
+                    <thead class="table-success">
+                        <tr>
+                            <th>User ID</th>
+                            <th>Full Name</th>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var user in Model)
+                        {
+                            <tr>
+                                <td>@user.UserCode</td>
+                                <td>@user.FullName</td>
+                                <td>@user.Username</td>
+                                <td>@user.Role</td>
+
+                                <td>
+                                    <span class="badge @(user.Status == "Active" ? "bgsuccess" : "bg-secondary")">
+                                        @user.Status
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <button type="button"
+                                            class="btn btn-success btn-sm"
+                                            databs-toggle="modal"
+                                            databs-target="#editUserModal"
+                                            dataid="@user.UserID"
+                                            datafullname="@user.FullName"
+                                            data-
+                                            username="@user.Username"
+                                            datarole="@user.Role"
+                                            datastatus="@user.Status">
+                                        Edit
+                                    </button>
+
+                                    <button type="button"
+                                            class="btn btn-outline-success btn-sm"
+                                            databs-toggle="modal"
+                                            databs-target="#changePasswordModal"
+                                            dataid="@user.UserID">
+                                        Change
+                                        Password
+                                    </button>
+
+                                    <form aspcontroller="Users"
+                                          aspaction="ToggleStatus"
+                                          asproute-id="@user.UserID"
+                                          method="post"
+                                          class="dinline">
+                                        <button type="submit"
+                                                class="btn @(user.Status == "Active" ? "btn-danger"
+                                                    : "btn-secondary") btn-sm">
+                                            @(user.Status == "Active" ? "Deactivate" :
+                                                "Activate")
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--
+========================================================
+ADD USER MODAL
+========================================================
+-->
+<div class="modal fade"
+     id="addUserModal"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog">
+        <form asp-controller="Users" aspaction="Create" method="post">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h4 class="modal-title">
+                        Add User
+                    </h4>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label class="formlabel">
+                            Full Name
+                        </label>
+
+                        <input type="text"
+                               name="FullName"
+                               class="form-control"
+                               required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="formlabel">
+                            Username
+                        </label>
+
+                        <input type="text"
+                               name="Username"
+                               class="form-control"
+                               required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="formlabel">
+                            Password
+                        </label>
+
+                        <input type="password"
+                               name="Password"
+                               class="form-control"
+                               required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="formlabel">
+                            Confirm Password
+                        </label>
+
+                        <input type="password"
+                               name="ConfirmPassword"
+                               class="form-control"
+                               required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-
+                            label">
+                            Role
+                        </label>
+
+                        <select name="Role"
+                                class="form-select"
+                                required>
+                            <option value="Staff">
+                                Staff
+                            </option>
+
+                            <option value="Manager">
+                                Manager
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="formlabel">
+                            Status
+                        </label>
+
+                        <select name="Status"
+                                class="form-select"
+                                required>
+                            <option value="Active">
+                                Active
+                            </option>
+
+                            <option value="Inactive">
+                                Inactive
+                            </option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit"
+                            class="btn btn-success">
+                        Save
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-danger"
+                            data-bsdismiss="modal">
+                        Cancel
+                    </button>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+
+<!--
+========================================================
+EDIT USER MODAL
+========================================================
+-->
+<div class="modal fade"
+     id="editUserModal"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog">
+
+        <form id="editUserForm"
+              aspcontroller="Users"
+              asp-action="Edit"
+              method="post">
+
+            <input type="hidden"
+                   name="id"
+                   id="editUserId" />
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h4 class="modal-title">
+                        Edit User
+                    </h4>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label class="formlabel">
+                            Full Name
+                        </label>
+
+                        <input type="text"
+                               name="FullName"
+                               id="editFullName"
+                               class="formcontrol"
+                               required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-
+                            label">
+                            Username
+                        </label>
+
+                        <input type="text"
+                               name="Username"
+                               id="editUsername"
+                               class="formcontrol"
+                               required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="formlabel">
+                            Role
+                        </label>
+
+                        <select name="Role"
+                                id="editRole"
+                                class="form-select"
+                                required>
+                            <option value="Staff">
+                                Staff
+                            </option>
+
+                            <option value="Manager">
+                                Manager
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="formlabel">
+                            Status
+                        </label>
+
+                        <select name="Status"
+                                id="editStatus"
+                                class="form-select"
+                                required>
+                            <option value="Active">
+                                Active
+                            </option>
+
+                            <option value="Inactive">
+                                Inactive
+                            </option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit"
+                            class="btn btn-success">
+                        Save Changes
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-danger"
+                            data-bsdismiss="modal">
+                        Cancel
+                    </button>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+
+<!--
+========================================================
+CHANGE PASSWORD MODAL
+========================================================
+-->
+<div class="modal fade"
+     id="changePasswordModal"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog">
+
+        <form id="changePasswordForm"
+              aspcontroller="Users"
+              asp-action="ChangePassword"
+              method="post">
+
+            <input type="hidden"
+                   name="id"
+                   id="changePasswordUserId" />
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h4 class="modal-title">
+                        Change Password
+                    </h4>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label class="formlabel">
+                            New Password
+                        </label>
+
+                        <input type="password"
+                               name="NewPassword"
+                               class="form-control"
+                               required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="formlabel">
+                            Confirm New Password
+                        </label>
+
+                        <input type="password"
+                               name="ConfirmNewPassword"
+                               class="form-control"
+                               required />
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit"
+                            class="btn btn-success">
+                        Update Password
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-danger"
+                            data-bsdismiss="modal">
+                        Cancel
+                    </button>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // EDIT MODAL — populate fields from the
+        // row's data-* attributes
+        document.getElementById("editUserModal")
+            .addEventListener("show.bs.modal",
+                function (event) {
+                    const button = event.relatedTarget;
+
+                    document.getElementById("editUserId").value =
+                        button.getAttribute("data-id");
+
+                    document.getElementById("editFullName").value =
+                        button.getAttribute("data-fullname");
+
+                    document.getElementById("editUsername").value =
+                        button.getAttribute("data-username");
+
+                    document.getElementById("editRole").value =
+                        button.getAttribute("data-role");
+
+                    document.getElementById("editStatus").value =
+                        button.getAttribute("data-status");
+                });
+
+        // CHANGE PASSWORD MODAL — populate hidden
+        // user id
+        document.getElementById("changePasswordModal")
+            .addEventListener("show.bs.modal",
+                function (event) {
+                    const button = event.relatedTarget;
+
+                    document.getElementById("changePasswordUserId").val
+                        ue = button.getAttribute("data-id");
+                });
+    </script>
 }
