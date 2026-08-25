@@ -3569,10 +3569,10 @@ namespace LOSTBOOKS.Controllers
         // =====================================================
 
         private static string BuildFinalSummary(
-    SalesGrowthAnalysis growth,
-    ItemAnalysisSummary itemAnalysis,
-    CategoryAnalysisSummary catAnalysis,
-    CompositionSummary composition)
+        SalesGrowthAnalysis growth,
+        ItemAnalysisSummary itemAnalysis,
+        CategoryAnalysisSummary catAnalysis,
+        CompositionSummary composition)
         {
             var parts = new List<string>();
 
@@ -3678,7 +3678,8 @@ namespace LOSTBOOKS.Controllers
                         $"({catAnalysis.LargestDecreasePercent:N2}%).");
                 }
 
-                if (catAnalysis.HighestPerformingCategory != null)
+                if (catAnalysis.HighestPerformingCategory != null &&
+                    !composition.IsSingleCategory)
                 {
                     parts.Add(
                         $"{catAnalysis.HighestPerformingCategory} was the " +
