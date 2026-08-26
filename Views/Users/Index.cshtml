@@ -27,11 +27,18 @@
         </div>
     }
 
+    @if (TempData["TempPasswordDisplay"] != null)
+    {
+        <div class="alert alert-warning">
+            @TempData["TempPasswordDisplay"]
+        </div>
+    }
+
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-hover table-bordered align-middle mb-0">
-                    <thead class="table-success">
+                    <thead>
                         <tr>
                             <th>User ID</th>
                             <th>Full Name</th>
@@ -70,13 +77,16 @@
                                         Edit
                                     </button>
 
-                                    <button type="button"
-                                            class="btn btn-outline-success btn-sm"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#changePasswordModal"
-                                            data-id="@user.UserID">
-                                        Change Password
-                                    </button>
+                                    <form asp-controller="Users"
+                                          asp-action="ResetPassword"
+                                          asp-route-id="@user.UserID"
+                                          method="post"
+                                          class="d-inline"
+                                          onsubmit="return confirm('Reset this user\'s password? They will need to set a new one on next login.');">
+                                        <button type="submit" class="btn btn-outline-warning btn-sm">
+                                            Reset Password
+                                        </button>
+                                    </form>
 
                                     <form asp-controller="Users"
                                           asp-action="ToggleStatus"

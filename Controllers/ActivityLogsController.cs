@@ -20,11 +20,15 @@ namespace LOSTBOOKS.Controllers
         DateTime? toDate,
         int? userId,
         string? module,
-        string? action)
+        string? actionFilter)
         {
             var query = _context.ActivityLogs
             .Include(a => a.User)
             .AsQueryable();
+
+            // TEMPORARY — filters disabled entirely to force-show all rows,
+            // no matter what's in the URL. Remove this block once confirmed working.
+            
             if (fromDate.HasValue)
             {
                 query = query.Where(a => a.DateTime
@@ -45,12 +49,13 @@ namespace LOSTBOOKS.Controllers
                 query = query.Where(a => a.Module
                 == module);
             }
-            if (!string.IsNullOrWhiteSpace(action))
+            if (!string.IsNullOrWhiteSpace(actionFilter))
             {
                 query = query.Where(a => a.Action
-                == action);
+                == actionFilter);
             }
-          
+
+
 
             var logs = await query
                 .OrderByDescending(a => a.DateTime)
@@ -80,7 +85,7 @@ namespace LOSTBOOKS.Controllers
 
             ViewBag.SelectedUserId = userId;
             ViewBag.SelectedModule = module ?? "";
-            ViewBag.SelectedAction = action ?? "";
+            ViewBag.SelectedAction = actionFilter ?? "";
 
             return View(logs);
         }

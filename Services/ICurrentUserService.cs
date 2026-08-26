@@ -11,6 +11,7 @@
         string? FullName { get; }
         string? Role { get; }
         bool IsManager { get; }
+        bool MustChangePassword { get; }
 
         void SetCurrentUser(int userId);
     }

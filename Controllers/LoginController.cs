@@ -72,5 +72,46 @@ namespace LOSTBOOKS.Controllers
             HttpContext.Session.Clear();
             return RedirectToAction("Index", "Login");
         }
+
+        [HttpGet]
+        public IActionResult SetNewPassword()
+        {
+            if (_currentUser.UserID == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SetNewPassword(string newPassword, string confirmPassword)
+        {
+            if (_currentUser.UserID == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            if (string.IsNullOrWhiteSpace(newPassword) || newPassword != confirmPassword)
+            {
+                ViewBag.SetPasswordError = "Passwords do not match.";
+                return View();
+            }
+
+            var user = await _context.Users.FindAsync(_currentUser.UserID.Value);
+
+            if (user == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            user.PasswordHash = _hasher.HashPassword(user, newPassword);
+            user.MustChangePassword = false;
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Index", "Home");
+        }
     }
 }

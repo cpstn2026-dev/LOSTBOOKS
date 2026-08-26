@@ -20,8 +20,11 @@ namespace LOSTBOOKS.Models
         public string Role { get; set; } = "Staff";
         // "Active" or "Inactive"
         [Required]
-        public string Status { get; set; } =
-        "Active";
+        public string Status { get; set; } = "Active";
+
+        // True right after a Manager-issued temp password reset —
+        // forces the "Set New Password" screen before anything else works.
+        public bool MustChangePassword { get; set; } = false;
         [NotMapped]
         public string UserCode => $"U-{UserID:D4}";
     }

@@ -1,4 +1,5 @@
-﻿using LOSTBOOKS.Data;
+﻿using System.Linq;
+using LOSTBOOKS.Data;
 using LOSTBOOKS.Filters;
 using LOSTBOOKS.Models;
 using LOSTBOOKS.Services;
@@ -167,6 +168,45 @@ namespace LOSTBOOKS.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
+        // POST: Users/ResetPassword/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            string tempPassword = GenerateTempPassword();
+
+            user.PasswordHash = _hasher.HashPassword(user, tempPassword);
+            user.MustChangePassword = true;
+
+            await _context.SaveChangesAsync();
+
+            TempData["TempPasswordDisplay"] =
+                $"Temporary password for {user.FullName}: {tempPassword} — " +
+                "share this with them directly. They will be required to set their own " +
+                "permanent password on next login.";
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        private static string GenerateTempPassword()
+        {
+            const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
+            var random = new Random();
+
+            return new string(
+                Enumerable.Range(0, 10)
+                    .Select(_ => chars[random.Next(chars.Length)])
+                    .ToArray());
+        }
+
         // POST: Users/ToggleStatus/5
         [HttpPost]
         [ValidateAntiForgeryToken]

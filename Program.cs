@@ -1,9 +1,58 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using LOSTBOOKS.Data;
 using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// =====================================================
+// EMERGENCY ADMIN RECOVERY (console-only, not web-reachable)
+// Run with: dotnet run -- emergency-reset-admin
+// =====================================================
+if (args.Contains("emergency-reset-admin"))
+{
+    var optionsBuilder = new Microsoft.EntityFrameworkCore.DbContextOptionsBuilder<LOSTBOOKS.Data.LOSTBOOKSContext>();
+    optionsBuilder.UseSqlServer(builder.Configuration.GetConnectionString("LOSTBOOKSContext"));
+
+    using var recoveryContext = new LOSTBOOKS.Data.LOSTBOOKSContext(optionsBuilder.Options);
+
+    var admin = recoveryContext.Users
+        .Where(u => u.Role == "Manager" && u.Status == "Active")
+        .OrderBy(u => u.UserID)
+        .FirstOrDefault();
+
+    if (admin == null)
+    {
+        Console.WriteLine("No active Manager account found. Cannot perform emergency recovery.");
+        return;
+    }
+
+    const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
+    var random = new Random();
+
+    string tempPassword = new string(
+        Enumerable.Range(0, 12)
+            .Select(_ => chars[random.Next(chars.Length)])
+            .ToArray());
+
+    var hasher = new Microsoft.AspNetCore.Identity.PasswordHasher<LOSTBOOKS.Models.User>();
+
+    admin.PasswordHash = hasher.HashPassword(admin, tempPassword);
+    admin.MustChangePassword = true;
+
+    recoveryContext.SaveChanges();
+
+    Console.WriteLine("=====================================================");
+    Console.WriteLine(" EMERGENCY ADMIN RECOVERY COMPLETE");
+    Console.WriteLine("=====================================================");
+    Console.WriteLine($" Account:            {admin.Username} ({admin.FullName})");
+    Console.WriteLine($" Temporary password: {tempPassword}");
+    Console.WriteLine(" This account must set a new password on next login.");
+    Console.WriteLine("=====================================================");
+
+    return;
+}
 
 // QuestPDF License
 QuestPDF.Settings.License = LicenseType.Community;
