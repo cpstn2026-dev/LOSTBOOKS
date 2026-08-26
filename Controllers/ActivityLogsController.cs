@@ -50,31 +50,38 @@ namespace LOSTBOOKS.Controllers
                 query = query.Where(a => a.Action
                 == action);
             }
+          
+
             var logs = await query
-            .OrderByDescending(a => a.DateTime)
-            .ToListAsync();
+                .OrderByDescending(a => a.DateTime)
+                .ToListAsync();
+
             ViewBag.Users = new SelectList(
-            _context.Users.OrderBy(u =>
-            u.FullName),
-            "UserID",
-            "FullName",
-            userId);
+                _context.Users.OrderBy(u => u.FullName),
+                "UserID",
+                "FullName",
+                userId);
+
             ViewBag.Modules = new SelectList(
-            new[]
-            {
-"POS", "Books", "Products",
-"Merchandise",
-"Services", "Consigners",
-"Reports"
-            },
-            module);
+                new[]
+                {
+                    "POS", "Books", "Products",
+                    "Merchandise",
+                    "Services", "Consigners",
+                    "Reports"
+                },
+                module);
+
             ViewBag.SelectedFromDate =
-            fromDate?.ToString("yyyy-MM-dd") ?? "";
+                fromDate?.ToString("yyyy-MM-dd") ?? "";
+
             ViewBag.SelectedToDate =
-            toDate?.ToString("yyyy-MM-dd") ?? "";
+                toDate?.ToString("yyyy-MM-dd") ?? "";
+
             ViewBag.SelectedUserId = userId;
             ViewBag.SelectedModule = module ?? "";
             ViewBag.SelectedAction = action ?? "";
+
             return View(logs);
         }
     }

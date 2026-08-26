@@ -30,8 +30,7 @@
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover
-                    table-bordered align-middle mb-0">
+                <table class="table table-hover table-bordered align-middle mb-0">
                     <thead class="table-success">
                         <tr>
                             <th>User ID</th>
@@ -53,7 +52,7 @@
                                 <td>@user.Role</td>
 
                                 <td>
-                                    <span class="badge @(user.Status == "Active" ? "bgsuccess" : "bg-secondary")">
+                                    <span class="badge @(user.Status == "Active" ? "bg-success" : "bg-secondary")">
                                         @user.Status
                                     </span>
                                 </td>
@@ -61,36 +60,32 @@
                                 <td>
                                     <button type="button"
                                             class="btn btn-success btn-sm"
-                                            databs-toggle="modal"
-                                            databs-target="#editUserModal"
-                                            dataid="@user.UserID"
-                                            datafullname="@user.FullName"
-                                            data-
-                                            username="@user.Username"
-                                            datarole="@user.Role"
-                                            datastatus="@user.Status">
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editUserModal"
+                                            data-id="@user.UserID"
+                                            data-fullname="@user.FullName"
+                                            data-username="@user.Username"
+                                            data-role="@user.Role"
+                                            data-status="@user.Status">
                                         Edit
                                     </button>
 
                                     <button type="button"
                                             class="btn btn-outline-success btn-sm"
-                                            databs-toggle="modal"
-                                            databs-target="#changePasswordModal"
-                                            dataid="@user.UserID">
-                                        Change
-                                        Password
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#changePasswordModal"
+                                            data-id="@user.UserID">
+                                        Change Password
                                     </button>
 
-                                    <form aspcontroller="Users"
-                                          aspaction="ToggleStatus"
-                                          asproute-id="@user.UserID"
+                                    <form asp-controller="Users"
+                                          asp-action="ToggleStatus"
+                                          asp-route-id="@user.UserID"
                                           method="post"
-                                          class="dinline">
+                                          class="d-inline">
                                         <button type="submit"
-                                                class="btn @(user.Status == "Active" ? "btn-danger"
-                                                    : "btn-secondary") btn-sm">
-                                            @(user.Status == "Active" ? "Deactivate" :
-                                                "Activate")
+                                                class="btn @(user.Status == "Active" ? "btn-danger" : "btn-secondary") btn-sm">
+                                            @(user.Status == "Active" ? "Deactivate" : "Activate")
                                         </button>
                                     </form>
                                 </td>
@@ -114,7 +109,7 @@ ADD USER MODAL
      aria-hidden="true">
 
     <div class="modal-dialog">
-        <form asp-controller="Users" aspaction="Create" method="post">
+        <form asp-controller="Users" asp-action="Create" method="post">
 
             <div class="modal-content">
 
@@ -132,7 +127,7 @@ ADD USER MODAL
                 <div class="modal-body">
 
                     <div class="mb-3">
-                        <label class="formlabel">
+                        <label class="form-label">
                             Full Name
                         </label>
 
@@ -143,7 +138,7 @@ ADD USER MODAL
                     </div>
 
                     <div class="mb-3">
-                        <label class="formlabel">
+                        <label class="form-label">
                             Username
                         </label>
 
@@ -154,7 +149,7 @@ ADD USER MODAL
                     </div>
 
                     <div class="mb-3">
-                        <label class="formlabel">
+                        <label class="form-label">
                             Password
                         </label>
 
@@ -165,7 +160,7 @@ ADD USER MODAL
                     </div>
 
                     <div class="mb-3">
-                        <label class="formlabel">
+                        <label class="form-label">
                             Confirm Password
                         </label>
 
@@ -176,8 +171,7 @@ ADD USER MODAL
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-
-                            label">
+                        <label class="form-label">
                             Role
                         </label>
 
@@ -195,7 +189,7 @@ ADD USER MODAL
                     </div>
 
                     <div class="mb-3">
-                        <label class="formlabel">
+                        <label class="form-label">
                             Status
                         </label>
 
@@ -222,7 +216,7 @@ ADD USER MODAL
 
                     <button type="button"
                             class="btn btn-danger"
-                            data-bsdismiss="modal">
+                            data-bs-dismiss="modal">
                         Cancel
                     </button>
                 </div>
@@ -245,7 +239,7 @@ EDIT USER MODAL
     <div class="modal-dialog">
 
         <form id="editUserForm"
-              aspcontroller="Users"
+              asp-controller="Users"
               asp-action="Edit"
               method="post">
 
@@ -269,32 +263,31 @@ EDIT USER MODAL
                 <div class="modal-body">
 
                     <div class="mb-3">
-                        <label class="formlabel">
+                        <label class="form-label">
                             Full Name
                         </label>
 
                         <input type="text"
                                name="FullName"
                                id="editFullName"
-                               class="formcontrol"
+                               class="form-control"
                                required />
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-
-                            label">
+                        <label class="form-label">
                             Username
                         </label>
 
                         <input type="text"
                                name="Username"
                                id="editUsername"
-                               class="formcontrol"
+                               class="form-control"
                                required />
                     </div>
 
                     <div class="mb-3">
-                        <label class="formlabel">
+                        <label class="form-label">
                             Role
                         </label>
 
@@ -313,7 +306,7 @@ EDIT USER MODAL
                     </div>
 
                     <div class="mb-3">
-                        <label class="formlabel">
+                        <label class="form-label">
                             Status
                         </label>
 
@@ -341,7 +334,7 @@ EDIT USER MODAL
 
                     <button type="button"
                             class="btn btn-danger"
-                            data-bsdismiss="modal">
+                            data-bs-dismiss="modal">
                         Cancel
                     </button>
                 </div>
@@ -364,7 +357,7 @@ CHANGE PASSWORD MODAL
     <div class="modal-dialog">
 
         <form id="changePasswordForm"
-              aspcontroller="Users"
+              asp-controller="Users"
               asp-action="ChangePassword"
               method="post">
 
@@ -388,7 +381,7 @@ CHANGE PASSWORD MODAL
                 <div class="modal-body">
 
                     <div class="mb-3">
-                        <label class="formlabel">
+                        <label class="form-label">
                             New Password
                         </label>
 
@@ -399,7 +392,7 @@ CHANGE PASSWORD MODAL
                     </div>
 
                     <div class="mb-3">
-                        <label class="formlabel">
+                        <label class="form-label">
                             Confirm New Password
                         </label>
 
@@ -419,7 +412,7 @@ CHANGE PASSWORD MODAL
 
                     <button type="button"
                             class="btn btn-danger"
-                            data-bsdismiss="modal">
+                            data-bs-dismiss="modal">
                         Cancel
                     </button>
                 </div>
@@ -431,8 +424,7 @@ CHANGE PASSWORD MODAL
 
 @section Scripts {
     <script>
-        // EDIT MODAL — populate fields from the
-        // row's data-* attributes
+        // EDIT MODAL — populate fields from the row's data-* attributes
         document.getElementById("editUserModal")
             .addEventListener("show.bs.modal",
                 function (event) {
@@ -454,15 +446,14 @@ CHANGE PASSWORD MODAL
                         button.getAttribute("data-status");
                 });
 
-        // CHANGE PASSWORD MODAL — populate hidden
-        // user id
+        // CHANGE PASSWORD MODAL — populate hidden user id
         document.getElementById("changePasswordModal")
             .addEventListener("show.bs.modal",
                 function (event) {
                     const button = event.relatedTarget;
 
-                    document.getElementById("changePasswordUserId").val
-                        ue = button.getAttribute("data-id");
+                    document.getElementById("changePasswordUserId").value =
+                        button.getAttribute("data-id");
                 });
     </script>
 }

@@ -10,7 +10,7 @@
     </h2>
     <div class="card shadow-sm mb-4">
         <div class="card-body">
-            <form method="get" aspcontroller="ActivityLogs" asp-action="Index">
+            <form method="get" asp-controller="ActivityLogs" asp-action="Index">
                 <div class="row align-items-end">
                     <div class="col-md-3 mb-3">
                         <label class="form-label
@@ -31,7 +31,7 @@
                         fw-bold">User</label>
                         <select name="userId"
                                 class="form-select"
-                                aspitems="ViewBag.Users">
+                                asp-items="ViewBag.Users">
                             <option value="">
                                 All
                                 Users
@@ -39,14 +39,12 @@
                         </select>
                     </div>
                     <div class="col-md-3 mb-3">
-                        <label class="form-label
-                        fw-bold">Module</label>
+                        <label class="form-label fw-bold">Section</label>
                         <select name="module"
                                 class="form-select"
-                                aspitems="ViewBag.Modules">
+                                asp-items="ViewBag.Modules">
                             <option value="">
-                                All
-                                Modules
+                                All Sections
                             </option>
                         </select>
                     </div>
@@ -58,7 +56,7 @@
                         fill"></i>
                         Filter
                     </button>
-                    <a aspcontroller="ActivityLogs" asp-action="Index"
+                    <a asp-controller="ActivityLogs" asp-action="Index"
                        class="btn btn-secondary">
                         <i class="bi bi-arrowcounterclockwise"></i>
                         Reset
@@ -79,7 +77,7 @@
                                 Time
                             </th>
                             <th>User</th>
-                            <th>Module</th>
+                            <th>Section</th>
                             <th>Action</th>
                             <th>Description</th>
                         </tr>

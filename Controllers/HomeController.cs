@@ -33,8 +33,9 @@ namespace LOSTBOOKS.Controllers
             // =========================
             // BOOKS
             // =========================
+
             items.AddRange(_context.Books
-                .Where(b => b.Quantity > 0)
+                .Where(b => b.Quantity > 0 && b.Consignor.IsActive)
                 .Select(b => new POSViewModels
                 {
                     Id = "BK-" + b.BookID.ToString("D4"),
@@ -62,8 +63,9 @@ namespace LOSTBOOKS.Controllers
             // =========================
             // MERCHANDISE
             // =========================
+
             items.AddRange(_context.Merchandises
-                .Where(m => m.Quantity > 0)   // NEW: hide out-of-stock merch too
+                .Where(m => m.Quantity > 0 && m.Consignor.IsActive) // hide out-of-stock AND deactivated-consignor items
                 .Select(m => new POSViewModels
                 {
                     Id = "MER-" + m.MerchandiseID.ToString("D4"),

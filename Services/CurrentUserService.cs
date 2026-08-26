@@ -20,34 +20,24 @@ namespace LOSTBOOKS.Services
         }
         private Models.User? GetUser()
         {
-            var session =
-            _httpContextAccessor.HttpContext?.Session;
+            var session = _httpContextAccessor.HttpContext?.Session;
+
             if (session == null)
             {
                 return null;
             }
+
             int? id = session.GetInt32(SessionKey);
+
             if (id == null)
             {
-                // No user selected yet this session — default to the
-            // first Active user in the database.
-                var firstActive = _context.Users
-                .Where(u => u.Status ==
-                "Active")
-                .OrderBy(u => u.UserID)
-                .FirstOrDefault();
-
-                if (firstActive == null)
-                {
-                    return null;
-                }
-                session.SetInt32(SessionKey,
-                firstActive.UserID);
-                return firstActive;
+                // No one is logged in — Login is now required, so there is
+                // no fallback to "the first active user" anymore.
+                return null;
             }
+
             return _context.Users
-            .FirstOrDefault(u => u.UserID ==
-            id.Value);
+                .FirstOrDefault(u => u.UserID == id.Value && u.Status == "Active");
         }
         public int? UserID => GetUser()?.UserID;
         public string? FullName =>

@@ -35,6 +35,7 @@ namespace LOSTBOOKS.Controllers
 
             var merchandises = _context.Merchandises
                 .Include(m => m.Consignor)
+                .Where(m => m.Consignor.IsActive)
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(searchString))

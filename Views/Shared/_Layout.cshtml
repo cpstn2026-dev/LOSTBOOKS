@@ -24,9 +24,13 @@
           href="~/css/site.css"
           asp-append-version="true" />
 
+    <link rel="stylesheet" href="~/css/polish.css" asp-append-version="true" />
+
     <link rel="stylesheet"
           href="~/LOSTBOOKS.styles.css"
           asp-append-version="true" />
+
+    <link rel="stylesheet" href="~/css/polish.css" asp-append-version="true" />
 
     <!-- Bootstrap Icons -->
     <link rel="stylesheet"
@@ -101,7 +105,7 @@
                asp-action="Index"
                class="sidebar-link @(currentController == "Services" ? "active" : "")">
 
-                <i class="bi bi-cup-hot-fill"></i>
+                <i class="bi bi-journal-bookmark-fill"></i>
 
                 <span>Services</span>
 
@@ -309,7 +313,7 @@
 
                     <!-- ================= PAGE TITLE ================= -->
 
-                    <h4 class="fw-bold text-success m-0">
+                    <h4 class="fw-bold text-success m-0 text-white">
 
                         PAGE & POUR POS
 
@@ -322,83 +326,44 @@
                         <!-- ================= DATE & TIME ================= -->
 
                         <span id="dateTime"
-                              class="me-4 text-secondary fw-semibold">
+                              
+                              class="me-4 text- fw-semibold text-white">
+                              font
 
                         </span>
 
-                        <!-- ================= CURRENT USER (temporary —
-                        replaced by Login later) ================= -->
-
+                        <!-- ================= CURRENT USER / LOGOUT ================= -->
                         @{
-                            var activeUsers = DbContext.Users
-                                .Where(u => u.Status == "Active")
-                                .OrderBy(u => u.FullName)
-                                .ToList();
-
-                            int? currentUserId = CurrentUserService.UserID;
-
-                            string currentUserName =
-                                CurrentUserService.FullName ?? "No Active User";
-
-                            string currentUserRole =
-                                CurrentUserService.Role ?? "-";
+                            string currentUserName = CurrentUserService.FullName ?? "";
+                            string currentUserRole = CurrentUserService.Role ?? "";
                         }
 
-                        <div class="dropdown">
+                        <div class="d-flex align-items-center">
 
-                            <button class="btn bg-transparent border-0 dflex align-items-center dropdown-toggle"
-                                    type="button"
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false">
+                            <i class="bi bi-person-circle fs-1 text-success"></i>
 
-                                <i class="bi bi-person-circle fs-3 textsuccess"></i>
+                            <span class="ms-2 fw-semibold text-start text-white">
 
-                                <span class="ms-2 fw-semibold text-start">
+                                @currentUserName
+                                <br />
 
-                                    @currentUserName
-                                    <br />
+                                <small class="text-white">
+                                    @currentUserRole
+                                </small>
 
-                                    <small class="textmuted">
-                                        @currentUserRole
-                                    </small>
+                            </span>
 
-                                </span>
+                            <form asp-controller="Login"
+                                  asp-action="Logout"
+                                  method="post"
+                                  class="ms-3">
 
-                            </button>
+                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                    <i class="bi bi-box-arrow-right"></i>
+                                    Logout
+                                </button>
 
-                            <ul class="dropdown-menu dropdown-menu-end">
-
-                                @foreach (var u in activeUsers)
-                                {
-                                    <li>
-
-                                        <form asp-controller="CurrentUser"
-                                              asp-action="Switch"
-                                              method="post"
-                                              class="px-1">
-
-                                            <input type="hidden"
-                                                   name="userId"
-                                                   value="@u.UserID" />
-
-                                            <input type="hidden"
-                                                   name="returnUrl"
-                                                   value="@Context.Request.Path" />
-
-                                            <button type="submit"
-                                                    class="dropdown-item
-                                                    @(u.UserID == currentUserId ? "active" : "")">
-
-                                                @u.FullName — @u.Role
-
-                                            </button>
-
-                                        </form>
-
-                                    </li>
-                                }
-
-                            </ul>
+                            </form>
 
                         </div>
 

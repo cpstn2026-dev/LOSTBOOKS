@@ -22,10 +22,16 @@ builder.Services.AddDbContext<LOSTBOOKSContext>(options =>
     ));
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession();
+
+builder.Services.AddScoped<LOSTBOOKS.Filters.RequireLoginFilter>();
+
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.AddService<LOSTBOOKS.Filters.RequireLoginFilter>();
+});
 
 builder.Services.AddScoped<
     LOSTBOOKS.Services.ICurrentUserService,

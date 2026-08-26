@@ -200,8 +200,8 @@ namespace LOSTBOOKS.Controllers
 
                 _activityLogger.Log(
                     "Consigners",
-                    "Consigner Deleted",
-                    $"Consigner Deleted — {consignor.ConsignorName}"
+                    "Consigner Deactivated",
+                    $"Consigner Deactivated — {consignor.ConsignorName}"
                 );
             }
 
@@ -222,6 +222,12 @@ namespace LOSTBOOKS.Controllers
             {
                 consignor.IsActive = true;
                 await _context.SaveChangesAsync();
+
+                _activityLogger.Log(
+                    "Consigners",
+                    "Consigner Reactivated",
+                    $"Consigner Reactivated — {consignor.ConsignorName}"
+                );
             }
 
             return RedirectToAction(nameof(Index));

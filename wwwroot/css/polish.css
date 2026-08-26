@@ -1,0 +1,163 @@
+﻿/* =====================================================
+   UI POLISH — softer edges, shadows, transitions
+   No layout, spacing, or color changes — refines existing
+   Bootstrap classes only.
+   ===================================================== */
+
+/* Cards — rounder corners, softer shadow */
+.card {
+    border-radius: 14px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+    .card:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.09);
+    }
+
+.card-header {
+    border-top-left-radius: 14px !important;
+    border-top-right-radius: 14px !important;
+}
+
+.card-footer {
+    border-bottom-left-radius: 14px !important;
+    border-bottom-right-radius: 14px !important;
+}
+
+/* Buttons — rounder, smoother hover */
+.btn {
+    border-radius: 10px;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+    .btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .btn:active {
+        transform: translateY(0);
+    }
+
+/* Inputs, selects — softer corners */
+.form-control,
+.form-select {
+    border-radius: 10px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+    .form-control:focus,
+    .form-select:focus {
+        box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.15);
+    }
+
+/* Badges — softer pill shape (keeps existing colors) */
+.badge {
+    border-radius: 999px;
+    padding: 0.4em 0.75em;
+}
+
+/* Tables — softer row hover, rounded container */
+.table-responsive {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.table > tbody > tr {
+    transition: background-color 0.12s ease;
+}
+
+/* Modals — rounder corners matching cards */
+.modal-content {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+}
+
+.modal-footer {
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+}
+
+/* Alerts — softer corners */
+.alert {
+    border-radius: 12px;
+}
+
+/* Dropdown menus — softer corners, smoother shadow */
+.dropdown-menu {
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+}
+
+.dropdown-item {
+    border-radius: 8px;
+    margin: 2px 4px;
+    width: calc(100% - 8px);
+}
+
+/* Sidebar links — softer active/hover state (keeps existing colors) */
+.sidebar-link {
+    border-radius: 10px;
+    transition: background-color 0.15s ease;
+}
+
+/* =====================================================
+   MANAGEMENT PAGES (Books, Products, Merchandise, Services,
+   Consignors) — these use plain HTML + inline styles, not
+   Bootstrap classes, so they need their own rules.
+   Inline styles (colors, backgrounds, padding) are left
+   untouched — only shape/shadow/hover polish is added.
+   ===================================================== */
+
+table {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+    table, table th, table td {
+        border-color: rgba(0, 0, 0, 0.08) !important;
+    }
+
+input[type="text"],
+input[type="number"],
+input[type="password"],
+input[type="date"],
+select {
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    padding: 6px 10px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    input[type="password"]:focus,
+    input[type="date"]:focus,
+    select:focus {
+        outline: none;
+        border-color: #2e8b57;
+        box-shadow: 0 0 0 3px rgba(46, 139, 87, 0.15);
+    }
+
+/* Targets the inline-styled buttons/links (Add, Edit, Delete)
+   without touching their existing colors */
+a[style*="background-color"],
+button[style*="background-color"] {
+    border-radius: 8px !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+    a[style*="background-color"]:hover,
+    button[style*="background-color"]:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+    }

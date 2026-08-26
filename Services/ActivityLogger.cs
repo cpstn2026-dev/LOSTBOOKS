@@ -15,9 +15,13 @@ namespace LOSTBOOKS.Services
             _currentUser = currentUser;
         }
         public void Log(string module, string
-        action, string description)
+action, string description)
         {
             int? userId = _currentUser.UserID;
+
+            System.Diagnostics.Debug.WriteLine(
+                $"===== ActivityLogger.Log called — module={module}, userId={(userId.HasValue ? userId.Value.ToString() : "NULL")} =====");
+
             // No current-user context yet (e.g.Users table is still empty) —
             // skip rather than fail the operation that triggered this log.
             if (userId == null)
