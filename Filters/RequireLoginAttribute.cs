@@ -31,11 +31,6 @@ namespace LOSTBOOKS.Filters
                 context.Result = new RedirectToActionResult("Index", "Login", null);
                 return;
             }
-            if (_currentUser.MustChangePassword)
-            {
-                context.Result = new RedirectToActionResult("SetNewPassword", "Login", null);
-                return;
-            }
 
             await next();
         }

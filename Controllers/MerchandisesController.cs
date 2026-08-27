@@ -28,7 +28,7 @@ namespace LOSTBOOKS.Controllers
         public async Task<IActionResult> Index(string searchString)
         {
             ViewBag.Consignors = new SelectList(
-                _context.Consignors,
+                _context.Consignors.Where(c => c.IsActive),
                 "ConsignorID",
                 "ConsignorName"
             );
@@ -74,7 +74,7 @@ namespace LOSTBOOKS.Controllers
             }
 
             ViewBag.Consignors = new SelectList(
-                _context.Consignors,
+                _context.Consignors.Where(c => c.IsActive),
                 "ConsignorID",
                 "ConsignorName"
             );
@@ -97,8 +97,8 @@ namespace LOSTBOOKS.Controllers
             if (merchandise == null)
                 return NotFound();
 
-            ViewBag.Consignors = new SelectList(
-                _context.Consignors,
+            ViewBag.ConsignorID = new SelectList(
+                _context.Consignors.Where(c => c.IsActive),
                 "ConsignorID",
                 "ConsignorName",
                 merchandise.ConsignorID
@@ -110,9 +110,7 @@ namespace LOSTBOOKS.Controllers
         // POST: Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(
-            int id,
-            Merchandise merchandise)
+        public async Task<IActionResult> Edit(int id, Merchandise merchandise)
         {
             if (id != merchandise.MerchandiseID)
                 return NotFound();
@@ -132,7 +130,7 @@ namespace LOSTBOOKS.Controllers
             }
 
             ViewBag.ConsignorID = new SelectList(
-                _context.Consignors,
+                _context.Consignors.Where(c => c.IsActive),
                 "ConsignorID",
                 "ConsignorName",
                 merchandise.ConsignorID

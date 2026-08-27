@@ -25,6 +25,19 @@ namespace LOSTBOOKS.Models
         // True right after a Manager-issued temp password reset —
         // forces the "Set New Password" screen before anything else works.
         public bool MustChangePassword { get; set; } = false;
+
+        [Required]
+        public string Email { get; set; } = string.Empty;
+
+        // Set when a "Forgot Password" email is requested; cleared once used.
+        public string? PasswordResetToken { get; set; }
+        public DateTime? PasswordResetTokenExpiry { get; set; }
+
+        // Used only by the console-based Emergency Recovery fallback
+        // (accounts with no working email). Separate from the email token
+        // above so the two paths never interfere with each other.
+        public string? EmergencyRecoveryToken { get; set; }
+        public DateTime? EmergencyRecoveryTokenExpiry { get; set; }
         [NotMapped]
         public string UserCode => $"U-{UserID:D4}";
     }

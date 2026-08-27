@@ -126,8 +126,13 @@
             </form>
 
             <p class="text-center text-muted mt-3 mb-0" style="font-size: 0.9rem;">
-                Forgot your password? Please contact your Manager to request a password reset.
+                <a asp-controller="Login" asp-action="ForgotPassword" class="text-success">Forgot your password?</a>
             </p>
+
+            <p class="text-center text-muted mt-2 mb-0" style="font-size: 0.9rem;">
+                Don't have an account?
+                <a asp-controller="Login" asp-action="Register" class="text-success">Create one</a>
+            
 
         </div>
 

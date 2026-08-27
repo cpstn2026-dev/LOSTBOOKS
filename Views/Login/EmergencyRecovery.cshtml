@@ -1,0 +1,96 @@
+﻿@{
+    Layout = null;
+    ViewData["Title"] = "Emergency Recovery";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Emergency Recovery — Lost Books Cebu</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/polish.css" asp-append-version="true" />
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        .login-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1f5c3f 0%, #2e8b57 50%, #4caf7d 100%);
+            padding: 20px;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 440px;
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+            padding: 40px 32px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-page">
+        <div class="login-card">
+
+            <div class="text-center mb-4">
+                <h4 class="fw-bold text-success mb-0">Emergency Recovery</h4>
+                <p class="text-muted mb-0">
+                    Enter the recovery token provided to you to set a new password.
+                </p>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(ViewBag.RecoveryError as string))
+            {
+                <div class="alert alert-danger py-2">@ViewBag.RecoveryError</div>
+            }
+
+            @if (TempData["ResetSuccess"] != null)
+            {
+                <div class="alert alert-success py-2">@TempData["ResetSuccess"]</div>
+            }
+
+            <form asp-controller="Login" asp-action="EmergencyRecovery" method="post">
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Username</label>
+                    <input type="text" name="username" class="form-control" required autofocus />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Recovery Token</label>
+                    <input type="text" name="recoveryToken" class="form-control" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">New Password</label>
+                    <input type="password" name="newPassword" class="form-control" required />
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Confirm New Password</label>
+                    <input type="password" name="confirmPassword" class="form-control" required />
+                </div>
+
+                <button type="submit" class="btn btn-success w-100 py-2 fw-bold">
+                    Reset Password
+                </button>
+
+            </form>
+
+            <p class="text-center mt-3 mb-0">
+                <a asp-controller="Login" asp-action="Index" class="text-success">Back to Login</a>
+            </p>
+
+        </div>
+    </div>
+</body>
+</html>

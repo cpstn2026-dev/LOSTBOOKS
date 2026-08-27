@@ -11,13 +11,15 @@
             User Management
         </h2>
 
-        <button type="button"
-                class="btn btn-success"
-                data-bs-toggle="modal"
-                data-bs-target="#addUserModal">
-            <i class="bi bi-plus-circle"></i>
-            Add User
-        </button>
+        <div>
+            <label class="form-check-label">
+                <input type="checkbox"
+                       class="form-check-input"
+                       @(ViewBag.ShowInactive == true ? "checked" : "")
+                       onchange="location.href='@Url.Action("Index", "Users")?showInactive=' + this.checked">
+                Show deactivated users
+            </label>
+        </div>
     </div>
 
     @if (TempData["UserError"] != null)
@@ -26,11 +28,37 @@
             @TempData["UserError"]
         </div>
     }
+    @{
+        var pendingUsers = Model.Where(u => u.Status == "Pending").ToList();
+    }
 
-    @if (TempData["TempPasswordDisplay"] != null)
+    @if (pendingUsers.Count > 0)
     {
-        <div class="alert alert-warning">
-            @TempData["TempPasswordDisplay"]
+        <div class="card shadow-sm mb-4 border-warning">
+            <div class="card-header bg-warning">
+                Pending Account Requests (@pendingUsers.Count)
+            </div>
+            <div class="card-body">
+                @foreach (var user in pendingUsers)
+                {
+                    <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                        <div>
+                            <strong>@user.FullName</strong> (@user.Username) — @user.Email
+                        </div>
+                        <div>
+                            <form asp-controller="Users" asp-action="Approve" asp-route-id="@user.UserID"
+                                  method="post" class="d-inline">
+                                <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                            </form>
+                            <form asp-controller="Users" asp-action="Reject" asp-route-id="@user.UserID"
+                                  method="post" class="d-inline"
+                                  onsubmit="return confirm('Reject and delete this request?');">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Reject</button>
+                            </form>
+                        </div>
+                    </div>
+                }
+            </div>
         </div>
     }
 
@@ -50,7 +78,7 @@
                     </thead>
 
                     <tbody>
-                        @foreach (var user in Model)
+                        @foreach (var user in Model.Where(u => u.Status != "Pending"))
                         {
                             <tr>
                                 <td>@user.UserCode</td>
@@ -78,17 +106,6 @@
                                     </button>
 
                                     <form asp-controller="Users"
-                                          asp-action="ResetPassword"
-                                          asp-route-id="@user.UserID"
-                                          method="post"
-                                          class="d-inline"
-                                          onsubmit="return confirm('Reset this user\'s password? They will need to set a new one on next login.');">
-                                        <button type="submit" class="btn btn-outline-warning btn-sm">
-                                            Reset Password
-                                        </button>
-                                    </form>
-
-                                    <form asp-controller="Users"
                                           asp-action="ToggleStatus"
                                           asp-route-id="@user.UserID"
                                           method="post"
@@ -113,128 +130,6 @@
 ADD USER MODAL
 ========================================================
 -->
-<div class="modal fade"
-     id="addUserModal"
-     tabindex="-1"
-     aria-hidden="true">
-
-    <div class="modal-dialog">
-        <form asp-controller="Users" asp-action="Create" method="post">
-
-            <div class="modal-content">
-
-                <div class="modal-header">
-                    <h4 class="modal-title">
-                        Add User
-                    </h4>
-
-                    <button type="button"
-                            class="btn-close"
-                            data-bs-dismiss="modal">
-                    </button>
-                </div>
-
-                <div class="modal-body">
-
-                    <div class="mb-3">
-                        <label class="form-label">
-                            Full Name
-                        </label>
-
-                        <input type="text"
-                               name="FullName"
-                               class="form-control"
-                               required />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">
-                            Username
-                        </label>
-
-                        <input type="text"
-                               name="Username"
-                               class="form-control"
-                               required />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">
-                            Password
-                        </label>
-
-                        <input type="password"
-                               name="Password"
-                               class="form-control"
-                               required />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">
-                            Confirm Password
-                        </label>
-
-                        <input type="password"
-                               name="ConfirmPassword"
-                               class="form-control"
-                               required />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">
-                            Role
-                        </label>
-
-                        <select name="Role"
-                                class="form-select"
-                                required>
-                            <option value="Staff">
-                                Staff
-                            </option>
-
-                            <option value="Manager">
-                                Manager
-                            </option>
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">
-                            Status
-                        </label>
-
-                        <select name="Status"
-                                class="form-select"
-                                required>
-                            <option value="Active">
-                                Active
-                            </option>
-
-                            <option value="Inactive">
-                                Inactive
-                            </option>
-                        </select>
-                    </div>
-
-                </div>
-
-                <div class="modal-footer">
-                    <button type="submit"
-                            class="btn btn-success">
-                        Save
-                    </button>
-
-                    <button type="button"
-                            class="btn btn-danger"
-                            data-bs-dismiss="modal">
-                        Cancel
-                    </button>
-                </div>
-
-            </div>
-        </form>
-    </div>
-</div>
 
 <!--
 ========================================================
@@ -280,18 +175,6 @@ EDIT USER MODAL
                         <input type="text"
                                name="FullName"
                                id="editFullName"
-                               class="form-control"
-                               required />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">
-                            Username
-                        </label>
-
-                        <input type="text"
-                               name="Username"
-                               id="editUsername"
                                class="form-control"
                                required />
                     </div>

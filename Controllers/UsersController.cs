@@ -22,84 +22,32 @@ namespace LOSTBOOKS.Controllers
             _context = context;
         }
         // GET: Users
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(bool showInactive = false)
         {
-            var users = await _context.Users
-            .OrderBy(u => u.UserID)
-            .ToListAsync();
+            var query = _context.Users.AsQueryable();
+
+            if (!showInactive)
+            {
+                query = query.Where(u => u.Status == "Active");
+            }
+            else
+            {
+                query = query.Where(u => u.Status == "Active" || u.Status == "Inactive");
+            }
+
+            var users = await query.OrderBy(u => u.UserID).ToListAsync();
+
+            ViewBag.ShowInactive = showInactive;
+
             return View(users);
         }
-        // POST: Users/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(
-        string FullName,
-        string Username,
-        string Password,
-        string ConfirmPassword,
-        string Role,
-        string Status)
-        {
-            if (string.IsNullOrWhiteSpace(FullName)
-            ||
-            string.IsNullOrWhiteSpace(Username)
-            ||
-            string.IsNullOrWhiteSpace(Password))
-            {
-                TempData["UserError"] = "All fields are required.";
-            return
-            RedirectToAction(nameof(Index));
-            }
-            if (Password != ConfirmPassword)
-            {
-                TempData["UserError"] = "Passwords  do not match.";
-            return
-            RedirectToAction(nameof(Index));
-            }
-            if (Role != "Staff" && Role !=
-            "Manager")
-            {
-                TempData["UserError"] = "Invalid role.";
-            return
-            RedirectToAction(nameof(Index));
-            }
-            if (Status != "Active" && Status !=
-            "Inactive")
-            {
-                TempData["UserError"] = "Invalid status.";
-                return
-                RedirectToAction(nameof(Index));
-            }
-            bool usernameTaken = await
-            _context.Users
-            .AnyAsync(u => u.Username ==
-            Username);
-            if (usernameTaken)
-            {
-                TempData["UserError"] = "Username is already taken.";
-            return
-            RedirectToAction(nameof(Index));
-            }
-            var user = new User
-            {
-                FullName = FullName,
-                Username = Username,
-                Role = Role,
-                Status = Status
-            };
-            user.PasswordHash =
-            _hasher.HashPassword(user, Password);
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
+
         // POST: Users/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
         int id,
         string FullName,
-        string Username,
         string Role,
         string Status)
         {
@@ -109,32 +57,21 @@ namespace LOSTBOOKS.Controllers
             {
                 return NotFound();
             }
-            bool usernameTaken = await
-            _context.Users
-            .AnyAsync(u => u.Username ==
-            Username && u.UserID != id);
-            if (usernameTaken)
-            {
-                TempData["UserError"] = "Username is already taken.";
-            return
-            RedirectToAction(nameof(Index));
-            }
             if (Role != "Staff" && Role !=
             "Manager")
             {
                 TempData["UserError"] = "Invalid role.";
-            return
-            RedirectToAction(nameof(Index));
+                return
+                RedirectToAction(nameof(Index));
             }
             if (Status != "Active" && Status !=
             "Inactive")
             {
                 TempData["UserError"] = "Invalid status.";
-            return
-            RedirectToAction(nameof(Index));
+                return
+                RedirectToAction(nameof(Index));
             }
             user.FullName = FullName;
-            user.Username = Username;
             user.Role = Role;
             user.Status = Status;
             await _context.SaveChangesAsync();
@@ -169,44 +106,6 @@ namespace LOSTBOOKS.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // POST: Users/ResetPassword/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ResetPassword(int id)
-        {
-            var user = await _context.Users.FindAsync(id);
-
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            string tempPassword = GenerateTempPassword();
-
-            user.PasswordHash = _hasher.HashPassword(user, tempPassword);
-            user.MustChangePassword = true;
-
-            await _context.SaveChangesAsync();
-
-            TempData["TempPasswordDisplay"] =
-                $"Temporary password for {user.FullName}: {tempPassword} — " +
-                "share this with them directly. They will be required to set their own " +
-                "permanent password on next login.";
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        private static string GenerateTempPassword()
-        {
-            const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
-            var random = new Random();
-
-            return new string(
-                Enumerable.Range(0, 10)
-                    .Select(_ => chars[random.Next(chars.Length)])
-                    .ToArray());
-        }
-
         // POST: Users/ToggleStatus/5
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -222,6 +121,37 @@ namespace LOSTBOOKS.Controllers
             user.Status = user.Status == "Active" ?
             "Inactive" : "Active";
             await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+        // POST: Users/Approve/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Approve(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+
+            if (user != null && user.Status == "Pending")
+            {
+                user.Status = "Active";
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // POST: Users/Reject/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Reject(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+
+            if (user != null && user.Status == "Pending")
+            {
+                _context.Users.Remove(user);
+                await _context.SaveChangesAsync();
+            }
+
             return RedirectToAction(nameof(Index));
         }
     }

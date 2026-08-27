@@ -29,9 +29,9 @@ namespace LOSTBOOKS.Controllers
         public async Task<IActionResult> Index(string searchString)
         {
             ViewBag.Consignors = new SelectList(
-                _context.Consignors,
-                "ConsignorID",
-                "ConsignorName"
+            _context.Consignors.Where(c => c.IsActive),
+            "ConsignorID",
+            "ConsignorName"
             );
 
             var books = _context.Books
@@ -71,10 +71,9 @@ namespace LOSTBOOKS.Controllers
             if (!ModelState.IsValid)
             {
                 ViewBag.Consignors = new SelectList(
-                    _context.Consignors,
-                    "ConsignorID",
-                    "ConsignorName",
-                    book.ConsignorID
+                _context.Consignors.Where(c => c.IsActive),
+                "ConsignorID",
+                "ConsignorName"
                 );
 
                 var books = await _context.Books

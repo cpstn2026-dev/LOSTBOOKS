@@ -2,14 +2,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using LOSTBOOKS.Data;
+using LOSTBOOKS.Services;
 using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// =====================================================
-// EMERGENCY ADMIN RECOVERY (console-only, not web-reachable)
-// Run with: dotnet run -- emergency-reset-admin
-// =====================================================
+
 if (args.Contains("emergency-reset-admin"))
 {
     var optionsBuilder = new Microsoft.EntityFrameworkCore.DbContextOptionsBuilder<LOSTBOOKS.Data.LOSTBOOKSContext>();
@@ -31,28 +29,28 @@ if (args.Contains("emergency-reset-admin"))
     const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
     var random = new Random();
 
-    string tempPassword = new string(
-        Enumerable.Range(0, 12)
+    string recoveryToken = new string(
+        Enumerable.Range(0, 16)
             .Select(_ => chars[random.Next(chars.Length)])
             .ToArray());
 
-    var hasher = new Microsoft.AspNetCore.Identity.PasswordHasher<LOSTBOOKS.Models.User>();
-
-    admin.PasswordHash = hasher.HashPassword(admin, tempPassword);
-    admin.MustChangePassword = true;
+    admin.EmergencyRecoveryToken = recoveryToken;
+    admin.EmergencyRecoveryTokenExpiry = DateTime.Now.AddHours(24);
 
     recoveryContext.SaveChanges();
 
     Console.WriteLine("=====================================================");
-    Console.WriteLine(" EMERGENCY ADMIN RECOVERY COMPLETE");
+    Console.WriteLine(" EMERGENCY RECOVERY TOKEN GENERATED");
     Console.WriteLine("=====================================================");
-    Console.WriteLine($" Account:            {admin.Username} ({admin.FullName})");
-    Console.WriteLine($" Temporary password: {tempPassword}");
-    Console.WriteLine(" This account must set a new password on next login.");
+    Console.WriteLine($" Account:         {admin.Username} ({admin.FullName})");
+    Console.WriteLine($" Recovery token:  {recoveryToken}");
+    Console.WriteLine(" Valid for 24 hours. The account holder must enter this");
+    Console.WriteLine(" token themselves to set their own new password.");
     Console.WriteLine("=====================================================");
 
     return;
 }
+
 
 // QuestPDF License
 QuestPDF.Settings.License = LicenseType.Community;
@@ -82,13 +80,12 @@ builder.Services.AddControllersWithViews(options =>
     options.Filters.AddService<LOSTBOOKS.Filters.RequireLoginFilter>();
 });
 
-builder.Services.AddScoped<
-    LOSTBOOKS.Services.ICurrentUserService,
+builder.Services.AddScoped<LOSTBOOKS.Services.ICurrentUserService,
     LOSTBOOKS.Services.CurrentUserService>();
-
-builder.Services.AddScoped<
-    LOSTBOOKS.Services.IActivityLogger,
+builder.Services.AddScoped<LOSTBOOKS.Services.IActivityLogger,
     LOSTBOOKS.Services.ActivityLogger>();
+builder.Services.AddScoped<LOSTBOOKS.Services.IEmailSender,
+    LOSTBOOKS.Services.EmailSender > ();
 
 var app = builder.Build();
 

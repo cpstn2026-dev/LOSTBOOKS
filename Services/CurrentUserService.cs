@@ -44,8 +44,6 @@ namespace LOSTBOOKS.Services
         GetUser()?.FullName;
         public string? Role => GetUser()?.Role;
         public bool IsManager => Role == "Manager";
-
-        public bool MustChangePassword => GetUser()?.MustChangePassword ?? false;
         public void SetCurrentUser(int userId)
         {
             _httpContextAccessor.HttpContext?.Session.SetInt32(
