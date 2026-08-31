@@ -28,11 +28,11 @@ namespace LOSTBOOKS.Controllers
 
             if (!showInactive)
             {
-                query = query.Where(u => u.Status == "Active");
+                query = query.Where(u => u.Status == "Active" || u.Status == "Pending");
             }
             else
             {
-                query = query.Where(u => u.Status == "Active" || u.Status == "Inactive");
+                query = query.Where(u => u.Status == "Active" || u.Status == "Inactive" || u.Status == "Pending");
             }
 
             var users = await query.OrderBy(u => u.UserID).ToListAsync();
