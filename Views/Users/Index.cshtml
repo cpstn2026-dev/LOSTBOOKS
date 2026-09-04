@@ -105,16 +105,27 @@
                                         Edit
                                     </button>
 
-                                    <form asp-controller="Users"
-                                          asp-action="ToggleStatus"
-                                          asp-route-id="@user.UserID"
-                                          method="post"
-                                          class="d-inline">
-                                        <button type="submit"
-                                                class="btn @(user.Status == "Active" ? "btn-danger" : "btn-secondary") btn-sm">
-                                            @(user.Status == "Active" ? "Deactivate" : "Activate")
-                                        </button>
-                                    </form>
+                                    @if (user.Status == "Active")
+                                    {
+                                        <a asp-controller="Users"
+                                           asp-action="Deactivate"
+                                           asp-route-id="@user.UserID"
+                                           class="btn btn-danger btn-sm">
+                                            Deactivate
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <form asp-controller="Users"
+                                              asp-action="Activate"
+                                              asp-route-id="@user.UserID"
+                                              method="post"
+                                              class="d-inline">
+                                            <button type="submit" class="btn btn-secondary btn-sm">
+                                                Activate
+                                            </button>
+                                        </form>
+                                    }
                                 </td>
                             </tr>
                         }

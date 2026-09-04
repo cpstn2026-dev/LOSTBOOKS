@@ -48,7 +48,7 @@ namespace LOSTBOOKS.Controllers
             }
 
             var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Username == username && u.Status == "Active");
+                .FirstOrDefaultAsync(u => u.Username == username  && u.Status == "Active");
 
             if (user == null)
             {

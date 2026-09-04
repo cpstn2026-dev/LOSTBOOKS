@@ -106,23 +106,51 @@ namespace LOSTBOOKS.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // POST: Users/ToggleStatus/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult>
-        ToggleStatus(int id)
+        // GET: Users/Deactivate/5
+        public async Task<IActionResult> Deactivate(int id)
         {
-            var user = await
-            _context.Users.FindAsync(id);
-            if (user == null)
+            var user = await _context.Users.FindAsync(id);
+
+            if (user == null || user.Status != "Active")
             {
                 return NotFound();
             }
-            user.Status = user.Status == "Active" ?
-            "Inactive" : "Active";
-            await _context.SaveChangesAsync();
+
+            return View(user);
+        }
+
+        // POST: Users/Deactivate/5
+        [HttpPost, ActionName("Deactivate")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeactivateConfirmed(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+
+            if (user != null)
+            {
+                user.Status = "Inactive";
+                await _context.SaveChangesAsync();
+            }
+
             return RedirectToAction(nameof(Index));
         }
+
+        // POST: Users/Activate/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Activate(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+
+            if (user != null)
+            {
+                user.Status = "Active";
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
         // POST: Users/Approve/5
         [HttpPost]
         [ValidateAntiForgeryToken]

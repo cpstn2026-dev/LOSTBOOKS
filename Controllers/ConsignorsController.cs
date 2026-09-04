@@ -167,29 +167,10 @@ namespace LOSTBOOKS.Controllers
         // DEACTIVATE (replaces hard Delete)
         // =====================================================
 
-        // GET: Consignors/Deactivate/5
-        public async Task<IActionResult> Deactivate(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var consignor = await _context.Consignors
-                .FirstOrDefaultAsync(m => m.ConsignorID == id);
-
-            if (consignor == null)
-            {
-                return NotFound();
-            }
-
-            return View(consignor);
-        }
-
         // POST: Consignors/Deactivate/5
-        [HttpPost, ActionName("Deactivate")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeactivateConfirmed(int id)
+        public async Task<IActionResult> Deactivate(int id)
         {
             var consignor = await _context.Consignors.FindAsync(id);
 

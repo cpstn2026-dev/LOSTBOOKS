@@ -74,7 +74,9 @@
 
                     @if (item.IsActive)
                     {
-                        <a asp-action="Deactivate" asp-route-id="@item.ConsignorID" style="background-color: red; color: white; border: none; padding: 5px 15px; text-decoration: none; display: inline-block;">Deactivate</a>
+                        <form asp-action="Deactivate" asp-route-id="@item.ConsignorID" method="post" style="display:inline;" onsubmit="return confirm('Deactivate this consignor?');">
+                            <button type="submit" style="background-color: red; color: white; border: none; padding: 5px 15px;">Deactivate</button>
+                        </form>
                     }
                     else
                     {
