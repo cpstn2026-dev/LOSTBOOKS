@@ -477,6 +477,7 @@
             </small>
 
             <div class="mt-2">
+                <i class="bi bi-clipboard-data"></i>
                 <strong>Finding:</strong>
                 <ul class="mb-0 mt-1">
                     @foreach (var line in growthFindings)
@@ -498,6 +499,7 @@
             @if (!string.IsNullOrWhiteSpace(growthConsider))
             {
                 <div class="mt-2">
+                    <i class="bi bi-flag-fill"></i>
                     <strong>Consider:</strong>
                     <span>@growthConsider</span>
                 </div>
@@ -581,6 +583,7 @@
                     </small>
 
                     <div class="mt-2">
+                        <i class="bi bi-clipboard-data"></i>
                         <strong>Finding:</strong>
                         <ul class="mb-0 mt-1">
                             @foreach (var line in trendFindings)
@@ -602,6 +605,7 @@
                     @if (!string.IsNullOrWhiteSpace(trendConsider))
                     {
                         <div class="mt-2">
+                            <i class="bi bi-flag-fill"></i>
                             <strong>Consider:</strong>
                             <span>@trendConsider</span>
                         </div>
@@ -651,8 +655,18 @@
 
                 </div>
 
+                @if (composition.Rows.Count > 0)
+                {
+                    <div class="text-center px-3 pb-2">
+                        <span class="badge bg-warning text-dark">
+                            <i class="bi bi-star-fill"></i>
+                            Top: @composition.Rows[0].Label (@composition.Rows[0].Percent.ToString("N2")%)
+                        </span>
+                    </div>
+                }
 
-                                <div class="card-footer"
+
+                <div class="card-footer"
                      style="background-color:#f1f9f4;">
 
                     <small class="text-success fw-bold text-uppercase" style="letter-spacing:0.5px;">
@@ -660,6 +674,7 @@
                     </small>
 
                     <div class="mt-2">
+                        <i class="bi bi-clipboard-data"></i>
                         <strong>Finding:</strong>
                         <ul class="mb-0 mt-1">
                             @foreach (var line in compositionFindings)
@@ -681,6 +696,7 @@
                     @if (!string.IsNullOrWhiteSpace(compositionConsider))
                     {
                         <div class="mt-2">
+                            <i class="bi bi-flag-fill"></i>
                             <strong>Consider:</strong>
                             <span>@compositionConsider</span>
                         </div>
@@ -699,14 +715,14 @@
 
         </div>
 
-        </div>
+    </div>
 
 
     <!-- =====================================================
          CATEGORY DETAILS
     ====================================================== -->
     @if (catAnalysis.Categories.Count > 0 &&
-             !composition.IsSingleCategory)
+        !composition.IsSingleCategory)
     {
         <div class="card shadow-sm mb-4">
 
@@ -769,13 +785,13 @@
                                         <td class="text-end">
 
                                             @(cat.ChangePercent.HasValue
-                                                ? (cat.ChangePercent.Value >= 0 ? "+" : "")
-                                                  + cat.ChangePercent.Value.ToString("N2")
-                                                  + "%"
-                                                : "-")
+                                                                            ? (cat.ChangePercent.Value >= 0 ? "+" : "")
+                                                                            + cat.ChangePercent.Value.ToString("N2")
+                                                                            + "%"
+                                                                            : "-")
 
-                                        </td>
-                                    }
+                            </td>
+                                                        }
 
                                 </tr>
                             }
@@ -796,99 +812,101 @@
          TOP SELLING ITEMS
     ====================================================== -->
 
-        <div class="card shadow-sm mb-4">
+    <div class="card shadow-sm mb-4">
 
-            <div class="card-header bg-success text-white fw-bold">
-                Top Selling Items
-            </div>
+        <div class="card-header bg-success text-white fw-bold">
+            Top Selling Items
+        </div>
 
-            <div class="px-3 pt-2">
-                <small class="text-muted fw-bold text-uppercase" style="letter-spacing:0.5px;">
-                    <i class="bi bi-bar-chart-fill"></i> Report
-                </small>
-            </div>
+        <div class="px-3 pt-2">
+            <small class="text-muted fw-bold text-uppercase" style="letter-spacing:0.5px;">
+                <i class="bi bi-bar-chart-fill"></i> Report
+            </small>
+        </div>
 
-            <div class="card-body"
-                 style="height:400px; position:relative;">
+        <div class="card-body"
+             style="height:400px; position:relative;">
 
-                <canvas id="topItemsChart"></canvas>
+            <canvas id="topItemsChart"></canvas>
 
-                <div id="topItemsNoData"
-                     class="text-center text-muted d-none h-100 d-flex align-items-center justify-content-center">
+            <div id="topItemsNoData"
+                 class="text-center text-muted d-none h-100 d-flex align-items-center justify-content-center">
 
-                    No top-selling item data available.
-
-                </div>
-
-            </div>
-
-
-                        <div class="card-footer"
-                 style="background-color:#f1f9f4;">
-
-                <small class="text-success fw-bold text-uppercase" style="letter-spacing:0.5px;">
-                    <i class="bi bi-search"></i> Analysis
-                </small>
-
-                <div class="mt-2">
-                    <strong>Finding:</strong>
-                    <ul class="mb-0 mt-1">
-                        @foreach (var line in itemFindings)
-                        {
-                            <li>@line</li>
-                        }
-                    </ul>
-                </div>
-
-                @if (!string.IsNullOrWhiteSpace(itemInsightText))
-                {
-                    <div class="mt-2">
-                        <i class="bi bi-lightbulb"></i>
-                        <strong>Insight:</strong>
-                        <span>@itemInsightText</span>
-                    </div>
-                }
-
-                @if (!string.IsNullOrWhiteSpace(itemConsider))
-                {
-                    <div class="mt-2">
-                        <strong>Consider:</strong>
-                        <span>@itemConsider</span>
-                    </div>
-                }
-
-                @if (!string.IsNullOrWhiteSpace(itemBasis))
-                {
-                    <div class="mt-2">
-                        <small class="text-muted"><em>Basis: @itemBasis</em></small>
-                    </div>
-                }
+                No top-selling item data available.
 
             </div>
 
         </div>
 
 
+        <div class="card-footer"
+             style="background-color:#f1f9f4;">
+
+            <small class="text-success fw-bold text-uppercase" style="letter-spacing:0.5px;">
+                <i class="bi bi-search"></i> Analysis
+            </small>
+
+            <div class="mt-2">
+                <i class="bi bi-clipboard-data"></i>
+                <strong>Finding:</strong>
+                <ul class="mb-0 mt-1">
+                    @foreach (var line in itemFindings)
+                    {
+                        <li>@line</li>
+                    }
+                </ul>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(itemInsightText))
+            {
+                <div class="mt-2">
+                    <i class="bi bi-lightbulb"></i>
+                    <strong>Insight:</strong>
+                    <span>@itemInsightText</span>
+                </div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(itemConsider))
+            {
+                <div class="mt-2">
+                    <i class="bi bi-flag-fill"></i>
+                    <strong>Consider:</strong>
+                    <span>@itemConsider</span>
+                </div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(itemBasis))
+            {
+                <div class="mt-2">
+                    <small class="text-muted"><em>Basis: @itemBasis</em></small>
+                </div>
+            }
+
+        </div>
+
+    </div>
+
+
     <!-- =====================================================
          ITEM RANKING
     ====================================================== -->
 
-        <div class="card shadow-sm mb-4">
+    <div class="card shadow-sm mb-4">
 
-            <div class="card-header bg-success text-white fw-bold">
-                Item Ranking
-            </div>
+        <div class="card-header bg-success text-white fw-bold">
+            Item Ranking
+        </div>
 
-            <div class="px-3 pt-2">
-                <small class="text-muted fw-bold text-uppercase" style="letter-spacing:0.5px;">
-                    <i class="bi bi-bar-chart-fill"></i> Report
-                </small>
-            </div>
+        <div class="px-3 pt-2">
+            <small class="text-muted fw-bold text-uppercase" style="letter-spacing:0.5px;">
+                <i class="bi bi-bar-chart-fill"></i> Report
+            </small>
+        </div>
 
-            <div class="card-body">
+        <div class="card-body">
 
             @if (itemAnalysis.AllItems == null ||
-                 itemAnalysis.AllItems.Count == 0)
+                        itemAnalysis.AllItems.Count == 0)
             {
                 <p class="text-muted mb-0">
                     No item data available for the selected period.
@@ -965,13 +983,13 @@
                                         <td class="text-end">
 
                                             @(item.QuantityChangePercent.HasValue
-                                                ? (item.QuantityChangePercent.Value >= 0 ? "+" : "")
-                                                  + item.QuantityChangePercent.Value.ToString("N2")
-                                                  + "%"
-                                                : "-")
+                                                                            ? (item.QuantityChangePercent.Value >= 0 ? "+" : "")
+                                                                            + item.QuantityChangePercent.Value.ToString("N2")
+                                                                            + "%"
+                                                                            : "-")
 
-                                        </td>
-                                    }
+                            </td>
+                                                        }
 
                                 </tr>
 
@@ -988,50 +1006,52 @@
         </div>
 
 
-                        <div class="card-footer"
-                 style="background-color:#f1f9f4;">
+        <div class="card-footer"
+             style="background-color:#f1f9f4;">
 
-                <small class="text-success fw-bold text-uppercase" style="letter-spacing:0.5px;">
-                    <i class="bi bi-search"></i> Analysis
-                </small>
+            <small class="text-success fw-bold text-uppercase" style="letter-spacing:0.5px;">
+                <i class="bi bi-search"></i> Analysis
+            </small>
 
-                <div class="mt-2">
-                    <strong>Finding:</strong>
-                    <ul class="mb-0 mt-1">
-                        @foreach (var line in itemConcentrationFindings)
-                        {
-                            <li>@line</li>
-                        }
-                    </ul>
-                </div>
-
-                @if (!string.IsNullOrWhiteSpace(itemConcentrationInsightText))
-                {
-                    <div class="mt-2">
-                        <i class="bi bi-lightbulb"></i>
-                        <strong>Insight:</strong>
-                        <span>@itemConcentrationInsightText</span>
-                    </div>
-                }
-
-                @if (!string.IsNullOrWhiteSpace(itemConcentrationConsider))
-                {
-                    <div class="mt-2">
-                        <strong>Consider:</strong>
-                        <span>@itemConcentrationConsider</span>
-                    </div>
-                }
-
-                @if (!string.IsNullOrWhiteSpace(itemConcentrationBasis))
-                {
-                    <div class="mt-2">
-                        <small class="text-muted"><em>Basis: @itemConcentrationBasis</em></small>
-                    </div>
-                }
-
+            <div class="mt-2">
+                <i class="bi bi-clipboard-data"></i>
+                <strong>Finding:</strong>
+                <ul class="mb-0 mt-1">
+                    @foreach (var line in itemConcentrationFindings)
+                    {
+                        <li>@line</li>
+                    }
+                </ul>
             </div>
 
+            @if (!string.IsNullOrWhiteSpace(itemConcentrationInsightText))
+            {
+                <div class="mt-2">
+                    <i class="bi bi-lightbulb"></i>
+                    <strong>Insight:</strong>
+                    <span>@itemConcentrationInsightText</span>
+                </div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(itemConcentrationConsider))
+            {
+                <div class="mt-2">
+                    <i class="bi bi-flag-fill"></i>
+                    <strong>Consider:</strong>
+                    <span>@itemConcentrationConsider</span>
+                </div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(itemConcentrationBasis))
+            {
+                <div class="mt-2">
+                    <small class="text-muted"><em>Basis: @itemConcentrationBasis</em></small>
+                </div>
+            }
+
         </div>
+
+    </div>
 
 
     <!-- =====================================================
@@ -1043,6 +1063,16 @@
         <div class="card-header bg-success text-white fw-bold">
             Final Analysis Summary
         </div>
+
+        @if (growth.HasPreviousPeriod)
+        {
+            <div class="card-body pb-0"
+                 style="height:220px; position:relative;">
+
+                <canvas id="periodComparisonChart"></canvas>
+
+            </div>
+        }
 
         <div class="card-body">
 
@@ -1100,6 +1130,11 @@
     const values =
     salesTrendData.map(item => Number(item.Total));
 
+    const peakLabel = "@(trend.HasData? trend.HighestSalesDate.Value.ToString("MMM dd, yyyy") : "")";
+
+    const pointRadii = labels.map(l => l === peakLabel ? 8 : 4);
+    const pointColors = labels.map(l => l === peakLabel ? "#ffc107" : "#198754");
+
     new Chart(salesTrendCanvas, {
 
     type: "line",
@@ -1121,13 +1156,13 @@
 
     borderWidth: 3,
 
-    pointBackgroundColor: "#198754",
+    pointBackgroundColor: pointColors,
 
-    pointBorderColor: "#198754",
+    pointBorderColor: pointColors,
 
-    pointRadius: 4,
+    pointRadius: pointRadii,
 
-    pointHoverRadius: 6,
+    pointHoverRadius: pointRadii.map(r => r + 2),
 
     tension: 0.3,
 
@@ -1260,6 +1295,8 @@
     categoryPerformanceData
     .map(item => Number(item.Total));
 
+    const sliceOffsets = values.map((v, i) => i === 0 ? 18 : 0);
+
     new Chart(categoryCanvas, {
 
     type: "pie",
@@ -1285,7 +1322,9 @@
 
     borderColor: "#ffffff",
 
-    borderWidth: 2
+    borderWidth: 2,
+
+    offset: sliceOffsets
 
     }]
 
@@ -1390,6 +1429,9 @@
     topItemsData
     .map(item => Number(item.Quantity));
 
+    const barColors = quantities.map((v, i) => i === 0 ? "#ffc107" : "#198754");
+    const barBorderColors = quantities.map((v, i) => i === 0 ? "#e0a800" : "#157347");
+
     new Chart(topItemsCanvas, {
 
     type: "bar",
@@ -1404,9 +1446,9 @@
 
     data: quantities,
 
-    backgroundColor: "#198754",
+    backgroundColor: barColors,
 
-    borderColor: "#157347",
+    borderColor: barBorderColors,
 
     borderWidth: 1,
 
@@ -1486,7 +1528,7 @@
     });
 
     }
-    else {
+        else {
 
     if (topItemsCanvas)
     topItemsCanvas.style.display = "none";
@@ -1496,6 +1538,112 @@
 
     }
 
+
+    /* =====================================================
+    PERIOD COMPARISON (Final Analysis Summary)
+    ===================================================== */
+
+    const periodComparisonCanvas =
+    document.getElementById("periodComparisonChart");
+
+    if (periodComparisonCanvas) {
+
+    const previousTotal = @growth.PreviousTotal.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+    const currentTotal = @growth.CurrentTotal.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+
+    new Chart(periodComparisonCanvas, {
+
+    type: "bar",
+
+    data: {
+
+    labels: ["Previous Period", "Current Period"],
+
+    datasets: [{
+
+    label: "Total Sales",
+
+    data: [previousTotal, currentTotal],
+
+    backgroundColor: ["#adb5bd", "#198754"],
+
+    borderColor: ["#868e96", "#157347"],
+
+    borderWidth: 1,
+
+    borderRadius: 5,
+
+    maxBarThickness: 90
+
+    }]
+
+    },
+
+    options: {
+
+    indexAxis: "y",
+
+    responsive: true,
+
+    maintainAspectRatio: false,
+
+    plugins: {
+
+    legend: {
+    display: false
+    },
+
+    tooltip: {
+
+    callbacks: {
+
+    label: function (context) {
+
+    return "₱" +
+    Number(context.raw)
+    .toLocaleString(
+    "en-PH",
+    {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
     });
 
-</script> 
+    }
+
+    }
+
+    }
+
+    },
+
+    scales: {
+
+    x: {
+
+    beginAtZero: true,
+
+    ticks: {
+
+    callback: function (value) {
+
+    return "₱" +
+    Number(value)
+    .toLocaleString("en-PH");
+
+    }
+
+    }
+
+    }
+
+    }
+
+    }
+
+    });
+
+    }
+
+    });
+
+</script>

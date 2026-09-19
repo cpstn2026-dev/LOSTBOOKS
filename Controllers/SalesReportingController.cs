@@ -1756,7 +1756,6 @@ namespace LOSTBOOKS.Controllers
                 column.Item()
                     .PaddingTop(3)
                     .Text($"Consider: {consider}")
-                    .Italic()
                     .FontSize(considerFontSize);
             }
 
@@ -2389,9 +2388,9 @@ namespace LOSTBOOKS.Controllers
                     increases.Select(c => $"{c.Category} (+₱{c.ChangeAmount:N2})"));
 
                 findings.Add(
-                    decreases.Count > 0
-                        ? $"Offset by growth in {increaseList}."
-                        : $"Largest gains: {increaseList}.");
+                 decreases.Count > 0
+        ?        $"However, sales grew in {increaseList}, which helped balance out that decline."
+        :        $"Largest gains: {increaseList}.");
             }
 
             var smallBaseFlags = increases
@@ -3252,13 +3251,20 @@ namespace LOSTBOOKS.Controllers
                     peakDayCategoryName = topCategoryOnPeakDay.Category;
                     peakDayDriverFires = !isSingleCategory && peakDayCategoryShare >= 50m;
 
-                    findings.Add(
-                        $"Peak day ({highest.Date:MMM dd, yyyy}, ₱{highest.Total:N2}) was driven mostly by " +
-                        $"{topCategoryOnPeakDay.Category} — {peakDayCategoryShare:N2}% of that day's sales.");
+                    if (peakDayDriverFires)
+                    {
+                        findings.Add(
+                            $"Your best day was {highest.Date:MMM dd, yyyy}, with ₱{highest.Total:N2} in sales — " +
+                            $"mostly from {topCategoryOnPeakDay.Category}, which made up {peakDayCategoryShare:N2}% of that day.");
+                    }
+                    else
+                    {
+                        findings.Add($"Your best day was {highest.Date:MMM dd, yyyy}, with ₱{highest.Total:N2} in sales.");
+                    }
                 }
                 else
                 {
-                    findings.Add($"Peak day: {highest.Date:MMM dd, yyyy} at ₱{highest.Total:N2}.");
+                    findings.Add($"Your best day was {highest.Date:MMM dd, yyyy}, with ₱{highest.Total:N2} in sales.");
                 }
             }
 
@@ -3281,12 +3287,12 @@ namespace LOSTBOOKS.Controllers
                     concentrationTopShare = topShare;
 
                     findings.Add(
-                        $"Sales are concentrated: the top {topCount} days alone made up {topShare:N2}% of the " +
-                        "entire period's total.");
+                         $"Most of your sales happened on just {topCount} days — together, they made up " +
+                         $"{topShare:N2}% of the whole period.");
 
                     considerParts.Add(
-                        "Sales are concentrated on a handful of days — worth checking whether promotions, " +
-                        "events, or foot traffic on those days can be identified and repeated.");
+                        "A few days accounted for most of your sales — check whether a promotion, event, " +
+                        "or unusually busy foot traffic on those days can be identified and repeated.");
                 }
             }
 
@@ -3332,7 +3338,7 @@ namespace LOSTBOOKS.Controllers
             {
                 if (peakDayDriverFires)
                 {
-                    insight = "One category's performance on a single day had an outsized effect on the whole period.";
+                    insight = "A single strong day from one category had a big impact on your overall results for this period.";
                 }
                 else if (concentrationFires)
                 {
